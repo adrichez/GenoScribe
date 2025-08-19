@@ -1,0 +1,347 @@
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Cuerpo del Informe
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+@keyframes scrollDown {
+  from {
+    background-position: 0% 0%, 0% 50%;
+  }
+  to {
+    background-position: 0% 100%, 100% 50%;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+
+  /* Fondo con textura + degradado suave */
+  background-color: #215a9b;
+  background-image: 
+    url("resources/2-textures/inspiration-geometry.png"),
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.1));
+  background-repeat: repeat, no-repeat;
+  background-size: auto, 200% 200%;
+
+  /* Movimiento muy sutil */
+  animation: scrollDown 40s linear infinite;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Título superior 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+.informe-titulo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 2rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #27396c, #141e55);
+  color: #e6e9f0;
+  margin: 1rem 0rem 8rem 0rem;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  transition: all 20s ease;
+  position: relative;
+  overflow: hidden;
+  min-height: 260px;
+}
+
+.informe-titulo:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, #253a77, #0c1458);
+}
+
+/* Efecto de luz animada */
+.informe-titulo::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+  animation: shimmer 20s infinite linear;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.informe-titulo h1 {
+  font-size: 4.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #fff;
+  letter-spacing: -0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.388);
+  padding-bottom: 2rem;
+  text-transform: uppercase;
+  text-align: center;
+  width: 90%;
+}
+
+.informe-titulo p {
+  margin-top: 15px;
+  font-size: 1.9rem;
+  font-weight: 300;
+  color: #d0d6e2;
+  text-align: center;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Imagen portada 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Estilos para la imagen de portada */
+.portada-imagen {
+  width: 100%;
+  aspect-ratio: 15 / 3;
+  overflow: hidden;
+  position: relative;
+  border-radius: 8px;
+  margin: 1.5rem 0 8rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.portada-imagen:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.portada-imagen img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 8px;
+  transition: filter 0.5s ease;
+  filter: brightness(1) contrast(1.02);
+}
+
+.portada-imagen:hover img {
+  filter: brightness(1.08) contrast(1.05);
+}
+
+/* Overlay con brillo sutil (muy tenue, tipo highlight) */
+.portada-imagen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.portada-imagen:hover::after {
+  opacity: 1;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Botón activo
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+.container button#run {
+  background: linear-gradient(135deg, #004080, #0059b3) !important;
+  color: white !important;
+  padding: 1rem 2rem;
+  border: none !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  font-size: 1.2rem !important;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.container button#run:hover {
+  background: linear-gradient(135deg, #0059b3, #0073e6) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+/* Mensaje de estado */
+#mensaje {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #444;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Caja principal
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+.container {
+  background-color: #f1f1f1;
+  color: #0e5296;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  min-width: 800px;
+  max-width: 98%;
+  margin: 2rem auto 2rem auto;
+  text-align: center;
+  transition: box-shadow 0.3s ease;
+}
+
+.container:hover {
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Contenedores de cada input-label */
+.container .form-group {
+  margin: 1rem auto;
+  max-width: 80%;
+}
+
+/* Más espacio debajo del menú tipo de análisis */
+.container .form-group.tipo-analisis {
+  margin-bottom: 5rem;
+}
+
+/* Menor espacio entre inputs relacionados */
+.container .form-group.inputs-conjuntos {
+  margin-bottom: -3rem;
+}
+
+/* Mensaje de éxito (verde) para archivos cargados */
+.container .form-group .shiny-text-output {
+  color: #2e7d32;
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 5rem;
+  text-align: center;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Etiquetas grandes
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+.label-grande {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #004080;
+  font-family: 'Arial', sans-serif;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Mensajes
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+#mensaje {
+  color: #2e7d32;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+#error {
+  color: #c0392b;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Enlaces
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+#enlace a {
+  display: inline-block;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #1e88e5, #1565c0);
+  color: white;
+  font-weight: 500;
+  border-radius: 6px;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: background 0.3s ease, transform 0.2s ease;
+  margin-top: 5px;
+}
+
+#enlace a:hover {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  transform: translateY(-2px);
+}
+
+#enlace {
+  text-align: center;
+  margin-top: 20px;
+}

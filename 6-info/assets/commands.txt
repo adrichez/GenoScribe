@@ -1,0 +1,85 @@
+docker build -t genoscribe .
+docker build --no-cache -t genoscribe .
+
+./run_app.sh /home/user/datos /home/user/reportes
+
+run_app.bat C:\Users\Adrian\Datos C:\Users\Adrian\Reportes
+
+chmod +x ./run_app.sh
+./run_app.sh '/Users/adrian/Documents/4 Workspace/Prototipo_resultados/EXT_RNA_Seq' '/Users/adrian/Documents/4 Workspace/Reports'
+
+chmod +x ./4-launch/unix/run_app_persist.sh
+chmod +x ./4-launch/unix/run_app_temp.sh
+chmod +x ./4-launch/unix/resume_app.sh
+chmod +x ./4-launch/unix/access_container_shell.sh
+./4-launch/unix/run_app_persist.sh '/Users/adrian/Documents/4 Workspace/Prototipo_resultados/EXT_RNA_Seq' '/Users/adrian/Documents/4 Workspace/Reports'
+./4-launch/unix/run_app_temp.sh '/Users/adrian/Documents/4 Workspace/Prototipo_resultados/EXT_RNA_Seq' '/Users/adrian/Documents/4 Workspace/Reports'
+./4-launch/unix/resume_app.sh
+./4-launch/unix/access_container_shell.sh
+
+# 1. Arrancar contenedor en background (si no está corriendo)
+docker start genoscribe_container
+
+# 2. Abrir bash
+docker exec -it genoscribe_container bash
+
+
+http://localhost:3838/app
+
+docker run -it --rm -p 3838:3838 genoscribe bash
+
+docker run -it --rm -p 3838:3838 genoscribe bash
+
+docker run -it --rm -p 3838:3838 \
+  -v "/Users/adrian/Documents/4 Workspace/Prototipo_resultados/EXT_RNA_Seq":/data/EXT_RNA_Seq \
+  -v "/Users/adrian/Documents/4 Workspace/Reports":/srv/shiny-server/app/www/reports \
+  genoscribe bash
+
+docker run -it --name genoscribe_container -p 3838:3838 \
+  -v "/Users/adrian/Documents/4 Workspace/Prototipo_resultados/EXT_RNA_Seq":/data/EXT_RNA_Seq \
+  -v "/Users/adrian/Documents/4 Workspace/Reports":/srv/shiny-server/app/www/reports \
+  genoscribe bash
+
+docker start -ai genoscribe_container
+
+docker cp genoscribe_container:/project/2-pipelines/1-bulk-rna-seq/report "/Users/adrian/Documents/4 Workspace/Reports/1-bulk-rna-seq"
+docker cp "/Users/adrian/Downloads/project/2-pipelines/1-bulk-rna-seq/run_pipeline.sh" genoscribe_container:/project/2-pipelines/1-bulk-rna-seq/run_pipeline.sh
+docker cp "/Users/adrian/Downloads/project/2-pipelines/1-bulk-rna-seq/clean_dir.sh" genoscribe_container:/project/2-pipelines/1-bulk-rna-seq/clean_dir.sh
+docker cp "/Users/adrian/Downloads/project/3-docker/entrypoint.sh" genoscribe_container:/project/3-docker/entrypoint.sh
+rm -rf _freeze *_cache *.knit.md
+
+quarto render --execute-params params.yml
+
+chmod +x ./run_pipeline.sh
+
+./run_pipeline.sh "/data/EXT_RNA_Seq" "mary"
+
+
+chmod +x ./clean_dir.sh
+./clean_dir.sh
+
+chmod +x ./2-pipelines/1-bulk-rna-seq/clean_dir.sh
+./2-pipelines/1-bulk-rna-seq/clean_dir.sh
+
+# Elimina solo imágenes y contenedores que no estén en uso
+docker image prune -f
+docker container prune -f
+
+# O eliminar TODO lo que no se use (contenedores, volúmenes, redes, imágenes sin usar)
+docker system prune -a --volumes -f
+
+
+
+apt-get update && apt-get install -y --no-install-recommends \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    libfreetype6-dev \
+    pkg-config \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev
+
+"plotly" %in% rownames(installed.packages())
+'tidyverse' %in% rownames(installed.packages())
+'DT' %in% rownames(installed.packages())
+install.packages("tidyverse", repos='https://cloud.r-project.org', dependencies=TRUE)

@@ -1,0 +1,84 @@
+project:
+  type: website
+  output-dir: report
+  render:
+    - "*.qmd"
+    - "!main.nf"
+    - "!nextflow.config"
+    - "!*.sh"
+    - "!*.R"
+    - "!*.Rmd"
+    - "!*.Rhistory"
+    - "!*.Rprofile"
+    - "!*.Rproj"
+    - "!*.py"
+    - "!*.ipynb"
+    - "!*.md"
+    - "!*.Rmd"
+    - "!resources/1-essential/3-scripts/1-R/"
+    - "!resources/1-essential/3-scripts/4-Python/"
+    - "!resources/2-nextflow-results/"
+    - "!work/"
+    - "!temp/"
+
+resources:
+  - "resources/**"
+  - "!resources/1-essential/3-scripts/1-R/"
+  - "!resources/1-essential/3-scripts/4-Python/"
+
+format:
+  html:
+    css: resources/1-essential/3-scripts/3-CSS/styles.css
+    theme: lux
+    toc: false
+    code-fold: false
+    code-tools: false
+    number-sections: false
+    page-layout: custom
+    smooth-scroll: true
+    highlight-style: a11y-dark
+    self-contained: false
+    copy-files: true
+    html: true
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="resources/1-essential/1-images/0-icono/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="resources/1-essential/1-images/0-icono/favicon.ico">
+
+execute:
+  echo: false
+  warning: false
+  message: false
+  freeze: false
+  cache: true
+
+params:
+  ruta_proyecto: ""
+  nombre_experimento: ""
+
+website:
+  navbar:
+    left:
+      - text: "Inicio"
+        href: index.qmd
+
+      - text: "Resumen"
+        href: resources/1-essential/3-scripts/2-Quarto/Tab2-Resumen/resumen.qmd
+
+      - text: "Análisis"
+        menu:
+          - text: "Introducción contextual"
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/0-contexto.qmd
+          - text: "1. Revisión inicial de muestras y metadatos"
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/1-revision-inicial.qmd
+          - text: "2. Evaluación de calidad de las lecturas"
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/2-evaluacion-calidad.qmd
+          - text: "3. Alineamiento de las lecturas"
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/3-alineamiento.qmd
+          - text: "4. Cuantificación de la expresión génica"
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/4-cuantificacion.qmd
+          - text: "5. Análisis estadístico de la expresión génica"
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/5-analisis-estadistico.qmd
+          - text: "6. Conclusiones y perspectivas"
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/6-conclusiones.qmd

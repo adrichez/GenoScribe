@@ -1,0 +1,22 @@
+# Ignore specific files
+main.nf
+nextflow.config
+
+# Ignore specific folders
+resources/1-essential/3-scripts/1-R/
+resources/1-essential/3-scripts/4-Python/
+resources/2-nextflow-results/
+work/
+temp/
+
+# Ignore files with specific patterns
+*.sh
+*.R
+*.Rmd
+*.Rhistory
+*.Rprofile
+*.Rproj
+*.py
+*.ipynb
+*.md
+*.Rmd

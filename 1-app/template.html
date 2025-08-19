@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Formulario Pipeline RNA-Seq</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<main>
+  <div style="height: 12px; background-color: transparent;"></div>
+
+  <div class="informe-titulo">
+    <h1>Informe Bioinformático Automatizado y Reproducible</h1>
+    <p>Generado con <strong>Shiny</strong> + <strong>Nextflow</strong> + <strong>Quarto</strong> · IPBLN-CSIC · Granada</p>
+  </div>
+
+  <div class="container">
+    {{contenido}}
+    {{boton}}
+    <div id="mensaje">{{mensaje}}</div>
+    <div id="enlace">{{resultLinks}}</div>
+    <div id="error">{{error}}</div>
+  </div>
+</main>
+
+</body>
+</html>

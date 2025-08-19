@@ -1,0 +1,2016 @@
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Reset y estilos base y contenedor principal
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* ==== ESTILOS BASE OPTIMIZADOS ==== */
+html, body {
+  margin: 0;
+  padding: 0em 1.5em 2.5em 1.5em;
+  width: 100%;
+  box-sizing: border-box;
+
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+  background-color: #f4f4f4;
+  color: #1e1d30;
+
+  font-size: 16px;         /* Ligero aumento para mejor legibilidad */
+  font-weight: 400;
+  line-height: 1.8;         /* Más aire entre líneas */
+  letter-spacing: 0.1px;   /* Muy sutil espaciado entre letras */
+  word-spacing: 0.05em;    /* Mejora el ritmo del texto */
+  text-align: justify;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ==== CONTENEDOR PRINCIPAL SIN CAMBIOS DE COLOR ==== */
+main {
+  max-width: 960px;
+  margin: 2.5em auto;
+  padding: 2.2em 2.4em;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+/* ==== PÁRRAFOS CON MÁS AIRE VISUAL ==== */
+p {
+  margin-top: 0;
+  margin-bottom: 0.4em;
+}
+
+/* ==== CABECERAS MEJORADAS SIN CAMBIAR ESTILO ==== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1e1e1e;
+  margin-top: 2em;
+  margin-bottom: 0.8em;
+}
+
+strong {
+  color: #1d4e89;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para la barra de navegación y pestañas
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Barra de navegación: más delgada, fondo oscuro elegante */
+/* Barra de navegación */
+.navbar {
+  padding: 0.5rem 1.5rem;
+  height: 48px;
+  background-color: #0f1a24;
+  border-bottom: 2px solid #1f2f5b;
+  font-size: 0.75rem;
+  font-weight: 400;  /* menos grueso */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1000;
+  letter-spacing: 0.02em; /* un poquito de espacio entre letras */
+  height: 60px;
+}
+
+/* Ítems del menú */
+.navbar .nav-link {
+  padding: 0.4rem 1.2rem; /* más espacio a los lados */
+  color: #cfd8dc !important;
+  font-weight: 500; /* intermedio */
+  border-radius: 5px;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Hover y foco: cambio sutil, grisáceo y menos saturado */
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: #e0e6ea !important; /* gris muy claro */
+  background-color: #253447 !important; /* azul grisáceo oscuro */
+  box-shadow: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Menús desplegables */
+.dropdown-menu {
+  background-color: #0f1a24;
+  border: 1.5px solid #2a3f52;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  padding: 0.4rem 0;
+  min-width: 160px;
+  transition: opacity 0.3s ease;
+}
+
+/* Ítems dentro del menú desplegable */
+.dropdown-item {
+  color: #cfd8dc;
+  font-size: 0.8rem;
+  padding: 0.4rem 1.2rem;
+  border-radius: 5px;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Hover en ítems desplegables: gris azulado suave */
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: #253447;
+  color: #e0e6ea;
+  box-shadow: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Ítem activo */
+.navbar .nav-link.active {
+  background-color: #2a3f52;
+  color: #e0f7fa !important;
+  box-shadow: none;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para portada e informes (imagen, título y subtítulo)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Ocultar título h1 con clase .title */
+h1.title {
+  display: none;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* Estilos para la imagen de portada */
+.portada-imagen {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  border-radius: 8px;
+  margin: 1.5rem 0 2rem 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.portada-imagen:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.portada-imagen img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 8px;
+  transition: filter 0.5s ease;
+  filter: brightness(1) contrast(1.02);
+}
+
+.portada-imagen:hover img {
+  filter: brightness(1.08) contrast(1.05);
+}
+
+/* Overlay con brillo sutil (muy tenue, tipo highlight) */
+.portada-imagen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.portada-imagen:hover::after {
+  opacity: 1;
+}
+
+
+/* Estilos para la caja del titulo principal del informe */
+.informe-titulo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 2rem 0rem 2rem;
+  min-height: 280px;
+  background: linear-gradient(135deg, #1f2f5b, #0a1138);
+  margin: 1.2rem auto -1rem auto;
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  color: #e6e9f0;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.informe-titulo:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, #253a77, #0c1458);
+}
+
+.informe-titulo::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 80%);
+  animation: shimmer 6s infinite linear;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+.informe-titulo h1 {
+  font-size: 2.8rem;
+  font-weight: 600;
+  margin: 1rem auto 1rem auto;
+  letter-spacing: -0.6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.388);
+  padding-bottom: 0.8rem;
+  width: 100%;
+  max-width: 950px;
+  color:#ececec;
+}
+
+.informe-titulo h2 {
+  font-size: 2rem;
+  font-weight: 400;
+  margin: 0;
+  color: #d6dbeb;
+  letter-spacing: -0.3px;
+  max-width: 800px;
+  margin-top: 0.5rem;
+}
+
+.informe-titulo p {
+  font-size: 1.4rem;
+  margin-top: 0.8rem;
+  color: #b0b8ce;
+  max-width: 1000px;
+}
+
+
+/* Estilos para la caja del titulo de cada pestaña*/
+.informe-titulo-tab {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #293c70, #1e2a78);
+  margin: 1.2rem auto -1rem auto;
+  border-radius: 7px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+  width: 99.5%;
+  color: #e6e9f0;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+}
+
+.informe-titulo-tab:hover {
+  transform: scale(1.01);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #32478f, #1d2974);
+}
+
+.informe-titulo-tab::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transform: skewX(-25deg);
+  opacity: 0;
+  transition: left 0.6s ease, opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.informe-titulo-tab:hover::before {
+  left: 120%;
+  opacity: 1;
+}
+
+.informe-titulo-tab h1 {
+  font-size: 2.1rem;
+  font-weight: 600;
+  margin: 1rem auto 1rem auto;
+  letter-spacing: -0.6px;
+  border-bottom: 1px solid rgb(230, 233, 240);
+  padding-bottom: 0.6rem;
+  width: 100%;
+  max-width: 240px;
+  color:#ececec;
+}
+
+.informe-titulo-tab h2 {
+  font-size: 1.7rem;
+  font-weight: 400;
+  margin: 0;
+  color: #d6dbeb;
+  letter-spacing: -0.3px;
+  max-width: 800px;
+  margin-top: 0.5rem;
+}
+
+.informe-titulo-tab p {
+  font-size: 0.85rem;
+  margin-top: 0.8rem;
+  color: #b0b8ce;
+  max-width: 800px;
+}
+
+
+/* Estilos para la caja del titulo de cada sección*/
+.informe-titulo-seccion {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #3a5299, #1e2a78);
+  margin: 2rem auto -1rem auto;
+  border-radius: 7px;
+  box-shadow: none;
+  width: 99%;
+  color: #e6e9f0;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+}
+
+.informe-titulo-seccion:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #4b63b0, #24358a);
+}
+
+.informe-titulo-seccion::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -65%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: skewX(-25deg);
+  opacity: 0;
+  transition: left 0.6s ease, opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.informe-titulo-seccion:hover::before {
+  left: 120%;
+  opacity: 1;
+}
+
+.informe-titulo-seccion h1 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 1rem auto 1rem auto;
+  letter-spacing: -0.6px;
+  border-bottom: 1px solid rgb(230, 233, 240);
+  padding-bottom: 0.6rem;
+  width: 100%;
+  max-width: 220px;
+  color:#ececec;
+}
+
+.informe-titulo-seccion h2 {
+  font-size: 1.4rem;
+  font-weight: 400;
+  margin: 0;
+  color: #d6dbeb;
+  letter-spacing: -0.3px;
+  max-width: 800px;
+  margin-top: 0.5rem;
+}
+
+.informe-titulo-seccion p {
+  font-size: 0.85rem;
+  margin-top: 0.8rem;
+  color: #b0b8ce;
+  max-width: 800px;
+}
+
+
+/* Estilos para la caja del titulo de cada subsección*/
+.informe-titulo-subseccion {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #607ab5, #3c569a);
+  margin: 2rem auto -1rem auto;
+  border-radius: 6px;
+  box-shadow: none;
+  width: 98.5%;
+  color: #edf2ff;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+}
+
+.informe-titulo-subseccion:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #748ec3, #475897);
+  cursor: default;
+}
+
+.informe-titulo-subseccion::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -65%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+  transform: skewX(-25deg);
+  opacity: 0;
+  transition: left 0.6s ease, opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.informe-titulo-subseccion:hover::before {
+  left: 120%;
+  opacity: 1;
+}
+
+.informe-titulo-subseccion h1 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0.6rem 0 0.6rem 0;
+  letter-spacing: -0.4px;
+  border-bottom: 1px solid rgba(237, 242, 255, 0.6);
+  padding-bottom: 0.3rem;
+  width: 100%;
+  max-width: 220px;
+  color: #f0f6ff;
+}
+
+.informe-titulo-subseccion h2 {
+  font-size: 1rem;
+  font-weight: 400;
+  margin: 0;
+  color: #d1d9f7;
+  letter-spacing: -0.2px;
+  max-width: 600px;
+  margin-top: 0.4rem;
+}
+
+.informe-titulo-subseccion p {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  color: #bec7ed;
+  max-width: 600px;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para el informe resumen y contexto
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Caja resumen: fondo claro, bordes azules, padding y sombra suave */
+.informe-resumen {
+  background: #f5f9fc;
+  border-radius: 10px;
+  border-top: 4px solid #2e648e;
+  padding: 1.5rem 2rem;
+  margin: 2.5rem auto 2rem auto;
+  width: 98%;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  font-size: 0.90rem;
+  color: #2b3c5a;
+  line-height: 1.7;
+  font-style: italic;
+  position: relative;
+  transition: 
+    box-shadow 0.3s ease,
+    border-top 0.3s ease,
+    background-color 0.3s ease,
+    filter 0.3s ease;
+}
+
+/* Efectos al hacer hover */
+.informe-resumen:hover {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+  border-top: 4px solid #123651; /* azul más intenso */
+  background-color: #f0f8ff; /* fondo más luminoso */
+  filter: brightness(1.05); /* realce global */
+}
+
+/* Glow sutil azul decorativo */
+.informe-resumen:hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  box-shadow: 0 0 8px 2px rgba(46, 100, 142, 0.15);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.informe-resumen p {
+  margin: 0.8rem 0;
+}
+
+.informe-resumen strong {
+  color: #1d4e89;
+}
+
+.informe-resumen code {
+  background: #c9e2fa;
+  color: #0b2179;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'Courier New', Courier, monospace;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-style: normal;
+  font-weight: 550;
+}
+
+.informe-resumen h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.6em;
+  font-weight: bold;
+  color: #1e2c54;
+  letter-spacing: -0.5px;
+  font-style: normal;
+}
+
+.informe-resumen::before {
+  content: "🧬";
+  position: absolute;
+  top: -14px;
+  left: 10px;
+  font-size: 1.6rem;
+}
+
+
+.informe-contenido {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem auto;
+  max-width: 90%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1.8;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para el contenedor de imágenes centradas
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Imagen centrada con sombra, borde redondeado y color de borde específico */
+.box-images img {
+  width: 65% !important;
+  display: block;
+  margin: 0.1rem auto;
+  border-radius: 10px;
+  border: 5px solid #004d61;
+  box-shadow: 0 6px 12px rgba(0, 77, 97, 0.18);
+  filter: brightness(1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+  cursor: pointer;
+}
+
+.box-images img:hover {
+  transform: scale(1.005);
+  box-shadow: 0 10px 15px rgba(1, 40, 50, 0.4);
+  filter: brightness(1.05); 
+  border-color: #0088aa;    
+}
+
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para títulos jerarquizados
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Título para la tabla de contenidos*/
+.titulo-toc {
+  font-size: 33px;
+  color: #013846;
+  margin-top: 60px; 
+  margin-bottom: 0; 
+  letter-spacing: -0.30px;
+  border-bottom: 1px solid #dedede;
+  padding-bottom: 2px;
+  line-height: 1;     
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* Título principal grande */
+.titulo1 {
+  font-size: 32px;
+  color: #004151;
+  margin-top: 60px;
+  margin-bottom: 0;
+  letter-spacing: -0.35px;
+  border-bottom: 1px solid #dedede;
+  padding-bottom: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* Segundo nivel de título */
+.titulo2 {
+  font-size: 28px;
+  color: #004151;
+  margin-top: 45px;
+  margin-bottom: 0;
+  letter-spacing: -0.25px;
+  border-bottom: 1px solid #dedede;
+  padding-bottom: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* Tercer nivel de título */
+.titulo3 {
+  font-size: 25px;
+  color: #004151;
+  margin-top: 38px;
+  margin-bottom: 0;
+  letter-spacing: -0.15px;
+  border-bottom: 1px solid #dedede;
+  padding-bottom: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* Cuarto nivel de título */
+.titulo4 {
+  font-size: 22px;
+  color: #004151;
+  margin-top: 38px;
+  margin-bottom: 0;
+  letter-spacing: -0.12px;
+  border-bottom: 1px solid #dedede;
+  padding-bottom: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para el pie de página (footer)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Estilo centrado y con separación del contenido principal */
+footer, .footer {
+  text-align: center;
+  color: #777;
+  font-size: 0.9rem;
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid #ddd;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para enlaces con clase normalink
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Enlaces normales: color, subrayado, cursiva y fondo claro */
+a.normalink {
+  color: #1d4e89;
+  text-decoration: underline;
+  font-style: italic;
+  background-color: #f4f5ff;
+  font-weight: 600;
+  
+}
+
+/* Enlaces normales al pasar el cursor: cambio de color, fondo y bordes redondeados */
+a.normalink:hover {
+  color: darkblue;
+  text-decoration: underline;
+  background-color: #e0e0e9;
+  border-radius: 4px;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para la tabla de contenidos (.toc)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Estilo general del contenedor de la tabla de contenidos */
+.toc {
+  background: linear-gradient(135deg, #1d2733, #0f1a24); /* Azul oscuro */
+  padding: 20px 30px;
+  width: 100%;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: -0.1px;
+  font-size: 15px;
+  line-height: 1.6;
+  border-left: 5px solid #2e8bc0; /* Azul más vibrante */
+  border-radius: 0 10px 10px 0;
+  color: #ffffff;
+  box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.25);
+  margin: 30px 0;
+  box-sizing: border-box;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Estilo básico de los enlaces */
+.toc a {
+  display: block;
+  color: #dfecf5;
+  text-decoration: none;
+  padding: 6px 0;
+  border-bottom: 1px dashed #355c7d;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Estilo al pasar el ratón sobre los enlaces */
+.toc a:hover {
+  padding-left: 10px;
+  color: #59c2ff;
+  background-color: #2a3f52;
+  transform: scale(1.005);
+  border-radius: 0 10px 10px 0;
+}
+
+
+.toc a::before {
+  content: "➤ ";
+  margin-right: 6px;
+  color: #2e8bc0;
+}
+
+
+/* Elimina viñetas y márgenes de la lista principal */
+.toc ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+/* Márgenes verticales entre elementos de la lista */
+.toc li {
+  margin-bottom: 8px;
+}
+
+/* Márgenes alternativos para elementos dentro de listas anidadas */
+.toc ul li {
+  margin: 6px 0;
+}
+
+/* Indentación para subniveles dentro de la tabla de contenidos */
+.toc ul ul {
+  padding-left: 20px; /* Indenta los subniveles */
+  margin-top: 4px;     /* Añade algo de separación arriba */
+}
+
+/* Indentación específica por nivel */
+.toc li.level-1 {
+  padding-left: 0em;
+}
+.toc li.level-2 {
+  padding-left: 1.5em;
+}
+.toc li.level-3 {
+  padding-left: 3em;
+}
+.toc li.level-4 {
+  padding-left: 4.5em;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para bloques de código, código en línea y salidas
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* ==== BLOQUES DE CÓDIGO ==== */
+pre.sourceCode {
+  background-color: #102334;
+  color: #f1f1f1;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 1.2rem 0;
+  overflow-x: auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border-left: 4px solid #3a6ea5;
+  transition: background-color 0.3s ease;
+}
+
+/* code dentro de pre: SIN repeticiones de fondo ni padding extra */
+pre.sourceCode code {
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* hover sutil */
+pre.sourceCode:hover {
+  background-color: #1a2e47;
+}
+
+/* ==== CÓDIGO EN LÍNEA CON FONDO OSCURO ==== */
+p code,
+li code,
+td code,
+.informe-resumen code,
+strong code,
+em code {
+  background-color: #f1f0f6 !important;
+  color: #18186e !important;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 0.92em;
+  padding: 3px 6px !important;
+  border-radius: 5px !important;
+  font-weight: 400;
+  font-style: normal;
+  white-space: nowrap;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+  cursor: default;
+}
+
+p code:hover,
+li code:hover,
+td code:hover,
+.informe-resumen code:hover,
+strong code:hover,
+em code:hover {
+  background-color: #e0e0ff !important;
+  color: #1a1a7a !important;
+  box-shadow: 0 0 4px 1px rgba(60, 60, 184, 0.494);
+}
+
+/* ==== SALIDA DE CÓDIGO ==== */
+div.cell-output,
+pre.cell-output {
+  background-color: #f5fbff;
+  color: #1e3d59;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: 8px;
+  border: 1px solid #c0d7e7;
+  border-left: 4px solid #2b6ca3;
+  padding: 12px 16px;
+  margin: 1.2rem 0.4rem;
+  white-space: pre-wrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ==== Limpiar cualquier estilo de DIV exterior ==== */
+div.sourceCode {
+  background: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para cajas de archivos (box-files)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Estilo para caja de archivos normal */
+.box-files {
+  background-color: #0f1a24;
+  border-radius: 12px;
+  padding: 20px 25px;
+  margin-top: 25px;
+  margin-bottom: 5px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  max-height: 400px;
+  width: 98%;
+  overflow-y: auto;
+  border: none;
+  color: #cfd8dc;
+  box-sizing: border-box;
+  font-size: 0.75rem;
+}
+
+/* Scroll personalizado (WebKit) */
+.box-files::-webkit-scrollbar {
+  width: 8px;
+}
+
+.box-files::-webkit-scrollbar-track {
+  background: #1d2733;
+  border-radius: 10px;
+}
+
+.box-files::-webkit-scrollbar-thumb {
+  background-color: #2e8bc0;
+  border-radius: 10px;
+  border: 2px solid #1d2733;
+}
+
+/* Eliminar márgenes y overflow en lista para evitar doble scroll */
+.box-files ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: block;
+  overflow: visible;   /* importante */
+  max-height: none;    /* para que no limite */
+}
+
+.box-files li {
+  background: #2a3f52;
+  box-shadow: 0 2px 8px rgba(1, 56, 70, 0.3);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.75rem;
+  color: #cfd8dc;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.15s ease;
+  user-select: text;
+  
+  /* Evitar que el texto salga del recuadro */
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  
+  /* Crecer hacia la derecha al hacer hover */
+  transform-origin: left center;
+}
+
+.box-files li::before {
+  content: "";
+  margin-right: 8px;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+
+/* Iconos según extensión */
+.box-files li.file-html::before {
+  content: "🌐";
+  color: #2e8bc0;
+}
+
+.box-files li.file-zip::before {
+  content: "📦";
+  color: #c76b00;
+}
+
+.box-files li.file-fastqgz::before {
+  content: "🧬";
+  color: #2a3f52;
+}
+
+.box-files li.file-bam::before {
+  content: "📊";
+  color: #6a1b9a;
+}
+
+.box-files li.file-bai::before {
+  content: "🧩";
+  color: #8e24aa;
+}
+
+.box-files li.file-sam::before {
+  content: "📘";
+  color: #1565c0;
+}
+
+.box-files li.file-metrics::before {
+  content: "📈";
+  color: #00bfa5;
+}
+
+.box-files li.file-ht2::before {
+  content: "🧠";
+  color: #5e35b1;
+}
+
+.box-files li.file-pdf::before {
+  content: "📕";
+  color: #d32f2f;
+}
+
+.box-files li.file-xls::before,
+.box-files li.file-xlsx::before {
+  content: "📊";
+  color: #2e7d32;
+}
+
+.box-files li.file-default::before {
+  content: "📄";
+  color: #657786;
+}
+
+.box-files li.file-folder::before {
+  content: "📁";
+  color: #f0ad4e;
+}
+
+
+/* Hover con efecto suave y sin cortar */
+.box-files li:hover {
+  background-color: #013846;
+  box-shadow: 0 6px 20px rgba(46, 139, 192, 0.7);
+  transform: scale(1.01);
+  color: #e0f7fa;
+}
+
+.box-files a {
+  color: inherit;
+  text-decoration: none;
+  width: 100%;
+  user-select: text;
+}
+
+.box-files a:hover {
+  text-decoration: none;
+}
+
+
+
+/* Estilo para caja de archivos con forma anidada y de lista */
+.box-files-list {
+  background-color: #0f1a24;
+  border-radius: 12px;
+  padding: 20px 25px;
+  margin-top: 25px;
+  margin-bottom: 5px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  max-height: 400px;
+  width: 98%;
+  overflow-y: auto;
+  border: none;
+  color: #cfd8dc;
+  box-sizing: border-box;
+  font-size: 0.75rem;
+}
+
+/* Scroll personalizado (WebKit) */
+.box-files-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.box-files-list::-webkit-scrollbar-track {
+  background: #1d2733;
+  border-radius: 10px;
+}
+
+.box-files-list::-webkit-scrollbar-thumb {
+  background-color: #2e8bc0;
+  border-radius: 10px;
+  border: 2px solid #1d2733;
+}
+
+/* Reset márgenes y padding */
+.box-files-list ul,
+.box-files-list ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Categorías (niveles padres) como bloques */
+.box-files-list > ul > li {
+  background: #2a3f52;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #a0c8e8;
+  user-select: none;
+  cursor: default;
+  box-shadow: 0 2px 8px rgba(1, 56, 70, 0.3);
+}
+
+/* Sub-items dentro de cada categoría sin indentación */
+.box-files-list ul ul {
+  margin-top: 10px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Sub-items como "botones" o tarjetas horizontales */
+.box-files-list ul ul li {
+  background: #1d2733;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: #cfd8dc;
+  cursor: default;
+  box-shadow: 0 2px 8px rgba(1, 56, 70, 0.3);
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.15s ease;
+  user-select: text;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Iconos delante de sub-items */
+.box-files-list ul ul li::before {
+  content: "📄";
+  margin-right: 8px;
+  font-size: 1rem;
+  flex-shrink: 0;
+  color: #657786;
+}
+
+/* Hover solo en enlaces dentro de sub-items */
+.box-files-list ul ul li a {
+  color: inherit;
+  text-decoration: none;
+  width: 100%;
+  user-select: text;
+  display: inline-block;
+  border-radius: 6px;
+  padding: 4px 8px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
+}
+
+
+/* Iconos según extensión */
+.box-files-list li.file-html::before {
+  content: "🌐";
+  color: #2e8bc0;
+}
+
+.box-files-list li.file-zip::before {
+  content: "📦";
+  color: #c76b00;
+}
+
+.box-files-list li.file-fastqgz::before {
+  content: "🧬";
+  color: #2a3f52;
+}
+
+.box-files-list li.file-bam::before {
+  content: "📊";
+  color: #6a1b9a;
+}
+
+.box-files-list li.file-bai::before {
+  content: "🧩";
+  color: #8e24aa;
+}
+
+.box-files-list li.file-sam::before {
+  content: "📘";
+  color: #1565c0;
+}
+
+.box-files-list li.file-metrics::before {
+  content: "📈";
+  color: #00bfa5;
+}
+
+.box-files-list li.file-ht2::before {
+  content: "🧠";
+  color: #5e35b1;
+}
+
+.box-files-list li.file-pdf::before {
+  content: "📕";
+  color: #d32f2f;
+}
+
+.box-files-list li.file-xls::before,
+.box-files-list li.file-xlsx::before {
+  content: "📊";
+  color: #2e7d32;
+}
+
+.box-files-list li.file-default::before {
+  content: "📄";
+  color: #657786;
+}
+
+.box-files-list li.file-folder::before {
+  content: "📁";
+  color: #f0ad4e;
+}
+
+
+.box-files-list ul ul li a:hover {
+  background-color: #013846;
+  box-shadow: 0 6px 20px rgba(46, 139, 192, 0.7);
+  transform: scale(1.01);
+  color: #e0f7fa;
+  text-decoration: underline;
+}
+
+/* Sin hover en li (sin enlace) */
+.box-files-list ul ul li:hover {
+  background-color: transparent;
+  box-shadow: none;
+  transform: none;
+  cursor: default;
+}
+
+
+
+/* Estilo para caja de archivos con forma anidada y de lista personalizada */
+.box-files-nested {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  padding: 20px 25px;
+  background-color: #0f1a24;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  color: #cfd8dc;
+  max-height: 500px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  margin-top: 25px;
+}
+
+/* Scroll personalizado */
+.box-files-nested::-webkit-scrollbar {
+  width: 8px;
+}
+
+.box-files-nested::-webkit-scrollbar-track {
+  background: #1d2733;
+  border-radius: 10px;
+}
+
+.box-files-nested::-webkit-scrollbar-thumb {
+  background-color: #2e8bc0;
+  border-radius: 10px;
+  border: 2px solid #1d2733;
+}
+
+/* Lista ordenada principal */
+.box-files-nested ol {
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Categorías principales */
+.box-files-nested ol > li {
+  background: #2a3f52;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #a0c8e8;
+  box-shadow: 0 2px 8px rgba(1, 56, 70, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 💡 Esto añade espacio entre título y sublista */
+}
+
+.box-files-nested ol > li {
+  background: #2a3f52;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #a0c8e8;
+  box-shadow: 0 2px 8px rgba(1, 56, 70, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 💡 Esto añade espacio entre título y sublista */
+}
+
+/* Sublistas */
+.box-files-nested ul {
+  list-style: none;
+  margin-top: 10px; /* antes 10px */
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Subitems como tarjetas */
+.box-files-nested ul li {
+  background: #1d2733;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: #cfd8dc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(1, 56, 70, 0.3);
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.15s ease;
+}
+
+/* Icono al principio de cada subitem */
+.box-files-nested ul li::before {
+  content: "📄";
+  font-size: 1rem;
+  flex-shrink: 0;
+  color: #657786;
+  transition: filter 0.3s ease, transform 0.15s ease, color 0.3s ease;
+}
+
+/* Enlaces */
+.box-files-nested ul li a {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  width: 100%;
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+
+
+/* Iconos según extensión */
+.box-files-nested li.file-html::before {
+  content: "🌐";
+  color: #2e8bc0;
+}
+
+.box-files-nested li.file-zip::before {
+  content: "📦";
+  color: #c76b00;
+}
+
+.box-files-nested li.file-fastqgz::before {
+  content: "🧬";
+  color: #2a3f52;
+}
+
+.box-files-nested li.file-bam::before {
+  content: "📊";
+  color: #6a1b9a;
+}
+
+.box-files-nested li.file-bai::before {
+  content: "🧩";
+  color: #8e24aa;
+}
+
+.box-files-nested li.file-sam::before {
+  content: "📘";
+  color: #1565c0;
+}
+
+.box-files-nested li.file-metrics::before {
+  content: "📈";
+  color: #00bfa5;
+}
+
+.box-files-nested li.file-ht2::before {
+  content: "🧠";
+  color: #5e35b1;
+}
+
+.box-files-nested li.file-pdf::before {
+  content: "📕";
+  color: #d32f2f;
+}
+
+.box-files-nested li.file-xls::before,
+.box-files-nested li.file-xlsx::before {
+  content: "📊";
+  color: #2e7d32;
+}
+
+.box-files-nested li.file-default::before {
+  content: "📄";
+  color: #657786;
+}
+
+.box-files-nested li.file-folder::before {
+  content: "📁";
+  color: #f0ad4e;
+}
+
+
+/* Hover sobre todo el bloque */
+.box-files-nested ul li:hover {
+  background-color: #013846;
+  box-shadow: 0 6px 20px rgba(46, 139, 192, 0.7);
+  transform: scale(1.01);
+}
+
+/* Hover del enlace dentro del li */
+.box-files-nested ul li:hover a {
+  color: #e0f7fa;
+  text-decoration: underline;
+}
+
+/* Hover también afecta al icono */
+.box-files-nested ul li:hover::before {
+  filter: brightness(1.4);
+  transform: scale(1.1);
+  color: #e0f7fa;
+}
+
+.box-files-nested strong {
+  color: #bfcfdd;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilos para iframes y botones interactivos (mostrar iframe, descargar archivos)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* iframe embebido */
+iframe {
+  border: none;
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  background-color: #f0f0f0;
+  margin-top: 25px;
+  margin-bottom: 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* botón mostrar iframe */
+.boton-iframe {
+  display: inline-block;
+  padding: 10px 22px;
+  background-color: #1b7581;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  margin: 5px auto 10px auto;
+  transition: 
+    background-color 0.3s ease, 
+    transform 0.3s ease,
+    box-shadow 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.boton-iframe::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -50%;
+  width: 40%;
+  height: 120%;
+  background: linear-gradient(
+    120deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.25) 50%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg) translateX(0);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  border-radius: 8px;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+  z-index: 1;
+}
+
+.boton-iframe:hover {
+  background-color: #155861;
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(21, 88, 97, 0.7);
+  cursor: pointer;
+}
+
+.boton-iframe:hover::before {
+  transform: skewX(-25deg) translateX(200%);
+  transition: transform 0.6s ease;
+}
+
+
+/* botón para mostrar archivos */
+.boton-files {
+  display: inline-block;
+  padding: 10px 22px;
+  background-color: #2a3f52;       /* Azul grisáceo medio */
+  color: #e0f7fa;                  /* Texto claro */
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  margin: 5px auto 10px auto;
+  position: relative;
+  overflow: hidden;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.4s ease;
+}
+
+.boton-files::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -50%;
+  width: 40%;
+  height: 120%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg) translateX(0);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  border-radius: 8px;
+  filter: drop-shadow(0 0 5px rgba(224, 247, 250, 0.25));
+  z-index: 1;
+}
+
+.boton-files:hover {
+  background-color: #013846;       /* Azul oscuro fuerte */
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(1, 56, 70, 0.7);
+  cursor: pointer;
+}
+
+.boton-files:hover::before {
+  transform: skewX(-25deg) translateX(200%);
+  transition: transform 0.6s ease;
+}
+
+
+/* botón mostrar subsección */
+.boton-subseccion {
+  display: inline-block;
+  width: fit-content;
+  margin: 20px auto;
+  padding: 12px 24px;
+  background-color: #1a61cc;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: 
+    background-color 0.3s ease, 
+    transform 0.3s ease,
+    box-shadow 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.85rem;
+}
+
+.boton-subseccion::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -50%;
+  width: 40%;
+  height: 140%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg) translateX(0);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  border-radius: 10px;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
+  z-index: 1;
+}
+
+.boton-subseccion:hover {
+  background-color: #10418a;
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(16, 65, 138, 0.7);
+  cursor: pointer;
+}
+
+.boton-subseccion:hover::before {
+  transform: skewX(-25deg) translateX(200%);
+  transition: transform 0.6s ease;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# ESTILOS PERSONALIZADOS PARA TABLAS INTERACTIVAS DATATABLES
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Estilo general de la tabla */
+table.dataTable {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Estilo de las celdas */
+table.dataTable th,
+table.dataTable td {
+  padding: 8px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+/* Cabecera de la tabla */
+table.dataTable thead {
+  background-color: #004151;
+  color: white;
+}
+
+/* Colores alternos para las filas */
+table.dataTable tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+table.dataTable tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Efecto hover sobre las filas */
+table.dataTable tbody tr:hover {
+  background-color: #e6f2f4;
+  transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+/* Estilo del caption en tablas con scroll horizontal */
+.dataTables_scroll caption {
+  display: block;
+  padding: 8px 10px;
+  font-weight: bold;
+  font-size: 16px;
+  color: #004151;
+  text-align: left;
+}
+
+/* Estilo del buscador */
+.dataTables_filter {
+  font-family: sans-serif;
+  font-size: 14px;
+  color: #004151;
+  margin-bottom: 10px;
+}
+.dataTables_filter input {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 13px;
+}
+
+/* Límite máximo de altura para scroll vertical */
+.scroll-y-max-500 {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilo para gráficos Plotly centrados
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+.plot-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  margin-bottom: 25px;
+  width: 85%;
+  background-color: #ffffff;
+  border: 1px solid #a8a8a8;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilo para detalles y resúmenes interactivos
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+details summary.titulo2 {
+  font-size: 28px;
+  color: #004151;
+  margin-top: 45px;
+  margin-bottom: 15px; /* da espacio visual real */
+  letter-spacing: -0.25px;
+  border-bottom: 1px solid #dedede;
+  padding-bottom: 6px; /* más visible que 1px */
+  line-height: 1.2;
+  text-transform: uppercase;
+  font-weight: bold;
+  cursor: pointer;
+  list-style: none;
+  position: relative;
+  padding-left: 20px;
+}
+
+details summary.titulo2::before {
+  content: "➤ ";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  font-size: 18px;
+  transition: transform 0.2s ease;
+  color: #045165;
+}
+
+details[open] summary.titulo2::before {
+  transform: rotate(90deg);
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilo para tarjetas de métricas
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+.metric-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: start;
+  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+  margin: 15px 0 20px 0;
+}
+
+.metric-card {
+  position: relative;
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  min-width: 350px;
+  min-height: 140px;
+  flex: 1 1 auto;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), 0 0 10px rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  filter: brightness(1.03);
+}
+
+/* Colores con fondo suave y bordes destacados */
+.metric-card.blue {
+  background-color: #e6f0ff;
+  border-top: 4px solid #004080;
+  color: #004080;
+}
+.metric-card.green {
+  background-color: #e6f9f0;
+  border-top: 4px solid #006644;
+  color: #006644;
+}
+.metric-card.red {
+  background-color: #ffe6e6;
+  border-top: 4px solid #990000;
+  color: #990000;
+}
+.metric-card.orange {
+  background-color: #fff3e6;
+  border-top: 4px solid #cc6600;
+  color: #994d00;
+}
+.metric-card.yellow {
+  background-color: #fffbe6;
+  border-top: 4px solid #665c00;
+  color: #665c00;
+}
+
+/* Tipografía armonizada */
+.metric-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+  color: #191919dd;
+}
+
+.metric-card p {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}

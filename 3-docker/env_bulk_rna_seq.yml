@@ -1,0 +1,18 @@
+name: bulk-rna-seq
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - r-base=4.3
+  - fastqc
+  - fastp
+  - hisat2
+  - multiqc
+  - bioconductor-deseq2
+  - bioconductor-tximport
+  - r-ggplot2
+  - r-pheatmap
+  - r-readr
+  - r-dplyr
+  - r-tibble
