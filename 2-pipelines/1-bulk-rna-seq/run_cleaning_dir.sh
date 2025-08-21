@@ -67,11 +67,8 @@ for folder in "${FOLDERS_TO_EMPTY[@]}"; do
   if [ -d "$folder" ]; then
     echo "   - Vaciando carpeta $folder..."
     
-    # Eliminar todo el contenido normal
-    rm -rf "${folder:?}/"*
-    
-    # Eliminar archivos y carpetas ocultas (excepto . y ..)
-    rm -rf "${folder:?}/".* 2>/dev/null || true
+    # Eliminar todos los archivos normales excepto .gitkeep
+    find "$folder" -mindepth 1 ! -name ".gitkeep" -exec rm -rf {} + 2>/dev/null
   fi
 done
 
