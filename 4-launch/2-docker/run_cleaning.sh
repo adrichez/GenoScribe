@@ -9,7 +9,7 @@ RETRY_DELAY=1
 
 echo "
 🚀 Iniciando el contenedor $CONTAINER_NAME...
--------------------------------------------------------"
+--------------------------------------------------"
 
 # Verificar si el contenedor ya está en ejecución
 if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
@@ -42,6 +42,7 @@ else
     # El contenedor no existe
     echo "❌ El contenedor $CONTAINER_NAME no existe."
     echo "Por favor, crea el contenedor con 'docker create' o 'docker run' primero."
+    echo ""
     exit 1
 fi
 

@@ -10,6 +10,7 @@ echo "
 # Configuración de variables
 PORT=3838
 CONTAINER_NAME="genoscribe_container"
+CONTAINER_TAG="1.0"
 DATOS_BASENAME=$(basename "$DATOS")
 
 # Variables adicionales
@@ -87,12 +88,12 @@ else
         docker run -dit --name "$CONTAINER_NAME" -p $PORT:3838 \
             -v "$DATOS":/data/"$DATOS_BASENAME" \
             -v "$REPORTS":/srv/shiny-server/app/www/reports \
-            genoscribe
+            genoscribe:$CONTAINER_TAG
     elif [ "$CONT_TYPE" -eq 2 ]; then
         docker run -dit --rm --name "$CONTAINER_NAME" -p $PORT:3838 \
             -v "$DATOS":/data/"$DATOS_BASENAME" \
             -v "$REPORTS":/srv/shiny-server/app/www/reports \
-            genoscribe
+            genoscribe:$CONTAINER_TAG
     else
         echo "❌ Opción no válida. Abortando."
         exit 1

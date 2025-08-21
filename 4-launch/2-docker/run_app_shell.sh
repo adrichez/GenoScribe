@@ -10,6 +10,7 @@ echo "
 # Configuración de variables
 PROYECTO_BASENAME="genoscribe"
 CONTAINER_NAME="genoscribe_container"
+CONTAINER_TAG="1.0"
 PORT=3838  # para exponer Shiny si se necesitara
 
 # Preguntar tipo de análisis
@@ -67,7 +68,7 @@ read -p "---> Ruta local de la carpeta donde se guardarán los reportes: " REPOR
 
 # Ajustar permisos de la carpeta de reportes
 if [ -d "$REPORTS" ]; then
-    echo "⚙️ Ajustando permisos de la carpeta de reportes..."
+    echo "⚙️  Ajustando permisos de la carpeta de reportes..."
     chmod -R a+rw "$REPORTS"
     echo "✅ Permisos ajustados."
     echo ""
@@ -108,12 +109,12 @@ else
         docker run -dit --name "$CONTAINER_NAME" \
             -v "$DATOS":/data/"$DATOS_BASENAME" \
             -v "$REPORTS":/$PROYECTO_BASENAME/1-app/www/reports \
-            genoscribe
+            genoscribe:$CONTAINER_TAG
     else
         docker run -dit --rm --name "$CONTAINER_NAME" \
             -v "$DATOS":/data/"$DATOS_BASENAME" \
             -v "$REPORTS":/$PROYECTO_BASENAME/1-app/www/reports \
-            genoscribe
+            genoscribe:$CONTAINER_TAG
     fi
     sleep 2
 fi

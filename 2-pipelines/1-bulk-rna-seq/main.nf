@@ -217,8 +217,12 @@ workflow {
 
 
     // 4. Renderizar Quarto
-    // Combina las salidas para sincronizar
-    all_done_ch = copiar_out.mix(multiqc_out).mix(procesar_rpkm_out)
+    // Barrier: emite UNA SOLA VEZ cuando se han cerrado las tres salidas
+    all_done_ch = copiar_out
+        .mix(multiqc_out)
+        .mix(procesar_rpkm_out)
+        .collect()  // << espera a que terminen y emite una lista única
+        .map { true }  // << la lista no nos importa; solo queremos un token
 
     // Canal con la ruta del directorio base donde se encuentra main.nf e index.qmd
     base_dir_ch = Channel.fromPath('.', checkIfExists: true)

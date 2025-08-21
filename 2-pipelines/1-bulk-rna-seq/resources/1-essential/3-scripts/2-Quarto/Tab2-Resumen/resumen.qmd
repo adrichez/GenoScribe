@@ -23,7 +23,7 @@ library(stringr)
 library(glue)
 
 # Definir rutas relevantes
-ruta_nextflow_results <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results")
+ruta_nextflow_results <- file.path("..", "..", "..", "..", "2-nextflow-results")
 
 ruta_multiqc_data.json <- file.path(ruta_nextflow_results, "2-fastqc-report/results-multiqc/multiqc_data/multiqc_data.json")
 
