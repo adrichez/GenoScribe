@@ -79,7 +79,7 @@ COPY README.md /genoscribe/README.md
 RUN rm -rf /genoscribe/1-app/_freeze /genoscribe/1-app/_cache \
     && rm -rf /genoscribe/2-pipelines/1-bulk-rna-seq/_freeze /genoscribe/2-pipelines/1-bulk-rna-seq/_cache \
     && rm -rf /genoscribe/2-pipelines/3-metagenomic/_freeze /genoscribe/2-pipelines/3-metagenomic/_cache \
-    && find /project -type f -name "*.rds" -delete
+    && find /genoscribe -type f -name "*.rds" -delete
 
 # 13. Crear enlace simbólico para que Shiny sirva la app
 RUN ln -s /genoscribe/1-app /srv/shiny-server/app
@@ -88,7 +88,7 @@ RUN ln -s /genoscribe/1-app /srv/shiny-server/app
 RUN mkdir -p /srv/shiny-server/app/www/reports
 
 # 15. Permisos de Shiny y entrypoint
-RUN chown -R shiny:shiny /srv/shiny-server /project
+RUN chown -R shiny:shiny /srv/shiny-server /genoscribe
 RUN chmod +x /genoscribe/3-containers/1-docker/entrypoint.sh
 
 # 16. Exponer el puerto 3838
