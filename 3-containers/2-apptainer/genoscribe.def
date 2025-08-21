@@ -1,0 +1,92 @@
+Bootstrap: docker
+From: rocker/shiny:4.4.1
+
+%environment
+# Variables de entorno
+    export DEBIAN_FRONTEND=noninteractive
+    export PATH="/usr/local/bin:${PATH}"
+    export R_LIBS_USER=/usr/local/lib/R/site-library
+
+%post
+    # Paquetes de sistema
+    apt-get update && apt-get install -y --no-install-recommends \
+        libssl-dev \
+        libcurl4-openssl-dev \
+        libxml2-dev \
+        libfontconfig1-dev \
+        libharfbuzz-dev \
+        libfribidi-dev \
+        libfreetype6-dev \
+        libpng-dev \
+        libtiff5-dev \
+        libjpeg-dev \
+        pkg-config \
+        openjdk-17-jre-headless \
+        curl \
+        git \
+        python3 \
+        python3-pip \
+        unzip \
+        less \
+        nano \
+      && rm -rf /var/lib/apt/lists/*
+
+    # Nextflow
+    curl -s https://get.nextflow.io | bash \
+      && mv nextflow /usr/local/bin/ \
+      && chown root:shiny /usr/local/bin/nextflow \
+      && chmod 755 /usr/local/bin/nextflow \
+      && /usr/local/bin/nextflow -v
+
+    # Quarto CLI
+    curl -fsSL https://quarto.org/download/latest/quarto-linux-amd64.deb -o /tmp/quarto.deb \
+      && apt-get update && apt-get install -y /tmp/quarto.deb \
+      && rm -f /tmp/quarto.deb
+
+    # Paquetes R
+    R -e "options(repos='https://cloud.r-project.org'); \
+        install.packages(c('shiny','xfun','knitr','rmarkdown','quarto','fs','jsonlite','dplyr','DT','glue','purrr','stringr','ggplot2','readxl','htmltools','plotly','scales','tidyverse','tidyr','tibble'), dependencies=TRUE, quiet=TRUE)"
+
+    # MultiQC (pip)
+    pip3 install --no-cache-dir multiqc
+
+    # Miniconda + Mamba
+    curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh \
+      && bash /tmp/miniconda.sh -b -p /opt/miniconda3 \
+      && rm /tmp/miniconda.sh \
+      && mkdir -p /etc/conda \
+      && printf "channels:\n  - conda-forge\nchannel_priority: strict\ndefault_channels: []\n" > /etc/conda/condarc \
+      && /opt/miniconda3/bin/conda install -y -n base -c conda-forge --override-channels mamba \
+      && /opt/miniconda3/bin/conda clean -afy
+
+    # Crear entorno para bulk RNA-seq
+    /opt/miniconda3/bin/mamba env create -f /tmp/env_bulk_rna_seq.yml \
+      && rm /tmp/env_bulk_rna_seq.yml
+
+    # Limpiar caches de Quarto y R
+    rm -rf /project/1-app/_freeze /project/1-app/_cache \
+      /project/2-pipelines/1-bulk-rna-seq/_freeze /project/2-pipelines/1-bulk-rna-seq/_cache \
+      /project/2-pipelines/3-metagenomic/_freeze /project/2-pipelines/3-metagenomic/_cache \
+      && find /project -type f -name "*.rds" -delete
+
+    # Crear enlace simbólico para Shiny
+    ln -s /project/1-app /srv/shiny-server/app
+
+    # Crear carpeta de reports dentro de www
+    mkdir -p /srv/shiny-server/app/www/reports
+
+    # Permisos
+    chown -R shiny:shiny /srv/shiny-server /project
+    chmod +x /project/3-containers/1-docker/entrypoint.sh
+
+%files
+    # Copiar carpetas del proyecto
+    1-app /project/1-app
+    2-pipelines /project/2-pipelines
+    3-containers /project/3-containers
+    4-launch /project/4-launch
+    5-examples /project/5-examples
+    6-info /project/6-info
+    README.md /project/README.md
+    3-containers/1-docker/env_bulk_rna_seq.yml /tmp/env_bulk_rna_seq.yml
+

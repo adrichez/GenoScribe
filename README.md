@@ -4,7 +4,7 @@
 
 <div align="center">
   <h1>Sistema Inteligente y Reproducible de Generación de Informes Bioinformáticos</h1>
-  <p>Desarrollo de un sistema inteligente y reproducible para la generación automatizada e interactiva de informes bioinformáticos integrados en entornos basados en contenedores y computación en la nube.</h3>
+  <p>Desarrollo de un sistema inteligente y reproducible para la generación automatizada e interactiva de informes bioinformáticos integrados en entornos basados en contenedores y computación en la nube.</p>
 </div>
 
 <br>
@@ -73,11 +73,11 @@ El repositorio está organizado de forma modular para separar claramente la **in
 project
 ├── 1-app         # App Shiny y recursos web
 ├── 2-pipelines   # Pipelines de análisis y plantillas Quarto
-├── 3-docker      # Entornos reproducibles
+├── 3-containers  # Entornos reproducibles
 ├── 4-launch      # Scripts de lanzamiento
 ├── 5-examples    # Informes de ejemplo
 ├── 6-info        # Documentación y especificaciones
-├── Dockerfile     # Imagen base del sistema
+├── Dockerfile    # Imagen base del sistema
 └── README.md     # Descripción general
 ```
 
@@ -223,7 +223,7 @@ Esta opción permite que crees la imagen directamente en tu máquina, lo que te 
   3. Ejecuta el siguiente comando para construir la imagen:
 
 ```bash
-docker build --no-cache -t genoscribe .
+docker build --no-cache -t genoscribe:1.0 .
 ```
 
 **Ventajas:**

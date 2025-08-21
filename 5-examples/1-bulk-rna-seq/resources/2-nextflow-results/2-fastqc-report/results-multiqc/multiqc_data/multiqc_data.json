@@ -3,18 +3,18 @@
     "report_data_sources": {
         "FastQC": {
             "all_sections": {
-                "PX_Cd0_Rep1_R1": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/PX_Cd0_Rep1_R1_fastqc.zip",
-                "PX_Cd0_Rep1_R2": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/PX_Cd0_Rep1_R2_fastqc.zip",
-                "PX_Cd0_Rep2_R1": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/PX_Cd0_Rep2_R1_fastqc.zip",
-                "PX_Cd0_Rep2_R2": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/PX_Cd0_Rep2_R2_fastqc.zip",
-                "PX_Cd0_Rep3_R1": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/PX_Cd0_Rep3_R1_fastqc.zip",
-                "PX_Cd0_Rep3_R2": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/PX_Cd0_Rep3_R2_fastqc.zip",
-                "WT_Cd0_Rep1_R1": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/WT_Cd0_Rep1_R1_fastqc.zip",
-                "WT_Cd0_Rep1_R2": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/WT_Cd0_Rep1_R2_fastqc.zip",
-                "WT_Cd0_Rep2_R1": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/WT_Cd0_Rep2_R1_fastqc.zip",
-                "WT_Cd0_Rep2_R2": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/WT_Cd0_Rep2_R2_fastqc.zip",
-                "WT_Cd0_Rep3_R1": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/WT_Cd0_Rep3_R1_fastqc.zip",
-                "WT_Cd0_Rep3_R2": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results/WT_Cd0_Rep3_R2_fastqc.zip"
+                "PX_Cd0_Rep1_R1": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/PX_Cd0_Rep1_R1_fastqc.zip",
+                "PX_Cd0_Rep1_R2": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/PX_Cd0_Rep1_R2_fastqc.zip",
+                "PX_Cd0_Rep2_R1": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/PX_Cd0_Rep2_R1_fastqc.zip",
+                "PX_Cd0_Rep2_R2": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/PX_Cd0_Rep2_R2_fastqc.zip",
+                "PX_Cd0_Rep3_R1": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/PX_Cd0_Rep3_R1_fastqc.zip",
+                "PX_Cd0_Rep3_R2": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/PX_Cd0_Rep3_R2_fastqc.zip",
+                "WT_Cd0_Rep1_R1": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/WT_Cd0_Rep1_R1_fastqc.zip",
+                "WT_Cd0_Rep1_R2": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/WT_Cd0_Rep1_R2_fastqc.zip",
+                "WT_Cd0_Rep2_R1": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/WT_Cd0_Rep2_R1_fastqc.zip",
+                "WT_Cd0_Rep2_R2": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/WT_Cd0_Rep2_R2_fastqc.zip",
+                "WT_Cd0_Rep3_R1": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/WT_Cd0_Rep3_R1_fastqc.zip",
+                "WT_Cd0_Rep3_R2": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results/WT_Cd0_Rep3_R2_fastqc.zip"
             }
         }
     },
@@ -200,7 +200,7 @@
             }
         }
     },
-    "report_creation_date": "2025-08-18, 15:22 UTC",
+    "report_creation_date": "2025-08-20, 23:06 CEST",
     "report_plot_data": {
         "fastqc_sequence_counts_plot": {
             "id": "fastqc_sequence_counts_plot",
@@ -208,6 +208,21 @@
             "plot_type": "bar plot",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 440,
                 "hoverlabel": {
                     "namelength": -1,
@@ -223,66 +238,41 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": true,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": true,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Sequence Counts",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "yaxis": {
                     "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)",
                     "showgrid": false,
                     "categoryorder": "trace",
                     "type": "category"
@@ -348,11 +338,11 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "cats": [
                         {
                             "name": "Unique Reads",
-                            "color": "rgba(124,181,236,1)",
+                            "color": "124,181,236",
                             "data": [
                                 12695060.0,
                                 12100576.0,
@@ -384,7 +374,7 @@
                         },
                         {
                             "name": "Duplicate Reads",
-                            "color": "rgba(67,67,72,1)",
+                            "color": "67,67,72",
                             "data": [
                                 60968310.0,
                                 61562794.0,
@@ -530,6 +520,21 @@
             "plot_type": "x/y line",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 500,
                 "hoverlabel": {
                     "namelength": -1
@@ -541,75 +546,49 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": false,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": false,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Mean Quality Scores",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "yaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "shapes": [
                     {
-                        "fillcolor": "#009500",
+                        "fillcolor": "#c3e6c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -618,12 +597,11 @@
                         "y1": 100
                     },
                     {
-                        "fillcolor": "#a07300",
+                        "fillcolor": "#e6dcc3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -632,12 +610,11 @@
                         "y1": 28
                     },
                     {
-                        "fillcolor": "#990101",
+                        "fillcolor": "#e6c3c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -646,12 +623,11 @@
                         "y1": 20
                     },
                     {
-                        "fillcolor": "#009500",
+                        "fillcolor": "#c3e6c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -660,12 +636,11 @@
                         "y1": 100
                     },
                     {
-                        "fillcolor": "#a07300",
+                        "fillcolor": "#e6dcc3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -674,12 +649,11 @@
                         "y1": 28
                     },
                     {
-                        "fillcolor": "#990101",
+                        "fillcolor": "#e6c3c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -753,7 +727,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "lines": [
                         {
                             "name": "PX_Cd0_Rep1_R1",
@@ -2770,20 +2744,17 @@
                     {
                         "from_": 28,
                         "to": 100,
-                        "color": "#009500",
-                        "opacity": 0.13
+                        "color": "#c3e6c3"
                     },
                     {
                         "from_": 20,
                         "to": 28,
-                        "color": "#a07300",
-                        "opacity": 0.13
+                        "color": "#e6dcc3"
                     },
                     {
                         "from_": 0,
                         "to": 20,
-                        "color": "#990101",
-                        "opacity": 0.13
+                        "color": "#e6c3c3"
                     }
                 ],
                 "x_lines": null,
@@ -2847,6 +2818,21 @@
             "plot_type": "x/y line",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 500,
                 "hoverlabel": {
                     "namelength": -1
@@ -2858,75 +2844,49 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": false,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": false,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Per Sequence Quality Scores",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "yaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "shapes": [
                     {
-                        "fillcolor": "#009500",
+                        "fillcolor": "#c3e6c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 28,
                         "x1": 100,
@@ -2935,12 +2895,11 @@
                         "yref": "paper"
                     },
                     {
-                        "fillcolor": "#a07300",
+                        "fillcolor": "#e6dcc3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 20,
                         "x1": 28,
@@ -2949,12 +2908,11 @@
                         "yref": "paper"
                     },
                     {
-                        "fillcolor": "#990101",
+                        "fillcolor": "#e6c3c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 20,
@@ -2963,12 +2921,11 @@
                         "yref": "paper"
                     },
                     {
-                        "fillcolor": "#009500",
+                        "fillcolor": "#c3e6c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 28,
                         "x1": 100,
@@ -2977,12 +2934,11 @@
                         "yref": "paper"
                     },
                     {
-                        "fillcolor": "#a07300",
+                        "fillcolor": "#e6dcc3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 20,
                         "x1": 28,
@@ -2991,12 +2947,11 @@
                         "yref": "paper"
                     },
                     {
-                        "fillcolor": "#990101",
+                        "fillcolor": "#e6c3c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 20,
@@ -3070,7 +3025,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "lines": [
                         {
                             "name": "PX_Cd0_Rep1_R1",
@@ -4490,20 +4445,17 @@
                     {
                         "from_": 28,
                         "to": 100,
-                        "color": "#009500",
-                        "opacity": 0.13
+                        "color": "#c3e6c3"
                     },
                     {
                         "from_": 20,
                         "to": 28,
-                        "color": "#a07300",
-                        "opacity": 0.13
+                        "color": "#e6dcc3"
                     },
                     {
                         "from_": 0,
                         "to": 20,
-                        "color": "#990101",
-                        "opacity": 0.13
+                        "color": "#e6c3c3"
                     }
                 ],
                 "y_bands": null,
@@ -4568,6 +4520,21 @@
             "plot_type": "x/y line",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 500,
                 "hoverlabel": {
                     "namelength": -1
@@ -4579,66 +4546,41 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": false,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": false,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Per Sequence GC Content",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "yaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "hoverdistance": -1
             },
@@ -4704,7 +4646,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "lines": [
                         {
                             "name": "PX_Cd0_Rep1_R1",
@@ -9737,7 +9679,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "lines": [
                         {
                             "name": "PX_Cd0_Rep1_R1",
@@ -14851,6 +14793,21 @@
             "plot_type": "x/y line",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 500,
                 "hoverlabel": {
                     "namelength": -1
@@ -14862,75 +14819,49 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": false,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": false,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Per Base N Content",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "yaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "shapes": [
                     {
-                        "fillcolor": "#990101",
+                        "fillcolor": "#e6c3c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -14939,12 +14870,11 @@
                         "y1": 100
                     },
                     {
-                        "fillcolor": "#a07300",
+                        "fillcolor": "#e6dcc3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -14953,12 +14883,11 @@
                         "y1": 20
                     },
                     {
-                        "fillcolor": "#009500",
+                        "fillcolor": "#c3e6c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -14967,12 +14896,11 @@
                         "y1": 5
                     },
                     {
-                        "fillcolor": "#990101",
+                        "fillcolor": "#e6c3c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -14981,12 +14909,11 @@
                         "y1": 100
                     },
                     {
-                        "fillcolor": "#a07300",
+                        "fillcolor": "#e6dcc3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -14995,12 +14922,11 @@
                         "y1": 20
                     },
                     {
-                        "fillcolor": "#009500",
+                        "fillcolor": "#c3e6c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -15074,7 +15000,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "lines": [
                         {
                             "name": "PX_Cd0_Rep1_R1",
@@ -17091,20 +17017,17 @@
                     {
                         "from_": 20,
                         "to": 100,
-                        "color": "#990101",
-                        "opacity": 0.13
+                        "color": "#e6c3c3"
                     },
                     {
                         "from_": 5,
                         "to": 20,
-                        "color": "#a07300",
-                        "opacity": 0.13
+                        "color": "#e6dcc3"
                     },
                     {
                         "from_": 0,
                         "to": 5,
-                        "color": "#009500",
-                        "opacity": 0.13
+                        "color": "#c3e6c3"
                     }
                 ],
                 "x_lines": null,
@@ -17168,6 +17091,21 @@
             "plot_type": "x/y line",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 500,
                 "hoverlabel": {
                     "namelength": -1
@@ -17179,66 +17117,41 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": false,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": false,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Sequence Duplication Levels",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "yaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "hoverdistance": -1
             },
@@ -17302,7 +17215,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "lines": [
                         {
                             "name": "PX_Cd0_Rep1_R1",
@@ -18321,6 +18234,21 @@
             "plot_type": "bar plot",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 440,
                 "hoverlabel": {
                     "namelength": -1,
@@ -18336,66 +18264,41 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": true,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": true,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Overrepresented sequences sample summary",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "yaxis": {
                     "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)",
                     "showgrid": false,
                     "categoryorder": "trace",
                     "type": "category"
@@ -18461,11 +18364,11 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "cats": [
                         {
                             "name": "Top overrepresented sequence",
-                            "color": "rgba(124,181,236,1)",
+                            "color": "124,181,236",
                             "data": [
                                 0.15138188763288998,
                                 0.3015569339279482,
@@ -18484,7 +18387,7 @@
                         },
                         {
                             "name": "Sum of remaining overrepresented sequences",
-                            "color": "rgba(67,67,72,1)",
+                            "color": "67,67,72",
                             "data": [
                                 1.1354082768681368,
                                 1.9906813929365434,
@@ -18617,6 +18520,21 @@
             "plot_type": "violin plot",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 500,
                 "hoverlabel": {
                     "namelength": -1
@@ -18628,77 +18546,40 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": false,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": false,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Top overrepresented sequences",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
                     "automargin": false,
-                    "tickfont": {
-                        "size": 9,
-                        "color": "rgba(0,0,0,0.5)"
-                    },
+                    "color": "rgba(0,0,0,0.3)",
                     "gridcolor": "rgba(0,0,0,0.1)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,0.5)",
+                        "size": 9
+                    },
                     "zerolinecolor": "rgba(0,0,0,0.1)"
                 },
                 "yaxis": {
                     "automargin": true,
-                    "tickfont": {
-                        "size": 9,
-                        "color": "rgba(0,0,0,0.5)"
-                    },
+                    "color": "rgba(0,0,0,0.3)",
                     "gridcolor": "rgba(0,0,0,0.1)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,0.5)",
+                        "size": 9
+                    },
                     "zerolinecolor": "rgba(0,0,0,0.1)"
                 },
                 "violingap": 0,
@@ -18779,7 +18660,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 20,
+                    "n_samples": 20,
                     "metrics": [
                         "fastqc-samples",
                         "fastqc-total_count",
@@ -19790,6 +19671,21 @@
             "plot_type": "x/y line",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 500,
                 "hoverlabel": {
                     "namelength": -1
@@ -19801,75 +19697,49 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": false,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": false,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Adapter Content",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "yaxis": {
-                    "automargin": true
+                    "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)"
                 },
                 "shapes": [
                     {
-                        "fillcolor": "#990101",
+                        "fillcolor": "#e6c3c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -19878,12 +19748,11 @@
                         "y1": 100
                     },
                     {
-                        "fillcolor": "#a07300",
+                        "fillcolor": "#e6dcc3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -19892,12 +19761,11 @@
                         "y1": 20
                     },
                     {
-                        "fillcolor": "#009500",
+                        "fillcolor": "#c3e6c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -19906,12 +19774,11 @@
                         "y1": 5
                     },
                     {
-                        "fillcolor": "#990101",
+                        "fillcolor": "#e6c3c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -19920,12 +19787,11 @@
                         "y1": 100
                     },
                     {
-                        "fillcolor": "#a07300",
+                        "fillcolor": "#e6dcc3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -19934,12 +19800,11 @@
                         "y1": 20
                     },
                     {
-                        "fillcolor": "#009500",
+                        "fillcolor": "#c3e6c3",
                         "layer": "below",
                         "line": {
                             "width": 0
                         },
-                        "opacity": 0.13,
                         "type": "rect",
                         "x0": 0,
                         "x1": 1,
@@ -19957,11 +19822,11 @@
                     "uid": "fastqc_adapter_content_plot",
                     "dconfig": {
                         "title": "FastQC: Adapter Content",
-                        "subtitle": "12 sample-adapter combinations"
+                        "subtitle": "12 samples x adapters"
                     },
                     "layout": {
                         "title": {
-                            "text": "FastQC: Adapter Content<br><sup>12 sample-adapter combinations</sup>"
+                            "text": "FastQC: Adapter Content<br><sup>12 samples x adapters</sup>"
                         },
                         "xaxis": {
                             "hoverformat": null,
@@ -20013,7 +19878,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "lines": [
                         {
                             "name": "PX_Cd0_Rep1_R1 - illumina_universal_adapter",
@@ -20315,7 +20180,7 @@
                                     1.308417864383064
                                 ]
                             ],
-                            "color": "rgba(124,181,236,1)",
+                            "color": "#7cb5ec",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -20621,7 +20486,7 @@
                                     1.3217968051431142
                                 ]
                             ],
-                            "color": "rgba(67,67,72,1)",
+                            "color": "#434348",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -20927,7 +20792,7 @@
                                     1.3127032809966537
                                 ]
                             ],
-                            "color": "rgba(144,237,125,1)",
+                            "color": "#90ed7d",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -21233,7 +21098,7 @@
                                     1.3206750690521833
                                 ]
                             ],
-                            "color": "rgba(247,163,92,1)",
+                            "color": "#f7a35c",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -21539,7 +21404,7 @@
                                     0.9917652885546248
                                 ]
                             ],
-                            "color": "rgba(128,133,233,1)",
+                            "color": "#8085e9",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -21845,7 +21710,7 @@
                                     0.9991259796361183
                                 ]
                             ],
-                            "color": "rgba(241,92,128,1)",
+                            "color": "#f15c80",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -22151,7 +22016,7 @@
                                     0.6292674445143717
                                 ]
                             ],
-                            "color": "rgba(228,211,84,1)",
+                            "color": "#e4d354",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -22457,7 +22322,7 @@
                                     0.6448610644883374
                                 ]
                             ],
-                            "color": "rgba(43,144,143,1)",
+                            "color": "#2b908f",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -22763,7 +22628,7 @@
                                     1.4119886479227473
                                 ]
                             ],
-                            "color": "rgba(244,91,91,1)",
+                            "color": "#f45b5b",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -23069,7 +22934,7 @@
                                     1.381496639539527
                                 ]
                             ],
-                            "color": "rgba(145,232,225,1)",
+                            "color": "#91e8e1",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -23375,7 +23240,7 @@
                                     0.8044174465545088
                                 ]
                             ],
-                            "color": "rgba(124,181,236,1)",
+                            "color": "#7cb5ec",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -23681,7 +23546,7 @@
                                     0.7936169632206618
                                 ]
                             ],
-                            "color": "rgba(67,67,72,1)",
+                            "color": "#434348",
                             "width": 2,
                             "dash": null,
                             "showlegend": true,
@@ -23758,25 +23623,22 @@
                     {
                         "from_": 20,
                         "to": 100,
-                        "color": "#990101",
-                        "opacity": 0.13
+                        "color": "#e6c3c3"
                     },
                     {
                         "from_": 5,
                         "to": 20,
-                        "color": "#a07300",
-                        "opacity": 0.13
+                        "color": "#e6dcc3"
                     },
                     {
                         "from_": 0,
                         "to": 5,
-                        "color": "#009500",
-                        "opacity": 0.13
+                        "color": "#c3e6c3"
                     }
                 ],
                 "x_lines": null,
                 "y_lines": null,
-                "series_label": "sample-adapter combinations",
+                "series_label": "samples x adapters",
                 "categories": false,
                 "smooth_points": 500,
                 "smooth_points_sumcounts": null,
@@ -23822,6 +23684,21 @@
             "plot_type": "heatmap",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 700,
                 "hoverlabel": {
                     "namelength": -1
@@ -23833,63 +23710,31 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": false,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": false,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "FastQC: Status Checks",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
                     "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)",
                     "type": "category",
                     "tickmode": "array",
                     "tickvals": [
@@ -23923,6 +23768,13 @@
                 },
                 "yaxis": {
                     "automargin": true,
+                    "color": "rgba(0,0,0,0.3)",
+                    "gridcolor": "rgba(0,0,0,0.05)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,1)",
+                        "size": 10
+                    },
+                    "zerolinecolor": "rgba(0,0,0,0.05)",
                     "type": "category",
                     "tickmode": "array",
                     "tickvals": [
@@ -24031,7 +23883,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "rows": [
                         [
                             1,
@@ -24534,6 +24386,21 @@
             "plot_type": "violin plot",
             "layout": {
                 "autosize": true,
+                "colorway": [
+                    "#7cb5ec",
+                    "#434348",
+                    "#90ed7d",
+                    "#f7a35c",
+                    "#8085e9",
+                    "#f15c80",
+                    "#e4d354",
+                    "#2b908f",
+                    "#f45b5b",
+                    "#91e8e1"
+                ],
+                "font": {
+                    "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
+                },
                 "height": 500,
                 "hoverlabel": {
                     "namelength": -1
@@ -24545,77 +24412,40 @@
                     "r": 15,
                     "t": 50
                 },
-                "showlegend": false,
-                "template": {
-                    "layout": {
-                        "colorway": [
-                            "#7cb5ec",
-                            "#434348",
-                            "#90ed7d",
-                            "#f7a35c",
-                            "#8085e9",
-                            "#f15c80",
-                            "#e4d354",
-                            "#2b908f",
-                            "#f45b5b",
-                            "#91e8e1"
-                        ],
-                        "font": {
-                            "family": "'Lucida Grande', 'Open Sans', verdana, arial, sans-serif"
-                        },
-                        "modebar": {
-                            "activecolor": "rgba(0, 0, 0, 1)",
-                            "bgcolor": "rgba(0, 0, 0, 0)",
-                            "color": "rgba(0, 0, 0, 0.5)"
-                        },
-                        "paper_bgcolor": "white",
-                        "plot_bgcolor": "white",
-                        "title": {
-                            "font": {
-                                "size": 20
-                            }
-                        },
-                        "xaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        },
-                        "yaxis": {
-                            "color": "rgba(0,0,0,0.3)",
-                            "gridcolor": "rgba(0,0,0,0.05)",
-                            "tickfont": {
-                                "color": "rgba(0,0,0,1)",
-                                "size": 10
-                            },
-                            "zerolinecolor": "rgba(0,0,0,0.05)"
-                        }
-                    }
+                "modebar": {
+                    "activecolor": "rgba(0, 0, 0, 1)",
+                    "bgcolor": "rgba(0, 0, 0, 0)",
+                    "color": "rgba(0, 0, 0, 0.5)"
                 },
+                "paper_bgcolor": "white",
+                "plot_bgcolor": "white",
+                "showlegend": false,
                 "title": {
+                    "font": {
+                        "size": 20
+                    },
                     "text": "General Statistics",
                     "x": 0.5,
                     "xanchor": "center"
                 },
                 "xaxis": {
                     "automargin": false,
-                    "tickfont": {
-                        "size": 9,
-                        "color": "rgba(0,0,0,0.5)"
-                    },
+                    "color": "rgba(0,0,0,0.3)",
                     "gridcolor": "rgba(0,0,0,0.1)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,0.5)",
+                        "size": 9
+                    },
                     "zerolinecolor": "rgba(0,0,0,0.1)"
                 },
                 "yaxis": {
                     "automargin": true,
-                    "tickfont": {
-                        "size": 9,
-                        "color": "rgba(0,0,0,0.5)"
-                    },
+                    "color": "rgba(0,0,0,0.3)",
                     "gridcolor": "rgba(0,0,0,0.1)",
+                    "tickfont": {
+                        "color": "rgba(0,0,0,0.5)",
+                        "size": 9
+                    },
                     "zerolinecolor": "rgba(0,0,0,0.1)"
                 },
                 "violingap": 0,
@@ -24696,7 +24526,7 @@
                             "max": 100
                         }
                     },
-                    "n_series": 12,
+                    "n_samples": 12,
                     "metrics": [
                         "fastqc-percent_duplicates",
                         "fastqc-percent_gc",
@@ -25944,13 +25774,13 @@
     "config_report_comment": null,
     "config_report_header_info": null,
     "config_script_path": "/opt/miniconda3/envs/bulk-rna-seq/lib/python3.11/site-packages/multiqc",
-    "config_short_version": "1.30",
+    "config_short_version": "1.29",
     "config_subtitle": null,
     "config_title": null,
-    "config_version": "1.30",
-    "config_output_dir": "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb",
+    "config_version": "1.29",
+    "config_output_dir": "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84",
     "config_analysis_dir_abs": [
-        "/project/2-pipelines/1-bulk-rna-seq/work/59/3984c9a7561fa2b9b245b7ecd9ffeb/Pre_fastqc_results"
+        "/Users/adrian/Documents/4 Workspace/pruebas/genoscribe/2-pipelines/1-bulk-rna-seq/work/7a/077af325a189bf1034603f8a095a84/Pre_fastqc_results"
     ],
     "report_saved_raw_data": {
         "multiqc_fastqc": {

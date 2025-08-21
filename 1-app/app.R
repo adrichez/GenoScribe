@@ -376,19 +376,25 @@ server <- function(input, output, session) {
         bulk_rna_seq_report_dir <- file.path(bulk_rna_seq_pipeline_base, "report")
 
         # Crear carpetas necesarias si no existen
-        if (!dir.exists(bulk_rna_seq_report_dir)) dir.create(bulk_rna_seq_report_dir, recursive = TRUE)
-        if (!dir.exists(www_dir))    dir.create(www_dir, recursive = TRUE)
-        if (!dir.exists(www_report_bulk_rna_seq_dir))    dir.create(www_report_bulk_rna_seq_dir, recursive = TRUE)
+        if (!dir.exists(bulk_rna_seq_report_dir)) {
+          dir.create(bulk_rna_seq_report_dir, recursive = TRUE)
+        }
+        if (!dir.exists(www_dir)) {
+          dir.create(www_dir, recursive = TRUE)
+        }
+        if (!dir.exists(www_report_bulk_rna_seq_dir)) {
+          dir.create(www_report_bulk_rna_seq_dir, recursive = TRUE)
+        }
 
         # Preparar script de ejecución
         setwd(bulk_rna_seq_pipeline_base)
         incProgress(0.2, detail = "Preparando comando")
-        system2("chmod", c("+x", "run_pipeline.sh"))  # Asegurar permisos
+        system2("chmod", c("+x", "run_pipeline_shiny.sh"))  # Asegurar permisos
         
         # Ejecutar pipeline con parámetros del usuario
         incProgress(0.3, detail = "Ejecutando Nextflow (esto puede tardar)")
         log_out <- system2(
-          "./run_pipeline.sh",
+          "./run_pipeline_shiny.sh",
           args = c(shQuote(input$ruta_proyecto), shQuote(input$nombre_experimento)),
           stdout = TRUE,
           stderr = TRUE
@@ -420,8 +426,8 @@ server <- function(input, output, session) {
           if (!dir.exists(www_report_bulk_rna_seq_dir)) dir.create(www_report_bulk_rna_seq_dir, recursive = TRUE)
           
           # Copiar todo el contenido recursivamente
-          system2("cp", c("-R", paste0(bulk_rna_seq_report_dir, "/."), www_report_bulk_rna_seq_dir))
-          
+          system2("cp", shQuote(c("-R", paste0(bulk_rna_seq_report_dir, "/."), www_report_bulk_rna_seq_dir)))
+
           output$resultLinks <- renderUI({
             tags$a(href = "reports/1-bulk-rna-seq/index.html", target = "_blank", "Abrir informe HTML en nueva pestaña")
           })
