@@ -136,6 +136,7 @@ Antes de comenzar a usar GenoScribe, es necesario obtener los archivos del proye
 
 Para disponer de todo el código, pipelines y Dockerfile, existen varias formas:
 
+
 #### 1. Clonar el repositorio con Git
 
 Esta sería la opción recomendada si desea mantener el proyecto actualizado fácilmente.
@@ -144,6 +145,7 @@ Esta sería la opción recomendada si desea mantener el proyecto actualizado fá
 git clone https://github.com/adrichez/genoscribe.git
 cd genoscribe
 ```
+
 
 #### 2. Descargar directamente el ZIP desde GitHub
 
@@ -305,7 +307,7 @@ Esto permite ejecutar la misma imagen en entornos HPC, conservando las dependenc
 
 ### 🔄 Flujo mínimo para usar la app
 
-Sigue estos pasos para generar informes bioinformáticos de forma reproducible, flexible y adaptada a distintos entornos:
+Sigua estos pasos para generar informes bioinformáticos de forma reproducible, flexible y adaptada a distintos entornos:
 
 
 #### 1. Descargar el repositorio  
@@ -494,10 +496,11 @@ El proyecto combina un conjunto de herramientas y librerías modernas que permit
 
 | Categoría         | Herramientas / Librerías                     |
 |-------------------|----------------------------------------------|
-| Lenguajes         | R, Python, JavaScript                        |
+| Lenguajes         | R, Python, JavaScript, HTML, CSS, Markdown   |
+| Pipelines         | Nextflow, Conda                               |
 | Informes          | Quarto, R Markdown, Jupyter                  |
 | Contenedores      | Apptainer / Docker                           |
-| Visualización     | D3.js, ggplot2                               |
+| Visualización     | D3.js, ggplot2, plotly                       |
 | IA / NLP          | spaCy, HuggingFace Transformers              |
 | Cloud / HPC       | Picasso, Finisterrae III, almacenamiento S3  |
 
@@ -546,7 +549,7 @@ En resumen, este sistema está dirigido a **investigadores, bioinformáticos y e
 
 Para consultas, sugerencias o reportes de errores relacionados con este proyecto, puedes contactarnos a través de:
 
-* 📧 **Correo electrónico:** [asanca33@gmail.com](mailto:asanca33@gmail.com)  
+* 📧 **Correo electrónico:** [asanca33@gmail.com](mailto:asanca33@gmail.com).  
 * 🐙 **Repositorio GitHub:** [https://github.com/adrichez/genoscribe](https://github.com/adrichez/genoscribe) → issues, pull requests, contribuciones bienvenidas. 🚀  
 * 📚 **Documentación adicional:** revisa la carpeta [6-info/](6-info/) para guías, especificaciones y ejemplos de uso. 📝
 
