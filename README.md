@@ -1,19 +1,76 @@
 <p align="center">
-  <img src="6-info/assets/main_cover.png" alt="Banner Bioinformatics Reports" width="100%">
+  <img src="6-info/assets/0-main/main_cover_2.png" alt="GenoScribe — Banner: Generador de informes bioinformáticos" style="max-width:100%;height:auto;">
 </p>
 
 <div align="center">
   <h1>Sistema Inteligente y Reproducible de Generación de Informes Bioinformáticos</h1>
-  <p>Desarrollo de un sistema inteligente y reproducible para la generación automatizada e interactiva de informes bioinformáticos integrados en entornos basados en contenedores y computación en la nube.</p>
+  <p>Automatiza la generación de informes interactivos desde pipelines ómicos (Bulk RNA-Seq / scRNA-Seq / Metagenómica) en contenedores y entornos cloud/HPC.</p>
+
+  <hr style="border:none; height:0.3px; background-color:#777; width:65%; margin:30px auto 35px auto;">
+
+  <p>
+    <a href="https://www.r-project.org/"><img src="https://img.shields.io/badge/R-276DC3?style=flat&logo=r&logoColor=white" alt="R"></a>
+    <a href="https://rmarkdown.rstudio.com/"><img src="https://img.shields.io/badge/R%20Markdown-3EBB8D?style=flat&logo=r&logoColor=white" alt="R Markdown"></a>
+    <a href="https://shiny.rstudio.com/"><img src="https://img.shields.io/badge/Shiny-FF4088?style=flat&logo=r&logoColor=white" alt="Shiny"></a>
+    <a href="https://quarto.org/"><img src="https://img.shields.io/badge/Quarto-1DA1F2?style=flat&logo=quarto&logoColor=white" alt="Quarto"></a>
+    <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white" alt="Python"></a>
+    <a href="https://spacy.io/"><img src="https://img.shields.io/badge/SpaCy-3E8E41?style=flat&logo=spaCy&logoColor=white" alt="SpaCy"></a>
+    <a href="https://jupyter.org/"><img src="https://img.shields.io/badge/Jupyter-F37626?style=flat&logo=jupyter&logoColor=white" alt="Jupyter"></a>
+    <a href="https://www.w3.org/html/"><img src="https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white" alt="HTML5"></a>
+    <a href="https://www.w3.org/Style/CSS/"><img src="https://img.shields.io/badge/CSS-1572B6?style=flat&logo=css3&logoColor=white" alt="CSS3"></a>
+    <a href="https://www.javascript.com/"><img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black" alt="JavaScript"></a>
+    <a href="https://www.d3js.org/"><img src="https://img.shields.io/badge/D3.js-F9A800?style=flat&logo=d3.js&logoColor=white" alt="D3.js"></a>
+    <a href="https://www.nextflow.io/"><img src="https://img.shields.io/badge/Nextflow-1DA1F2?style=flat&logo=nextflow&logoColor=white" alt="Nextflow"></a>
+    <a href="https://www.bioconductor.org/"><img src="https://img.shields.io/badge/Bioconductor-3EBB8D?style=flat&logo=bioconductor&logoColor=white" alt="Bioconductor"></a>
+    <a href="https://docs.conda.io/en/latest/"><img src="https://img.shields.io/badge/Conda-77B8D8?style=flat&logo=anaconda&logoColor=white" alt="Conda"></a>
+    <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker"></a>
+    <a href="https://apptainer.org/"><img src="https://img.shields.io/badge/Apptainer-429999?style=flat&logo=apptainer&logoColor=white" alt="Apptainer"></a>
+    <a href="https://www.markdownguide.org/"><img src="https://img.shields.io/badge/Markdown-000000?style=flat&logo=markdown&logoColor=white" alt="Markdown"></a>
+    <a href="https://git-scm.com/"><img src="https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white" alt="Git"></a>
+    <a href="https://github.com/adrichez/genoscribe"><img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub"></a>
+    <a href="https://www.latex-project.org/"><img src="https://img.shields.io/badge/LaTeX-008080?style=flat&logo=latex&logoColor=white" alt="LaTeX"></a>
+  </p>
+
+  <p>
+    <a href="#section-1">¿Qué es?</a> • 
+    <a href="#section-2">Highlights</a> • 
+    <a href="#section-3">Estructura</a> • 
+    <a href="#section-4">Requisitos</a> • 
+    <a href="#section-5">Workflow</a> • 
+    <a href="#section-6">Quickstart</a> • 
+    <a href="#section-7">Docs</a> • 
+    <a href="#section-8">Tecnologías</a> • 
+    <a href="#section-9">Objetivos</a> • 
+    <a href="#section-10">Contacto</a>
+  </p>
 </div>
 
+
+
+
+
+
+<br>
 <br>
 
-<div align="center">
+---
 
-[![R](https://img.shields.io/badge/R-276DC3?style=flat&logo=r&logoColor=white)](https://www.r-project.org/) [![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/) [![Quarto](https://img.shields.io/badge/Quarto-1DA1F2?style=flat&logo=quarto&logoColor=white)](https://quarto.org/) [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/) [![Shiny](https://img.shields.io/badge/Shiny-FF4088?style=flat&logo=r&logoColor=white)](https://shiny.rstudio.com/) [![Apptainer](https://img.shields.io/badge/Apptainer-429999?style=flat&logo=apptainer&logoColor=white)](https://apptainer.org/) [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML) [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat)](https://developer.mozilla.org/en-US/docs/Web/CSS) [![D3.js](https://img.shields.io/badge/D3.js-F9A03C?style=flat)](https://d3js.org/) [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![Nextflow](https://img.shields.io/badge/Nextflow-1DA1F2?style=flat&logo=nextflow&logoColor=white)](https://www.nextflow.io/) [![Conda](https://img.shields.io/badge/Conda-342B02?style=flat&logo=anaconda&logoColor=white)](https://docs.conda.io/en/latest/) [![R Markdown](https://img.shields.io/badge/R_Markdown-536A89?style=flat&logo=r&logoColor=white)](https://rmarkdown.rstudio.com/) [![Jupyter](https://img.shields.io/badge/Jupyter-F37626?style=flat&logo=jupyter&logoColor=white)](https://jupyter.org/) [![Git](https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white)](https://git-scm.com/) [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/) [![spaCy](https://img.shields.io/badge/spaCy-09A3D6?style=flat&logo=spacy&logoColor=white)](https://spacy.io/) [![Markdown](https://img.shields.io/badge/Markdown-000000?style=flat&logo=markdown&logoColor=white)](https://www.markdownguide.org/) [![LaTeX](https://img.shields.io/badge/LaTeX-47A141?style=flat&logo=latex&logoColor=white)](https://www.latex-project.org/)
+<h2 id="section-1">1. 🚀 Descripción del proyecto</h2>
 
-</div>
+**GenoScribe** es un **sistema inteligente y reproducible** que transforma automáticamente los resultados de **pipelines ómicos** en **informes interactivos y estandarizados**. Su objetivo es simplificar la interpretación de datos complejos y facilitar la comunicación de hallazgos en proyectos de *Bulk RNA-Seq, scRNA-Seq y Metagenómica*.  
+
+La herramienta central es una **aplicación Shiny** que permite al usuario definir de forma sencilla los **parámetros del experimento** (por ejemplo, la carpeta de resultados con archivos `.fastq`, tablas `.xlsx` o reportes de **MultiQC**). A partir de ahí, el sistema ejecuta el **pipeline correspondiente** dentro de un **contenedor aislado** (Apptainer/Docker), garantizando **consistencia**, **reproducibilidad** y aislamiento de dependencias.  
+
+El flujo culmina en la generación de un **informe Quarto en HTML** completamente adaptado a los datos procesados. Cada informe integra:  
+
+- **Visualizaciones dinámicas** y personalizables  
+- **Tablas filtrables** y exportables  
+- **Resúmenes ejecutivos** con los principales hallazgos  
+- **Metadatos de ejecución** (versiones, parámetros, logs) que aseguran trazabilidad  
+
+Gracias a este enfoque, los investigadores pueden **explorar, compartir y documentar resultados** de forma ágil, reduciendo la carga manual y estandarizando la presentación de informes.  
+
+Diseñado para ser **flexible y escalable**, GenoScribe puede ejecutarse en **local**, en **HPC** o en la **nube**, ofreciendo una **solución robusta** que acelera la interpretación de datos y optimiza la toma de decisiones.  
 
 
 
@@ -25,35 +82,19 @@
 
 ---
 
-## 🚀 Descripción breve del proyecto
+<h2 id="section-2">2. ⭐ Características principales</h2>
 
-Este proyecto presenta un **sistema inteligente y reproducible** diseñado para convertir los resultados generados por **pipelines ómicos** en **informes automáticos e interactivos**, facilitando la interpretación de datos complejos y la comunicación de hallazgos clave. La herramienta central es una **aplicación Shiny** que permite al usuario introducir de manera sencilla los **parámetros del experimento** tal y como podría ser la **ruta a la carpeta de resultados de dichos pipelines**, que puede incluir desde archivos `.fastq` hasta hojas de cálculo `.xlsx` o reportes de **MultiQC**. Según el **tipo de análisis** seleccionado —ya sea *Bulk RNA-Seq, scRNA-Seq o Metagenómica*—, el sistema ejecuta automáticamente el **pipeline correspondiente** dentro de un **contenedor aislado** (Apptainer/Docker), garantizando **consistencia**, **reproducibilidad** y aislamiento total de dependencias.
+- 🧬 **Pipelines soportados** → Compatible con **Bulk RNA-Seq, scRNA-Seq y análisis metagenómicos**. Cada flujo de trabajo está **preconfigurado** para procesar datos crudos (por ejemplo `.fastq`, `.bam` o conteos) y generar resultados listos para análisis. Esto reduce la necesidad de pasos manuales, disminuye errores y asegura resultados consistentes en cada ejecución.  
 
-El flujo de trabajo culmina con la generación de un **informe HTML interactivo** generado a través de **Quarto**, completamente adaptado al contenido procesado y a los parámetros introducidos por el usuario. Cada informe integra **visualizaciones dinámicas**, **tablas filtrables**, **resúmenes ejecutivos** y **metadatos de ejecución** como versiones de software, parámetros utilizados y registros de procesamiento, asegurando una completa **trazabilidad** y **replicabilidad** de los resultados. Este enfoque permite explorar los datos de forma intuitiva, compartirlos fácilmente y descargarlos para su documentación o análisis posterior.
+- 📊 **Informes interactivos** → Los resultados se presentan como **informes HTML dinámicos** construidos con **Quarto** y potenciados con **visualizaciones interactivas en D3.js**. Los usuarios pueden **explorar gráficos**, **filtrar tablas**, navegar entre secciones y descargar figuras de interés, transformando datos complejos en información clara y accesible.  
 
-Diseñado para ser flexible y escalable, el sistema funciona tanto en **entornos locales**, de forma aislada en **contenedores**, como en **clústeres HPC o plataformas en la nube**, reduciendo de manera significativa la carga manual asociada con la generación de informes, estandarizando la presentación de resultados y ofreciendo una **solución robusta** y **reproducible** que agiliza la interpretación y el intercambio de información bioinformática. Con este enfoque, los investigadores pueden centrarse en el análisis y la toma de decisiones, dejando en manos del sistema la integración, visualización y documentación de sus resultados.
+- 🤖 **IA/NLP para resúmenes automáticos** → Integración de **modelos de inteligencia artificial y procesamiento de lenguaje natural (NLP)** que generan **resúmenes ejecutivos automáticos**. Estos destacan los **hallazgos clave**, patrones relevantes y posibles interpretaciones biológicas, ofreciendo al usuario una visión rápida sin necesidad de revisar cada tabla o gráfico en detalle.  
 
+- 🐳 **Reproducibilidad garantizada con contenedores** → Cada pipeline se ejecuta dentro de un **contenedor Apptainer o Docker**, lo que asegura **aislamiento total de dependencias**, **consistencia entre entornos** y la posibilidad de **replicar los análisis** en cualquier sistema, sin conflictos de software ni configuraciones ocultas.  
 
+- ☁️ **Despliegue flexible (local / HPC / nube)** → El sistema puede ejecutarse en **ordenadores personales**, en **clústeres HPC** o en **plataformas de nube**. Esta flexibilidad permite adaptarse a distintos volúmenes de datos y necesidades computacionales, maximizando la eficiencia sin comprometer la seguridad o la reproducibilidad.  
 
-
-
-
-<br>
-<br>
-
----
-
-## ⭐ Características principales
-
-- **Pipelines soportados**: Compatible con múltiples flujos de trabajo ómicos, incluyendo **Bulk RNA-Seq, scRNA-Seq y análisis metagenómicos**. Cada pipeline está preconfigurado para procesar datos crudos y generar resultados listos para análisis, reduciendo la necesidad de intervención manual y asegurando resultados consistentes.  
-
-- **Informes interactivos (Quarto + D3.js)**: Los resultados se presentan en **informes HTML dinámicos**, creados con **Quarto** y enriquecidos con **visualizaciones interactivas D3.js**. Los usuarios pueden explorar gráficos, filtrar tablas y navegar entre secciones de manera intuitiva, transformando datos complejos en información accesible y visualmente atractiva.  
-
-- **IA/NLP para resúmenes**: Integración de **algoritmos de inteligencia artificial y procesamiento de lenguaje natural (NLP)** que generan **resúmenes automáticos de los resultados**, destacando hallazgos clave, patrones relevantes y posibles interpretaciones biológicas, ayudando al usuario a comprender rápidamente los puntos más importantes.  
-
-- **Reproducibilidad (contenedores)**: Cada pipeline se ejecuta dentro de **contenedores Apptainer/Docker**, garantizando **aislamiento de dependencias**, **consistencia en la ejecución** y **replicabilidad absoluta** de los resultados en cualquier entorno, sin conflictos de software o diferencias en configuraciones.  
-
-- **Despliegue flexible (local / contenedores / HPC / cloud)**: El sistema puede ejecutarse **localmente**, en **contenedores**, en **clústeres HPC** o en **plataformas de nube**, adaptándose a distintos tamaños de proyecto y necesidades computacionales. Esto permite a los usuarios aprovechar la infraestructura disponible sin comprometer velocidad, seguridad o reproducibilidad.  
+- 📦 **Estandarización y trazabilidad** → Cada informe incluye **metadatos de ejecución**, como versiones de software, parámetros empleados y registros de procesamiento. De este modo, se asegura la **trazabilidad completa** y la posibilidad de **auditar o replicar** cualquier resultado en el futuro.  
 
 
 
@@ -65,7 +106,7 @@ Diseñado para ser flexible y escalable, el sistema funciona tanto en **entornos
 
 ---
 
-## 📂 Estructura del proyecto
+<h2 id="section-3">3. 📂 Estructura del proyecto</h2>
 
 El repositorio está organizado de forma modular para separar claramente la **interfaz de usuario**, los **pipelines de análisis**, los **entornos reproducibles** y la **documentación**. Esto facilita la navegación, el mantenimiento y la extensión del sistema.
 
@@ -84,13 +125,13 @@ genoscribe         # Directorio principal del proyecto
 
 A continuación se detalla la función de cada directorio:
 
-- **`1-app/`:** Contiene la aplicación Shiny, formularios para introducir parámetros, selección del tipo de experimento y paneles interactivos con R, JS y D3.js, junto con los recursos front-end.  
-- **`2-pipelines/`:** Incluye los pipelines bioinformáticos por tipo de análisis y las plantillas Quarto para generar los informes finales, así como archivos de ejemplo y scripts en R, Python o Snakemake/Nextflow.  
-- **`3-containers/`:** Define los entornos reproducibles, incluyendo Dockerfiles o recetas Apptainer, dependencias específicas y versionado de imágenes.  
-- **`4-launch/`:** Scripts para ejecutar la app Shiny y desplegar los pipelines en local, contenedores, HPC o cloud, incluyendo utilidades de montaje de volúmenes y registro de logs.  
-- **`5-examples/`:** Informes de ejemplo generados a partir de los pipelines y plantillas para cada tipo de análisis, que ilustran el formato y contenido esperado de los resultados finales.  
-- **`6-info/`:** Documentación técnica y especificaciones detalladas para cada tipo de análisis, así como guías de usuario generales.   
-- **`README.md`:** Documento principal con descripción general, estructura del proyecto, guía rápida de uso y enlaces a la documentación detallada.  
+- **`1-app/`** → Contiene la aplicación Shiny, formularios para introducir parámetros, selección del tipo de experimento y paneles interactivos con R, JS y D3.js, junto con los recursos front-end.  
+- **`2-pipelines/`** → Incluye los pipelines bioinformáticos por tipo de análisis y las plantillas Quarto para generar los informes finales, así como archivos de ejemplo y scripts en R, Python o Snakemake/Nextflow.  
+- **`3-containers/`** → Define los entornos reproducibles, incluyendo Dockerfiles o recetas Apptainer, dependencias específicas y versionado de imágenes.  
+- **`4-launch/`** → Scripts para ejecutar la app Shiny y desplegar los pipelines en local, contenedores, HPC o cloud, incluyendo utilidades de montaje de volúmenes y registro de logs.  
+- **`5-examples/`** → Informes de ejemplo generados a partir de los pipelines y plantillas para cada tipo de análisis, que ilustran el formato y contenido esperado de los resultados finales.  
+- **`6-info/`** → Documentación técnica y especificaciones detalladas para cada tipo de análisis, así como guías de usuario generales.   
+- **`README.md`** → Documento principal con descripción general, estructura del proyecto, guía rápida de uso y enlaces a la documentación detallada.  
 
 
 
@@ -102,16 +143,38 @@ A continuación se detalla la función de cada directorio:
 
 ---
 
-## ⚙️ Requisitos
+<h2 id="section-4">4. ⚙️ Requisitos</h2>
 
-Antes de utilizar el sistema, se recomienda asegurarse de contar con los siguientes elementos mínimos para garantizar un funcionamiento óptimo:
+Antes de utilizar el sistema, asegúrese de contar con los siguientes elementos para garantizar un funcionamiento correcto y reproducible:
 
-- 🐳 **Docker o Apptainer**: necesario para construir y ejecutar los contenedores que incluyen la app Shiny, los pipelines y todas las dependencias de los informes interactivos.  
-- 💻 **Terminal / Línea de comandos**: para ejecutar los scripts de lanzamiento y administrar los contenedores. Compatible con macOS, Linux y Windows. En Windows se recomienda usar una terminal compatible con Linux, como WSL, Git Bash o PowerShell con compatibilidad adecuada.  
-- 🌐 **Navegador web moderno**: se recomienda **Google Chrome** para explorar los informes HTML interactivos, ya que algunos componentes dinámicos (gráficos D3.js, paneles interactivos) pueden no cargarse correctamente en Safari u otros navegadores.  
-- 📶 **Conexión a internet** (opcional, según caso): necesaria para acceder a recursos externos o actualizaciones de dependencias si se utilizan pipelines que descargan datos adicionales.
+* 🐳 **Docker o Apptainer** → imprescindibles para construir y ejecutar los **contenedores** que incluyen la aplicación Shiny, los pipelines y todas las dependencias bioinformáticas.
 
-> 💡 **Nota:** con estos requisitos, la instalación y ejecución del sistema es sencilla y garantiza que todos los elementos interactivos de los informes funcionen de manera correcta y reproducible.
+  * Docker: recomendado para entornos de desarrollo, uso local y en la nube.
+  * Apptainer (antes Singularity): recomendado en clústeres HPC o entornos donde Docker no está permitido.
+
+* 💻 **Terminal / Línea de comandos** → utilizada para lanzar los scripts y gestionar la ejecución de los contenedores.
+
+  * Compatible con **macOS, Linux y Windows**.
+  * En Windows se recomienda **WSL2 (Windows Subsystem for Linux)**, **Git Bash** o **PowerShell** con soporte adecuado para contenedores.
+
+* 🌐 **Navegador web moderno** → necesario para explorar los **informes HTML interactivos**.
+
+  * Se recomienda **Google Chrome** o **Firefox**.
+  * Safari y Edge son compatibles pero pueden presentar limitaciones con algunos gráficos **D3.js** o en la visualización de algunos archivos incrustados.
+
+* 📶 **Conexión a internet** → (opcional) necesaria si:
+
+  * deseas descargar datos de referencia o bases externas durante la ejecución de un pipeline,
+  * o si quieres actualizar imágenes de contenedores.
+  * El sistema también puede ejecutarse **100% offline** si ya cuenta con los recursos necesarios preinstalados.
+
+* 💾 **Recursos mínimos recomendados** → para un uso fluido en análisis típicos de RNA-seq o metagenómica:
+
+  * **RAM**: ≥ ideal ≥ 8 GB.
+  * **CPU**: ≥ 4 núcleos.
+  * **Almacenamiento**: ≥ 30 GB libres (la imagen del contenedor pesa unos 15 GB).
+
+> 💡 Con estos requisitos cumplidos, la instalación y ejecución del sistema es directa y garantiza que todos los elementos interactivos de los informes funcionen de manera correcta y reproducible.
 
 
 
@@ -123,95 +186,100 @@ Antes de utilizar el sistema, se recomienda asegurarse de contar con los siguien
 
 ---
 
-## 🎯 Flujo de trabajo
+<h2 id="section-5">5. 🎯 Flujo de trabajo</h2>
 
-A continuación, se muestra el diagrama de flujo del sistema (workflow) donde se representa de forma esquemática todas las decisiones y caminos que un **usuario** puede seguir para generar un informe bioinformático a partir de sus **datos de entrada**:
+Este apartado describe cómo un usuario interactúa con el sistema para generar **informes bioinformáticos automáticos e interactivos** a partir de sus datos. Se presenta en tres niveles: diagrama general, flujo resumido en ASCII y demostración visual con GIF.
+
+
+
+
+<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+
+<h3 id="section-5.1">5.1. 📝 Diagrama general</h3>
+
+El **diagrama de flujo** ilustra de forma esquemática las decisiones y rutas que el usuario puede seguir desde la entrada de datos hasta la generación del informe final:
 
 <p align="center">
-  <img src="6-info/assets/workflow/general_workflow.png" alt="Diagrama del sistema de informes bioinformáticos" width="65%">
+  <img src="6-info/assets/4-other/workflow/general_workflow.png" alt="Diagrama general del flujo de trabajo de GenoScribe" width="65%">
 </p>
 
-Así, el recorrido comienza con una primera decisión: **¿dónde ejecutar el análisis?**. 
+**Recorrido resumido:**
 
-* 💻 **En Local**:  
+* 💻 **Ejecución Local:**  
 
-  * Puede ejecutarlo **directamente en su ordenador** o dentro de un **contenedor (recomendado)**.  
-  * Si opta por un contenedor, puede elegir entre **Docker** o **Apptainer**.  
-  * A continuación, decide **cómo interactuar** con el sistema: mediante **terminal (CLI)** o a través de la **interfaz gráfica Shiny**.  
+  * Directamente en el **ordenador** o dentro de un **contenedor** (recomendado).
+  * Contenedores disponibles en **Docker** o **Apptainer**.
+  * Interacción mediante **terminal (CLI)** o **interfaz Shiny**.
 
-* 🖥️ **En HPC/Cloud (cluster)**:  
+* 🖥️ **Ejecución HPC / Nube:**  
 
-  * Puede ejecutarlo **directamente en el cluster** o en un **contenedor con Apptainer** (Docker no suele estar permitido en HPC).  
-  * En estos entornos no se dispone de interfaces gráficas, por lo que la interacción se realiza siempre mediante **CLI**.  
+  * Directamente en el **cluster** o dentro de un **contenedor Apptainer** (Docker no suele estar permitido).
+  * Interacción exclusivamente mediante **CLI**.
 
-> 💡 **Nota:** Siempre será recomendable ejecutar el análisis en un contenedor para garantizar la reproducibilidad y facilitar la gestión de dependencias. La ejecución directamente en el ordenador (o en el cluster) está más bien pensada para la realización de pruebas o debugging, cuando se dispone de todas las herramientas necesarias ya disponibles en el propio entorno.
->
-> Además, en entornos HPC/Cloud, es posible que se requieran configuraciones adicionales, como la carga de módulos o la configuración de variables de entorno, para garantizar que todas las dependencias estén disponibles.
+> 💡 **Consejo:** Ejecutar siempre dentro de un **contenedor** garantiza **reproducibilidad**, aislamiento de dependencias y facilita la gestión. La ejecución directa se recomienda solo para pruebas o debugging.
+> En HPC/Cloud pueden requerirse pasos adicionales, como cargar **módulos del sistema** o configurar variables de entorno, para asegurar que todas las dependencias estén disponibles.
 
-Una vez seleccionado el entorno, el usuario completa un **formulario** para definir los parámetros del análisis:  
+Luego, el usuario completa un **formulario con los parámetros del experimento**:
 
-* 📄 **Formulario visual (GUI)** si está usando Shiny en Local.  
-* 📄 **Formulario en shell (CLI)** si ejecuta el análisis en terminal, tanto en Local como en HPC.  
+* 📄 **GUI (Shiny)** → Local.
+* 📄 **CLI (shell)** → Local o HPC/Cloud.
 
-Luego, el usuario selecciona el **tipo de análisis** a realizar:  
+Después, se selecciona el **tipo de análisis**:
 
-* 🧬 **Bulk RNA-Seq**.
-* 🧫 **Single-cell RNA-Seq (scRNA-Seq)**.
-* 🌱 **Metagenómica**.
+* 🧬 **Bulk RNA-Seq**
+* 🧫 **Single-cell RNA-Seq (scRNA-Seq)**
+* 🌱 **Metagenómica**
 
-Cada tipo de análisis requiere configurar **parámetros específicos**, tras lo cual se lanza el **pipeline correspondiente**.  
+Cada análisis requiere configurar parámetros específicos y ejecutar el **pipeline correspondiente**, que culmina con la **generación de un informe HTML interactivo**, listo para explorarse, descargarse y compartirse.
 
-Finalmente, el sistema genera un **informe interactivo en HTML** con los resultados del análisis seleccionado, listo para explorarse, descargarse y compartirse.  
+**Resumen conceptual del workflow:**
 
-En resumen, este workflow ilustra cómo:
-
-1. El usuario parte de sus **datos de entrada**.  
-2. Decide el **entorno de ejecución** (Local vs HPC/Cloud). 
-3. Determina si utilizar un **contenedor** o no. 
-4. Selecciona la **forma de interacción** (CLI o Shiny).  
-5. Define el **tipo de análisis** a realizar.  
-6. Configura los **parámetros específicos** y ejecuta el pipeline.  
-7. Obtiene un **informe interactivo en HTML** como producto final.  
+1. Preparación de **datos de entrada**.
+2. Elección del **entorno de ejecución** (Local vs HPC/Cloud).
+3. Decisión sobre uso de **contenedor**.
+4. Selección de **interfaz de usuario** (CLI o Shiny).
+5. Elección del **tipo de análisis**.
+6. Configuración de **parámetros específicos** y ejecución del pipeline.
+7. Obtención del **informe HTML interactivo**.
 
 
 
 
-<br>
+<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
 
-### 📐 Flujo principal paso a paso
+<h3 id="section-5.2">5.2. 📐 Pasos resumidos</h3>
 
-De manera resumida, el flujo de uso del sistema puede describirse así:
+Este flujo simplificado muestra, paso a paso, la ejecución típica del sistema empleando contenedores y la interfaz Shiny:
 
 ```ascii
-→ Descarga del proyecto desde GitHub
-   → Construcción de la imagen GenoScribe
-   → Creación de un contenedor genoscribe_container
-   → Inicio del contenedor genoscribe_container
-   → Se inicia la app Shiny en el puerto 3838
-   → Selección del tipo de análisis en el formulario
-   → Completar el formulario con los parámetros solicitados
-   → Ejecución del pipeline mediante Nextflow
-   → Generación de outputs y del informe interactivo HTML
-   → Acceso al informe interactivo (HTML)
+→ Descargar proyecto desde GitHub
+   → Construir la imagen genoscribe:1.0
+   → Crear contenedor genoscribe_container
+   → Iniciar contenedor
+   → Lanzar app Shiny en puerto 3838
+   → Seleccionar tipo de análisis en el formulario
+   → Completar parámetros del experimento
+   → Ejecutar pipeline mediante Nextflow
+   → Generar outputs y el informe HTML interactivo
+   → Acceder y explorar informe HTML
 ```
 
+Este esquema permite **visualizar rápidamente** la secuencia completa de pasos, incluyendo preparación, ejecución y obtención del informe final.
 
 
 
-<br>
 
-### 🎬 Demostración visual
+<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
 
-El siguiente GIF ofrece una **representación rápida** del flujo principal del sistema, mostrando cómo se inicia la **app Shiny**, se completa el **formulario con los parámetros del experimento**, se selecciona el **tipo de análisis** y finalmente se ejecuta el pipeline correspondiente dentro del contenedor. El proceso culmina con la **generación automática del informe HTML interactivo**, listo para explorarse, descargarse y compartirse:
+<h3 id="section-5.3">5.3. 🎬 Demostración visual</h3>
+
+El siguiente **GIF** ofrece una visión dinámica del flujo principal: inicio de la app Shiny, completado del formulario, selección del análisis y ejecución del pipeline dentro del contenedor. El proceso finaliza con la **generación automática del informe HTML interactivo**:
 
 <p align="center">
-  <img src="6-info/assets/bulk_rna_seq_demo.gif" alt="Demostración del proceso para crear un informe de Bulk RNA-Seq con la app de Shiny en un contenedor Docker" width="65%">
+  <img src="6-info/assets/1-bulk-rna-seq/bulk_rna_seq_demo.gif" alt="Demostración flujo de trabajo GenoScribe" width="65%">
 </p>
 
-Este GIF funciona como **guía visual rápida**, ideal para obtener una visión global antes de entrar en detalles técnicos.
-Cabe destacar que **no incluye todos los pasos intermedios ni outputs secundarios**, los cuales están documentados en la guía de usuario completa para cada tipo de análisis.
-
-> 💡 **Nota:** para una descripción más detallada del flujo, incluyendo **entradas, salidas y parámetros específicos**, consulta las [Guías de usuario extendidas](6-info).
+> 💡 **Nota:** Este GIF es una **guía visual rápida** y no muestra todos los pasos intermedios ni outputs secundarios. Para información completa, incluyendo **entradas, salidas y parámetros específicos**, consulta las [Guías de usuario extendidas](6-info).
 
 
 
@@ -223,321 +291,240 @@ Cabe destacar que **no incluye todos los pasos intermedios ni outputs secundario
 
 ---
 
-## 🚀 Guía rápida de uso (Quickstart)
+<h2 id="section-6">6. 🚀 Guía rápida de uso (Quickstart)</h2>
 
-Antes de comenzar a usar GenoScribe, es necesario obtener los archivos del proyecto y preparar el entorno. Esta sección proporciona un **resumen introductorio**; para más detalles sobre cada tipo de análisis y flujos específicos, consulta las guías completas en la carpeta `6-info/`.  
+Esta sección explica cómo poner en marcha **GenoScribe** de forma rápida, reproducible y flexible. Incluye **descarga del proyecto, preparación del entorno, construcción del contenedor y ejecución de pipelines**, con opciones adaptadas a distintos niveles de usuario y tipos de infraestructura (local, HPC o nube).
 
-
-
-
-<br>
-
-### 📦 Descarga del proyecto
-
-Para disponer de todo el código, pipelines y Dockerfile, existen varias formas:
+> ⚡ Para información más detallada sobre cada tipo de análisis y flujos específicos, revisa las guías completas en `6-info/`.
 
 
-#### 1. Clonar el repositorio con Git
 
-Esta sería la opción recomendada si desea mantener el proyecto actualizado fácilmente.
+
+<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+
+<h3 id="section-6.1">6.1. 📦 Descarga del proyecto</h3>
+
+Existen varias formas de obtener todo el código, pipelines y archivos necesarios para iniciar GenoScribe.
+
+
+
+<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+
+<h4 id="section-6.1.1">6.1.1. Clonar con Git (recomendado)</h4>
+
+La opción más flexible y recomendable es **clonar el repositorio**, lo que permite mantenerlo actualizado fácilmente y gestionar versiones mediante `git pull`.
 
 ```bash
 git clone https://github.com/adrichez/genoscribe.git
 cd genoscribe
 ```
 
-
-#### 2. Descargar directamente el ZIP desde GitHub
-
- - Accede a [https://github.com/adrichez/genoscribe](https://github.com/adrichez/genoscribe).
- - Pulsa "Code → Download ZIP"
- - Descomprime en una carpeta de tu elección y accede a ella desde la terminal.
-
-> 💡 **Nota:** Clonar con Git permite actualizar fácilmente el proyecto, mientras que el ZIP sirve para un uso puntual o en sistemas sin Git.
+> 💡 Ventaja: facilita actualizaciones y control de versiones, ideal para usuarios que planean ejecutar el sistema regularmente o integrar nuevas funcionalidades.
 
 
 
+<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
 
-<br>
+<h4 id="section-6.1.2">6.1.2. Descargar ZIP desde GitHub</h4>
 
-### 🛠️ Modos de uso
+Para un uso puntual o en sistemas sin Git, se puede descargar el ZIP directamente:
 
-Una vez descargado el proyecto, hay dos formas principales de generar los informes bioinformáticos: **dentro de un contenedor** o **en local sin contenedor**.
-Cada enfoque permite dos modos de ejecución: mediante la **interfaz Shiny** (visual e interactiva) o directamente con **Nextflow** (automatización avanzada).
+1. Accede a [https://github.com/adrichez/genoscribe](https://github.com/adrichez/genoscribe).
+2. Pulsa **Code → Download ZIP**.
+3. Descomprime y accede a la carpeta desde la terminal.
+
+> 💡 Nota: esta opción es más limitada para actualizaciones, pero útil para pruebas rápidas o entornos donde Git no está disponible.
 
 
-#### 1. Usando Docker o Apptainer
 
-Esta es la opción recomendada para mantener el proyecto actualizado y garantizar un entorno consistente.
 
-**Ventajas:**
+<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
 
-* Entorno preconfigurado con todas las dependencias ✅
-* Funcionamiento idéntico en distintos sistemas y servidores 🌐
-* Flujo estable y reproducible 🔒
+<h3 id="section-6.2">6.2. 🛠️ Modos de uso</h3>
+
+GenoScribe puede ejecutarse de **dos formas principales**:
+
+1. **Dentro de un contenedor** (Docker o Apptainer) – recomendado ✅
+2. **En local sin contenedor** – para usuarios avanzados o depuración 🖥️
+
+Cada enfoque ofrece **dos modos de ejecución**:
+
+* **💻 Interfaz Shiny** – visual e interactiva, ideal para exploración guiada.
+* **⚡ Nextflow / CLI** – ejecución directa, automatizada y más rápida, adecuada para grandes volúmenes o pipelines por lotes.
+
+
+
+<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+
+<h4 id="section-6.2.1">6.2.1. Usando Docker o Apptainer</h4>
+
+**Ventajas de usar contenedor:**
+
+* Entorno preconfigurado con todas las dependencias necesarias.
+* Ejecución consistente y reproducible en distintos sistemas operativos o servidores.
+* Flujo estable, seguro y controlado, ideal para proyectos colaborativos o pipelines complejos.
 
 **Modos de ejecución dentro del contenedor:**
 
-* **💻 Interfaz Shiny (visual)**
+* **💻 Shiny (GUI)**
 
-  * Inicia el servidor Shiny dentro del contenedor.
-  * Permite completar formularios de manera guiada para generar informes.
-  * Recomendado para usuarios que prefieren un flujo interactivo.
+  * Completa formularios visuales para definir parámetros del experimento.
+  * Lanza automáticamente los pipelines y genera informes Quarto interactivos.
+  * Ideal para usuarios novatos o exploración de resultados paso a paso.
 
-* **⚡ Nextflow (automatizado/manual)**
+* **⚡ Nextflow (CLI)**
 
-  * Ejecuta los pipelines directamente desde los directorios correspondientes.
-  * Genera los informes Quarto automáticamente.
-  * Ideal para automatización avanzada y ejecución por lotes.
+  * Ejecuta los pipelines directamente desde la terminal.
+  * Permite automatización avanzada y ejecución por lotes de datos.
+  * Genera informes HTML de forma reproducible, sin necesidad de interacción visual.
 
-> 💡 **Nota:** La interfaz Shiny puede ser más lenta que la ejecución directa con Nextflow, especialmente con grandes volúmenes de datos. Shiny está diseñada para usarse tanto en local como en contenedores Docker. Por otro lado, Apptainer, al estar orientado a entornos HPC, se centra principalmente en la ejecución de Nextflow desde la terminal, ya que generalmente no admite interfaz gráfica.
+> 🔹 Nota: Shiny puede ser más lenta que Nextflow con grandes volúmenes de datos. Apptainer, orientado a HPC, suele ejecutarse solo vía CLI, dado que la interfaz gráfica no siempre está disponible.
 
 
-#### 2. Ejecución en local sin contenedor
 
-Este enfoque permite ejecutar la app Shiny o los pipelines Nextflow/R directamente desde el código descargado 🖥️.
+<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
 
-**Consideraciones:**
+<h4 id="section-6.2.2">6.2.2. En local sin contenedor</h4>
 
-* Requiere tener instaladas todas las dependencias de R, Python y librerías bioinformáticas 📦
-* Recomendado para usuarios que ya disponen de todas las herramientas necesarias en su ordenador personal: R, Quarto, Nextflow, Conda y la carpeta del proyecto descargada desde GitHub (Genoscribe) con todas las plantillas, código y archivos.
-* Útil para depuración, desarrollo o pruebas rápidas 🧪
-* Más rápido que el contenedor, aunque es un entorno menos controlado y más propenso a fallos.
+**Consideraciones para ejecución local:**
 
-**Modos de ejecución en local:**
+* Requiere instalar todas las dependencias de R, Python, librerías bioinformáticas y herramientas (Nextflow, Quarto, Conda).
+* Útil para depuración, pruebas rápidas o desarrollo de pipelines.
+* Generalmente más rápido que el contenedor, pero menos controlado y con mayor riesgo de conflictos de dependencias.
 
-* **💻 Interfaz Shiny (visual)**
+**Modos de ejecución:**
 
-  * Inicia el servidor Shiny en tu máquina local.
-  * Permite completar formularios de manera guiada para generar informes.
+* **💻 Shiny (GUI)** – idéntico al contenedor, permite interacción visual y guiada.
+* **⚡ Nextflow (CLI)** – ejecución directa desde terminal, rápida y automatizable.
 
-* **⚡ Nextflow (automatizado/manual)**
-
-  * Ejecuta los pipelines directamente desde los directorios correspondientes.
-  * Genera los informes Quarto automáticamente.
-
-> 💡 **Nota:** La interfaz Shiny actúa como una capa visual sobre Nextflow, facilitando la selección de parámetros y la generación de informes de manera guiada. Aunque es más lenta que ejecutar Nextflow directamente, resulta útil para quienes prefieren un flujo interactivo y amigable. Nextflow, por su parte, permite automatización avanzada y ejecución por lotes de forma más rápida, ya sea en contenedor o en local.  
+> 🔹 Nota: Shiny es una capa visual sobre Nextflow, facilitando la selección de parámetros. Nextflow permite ejecución directa, rápida y por lotes, tanto en local como en contenedor.
 
 
 
 
-<br>
+<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
 
-### 🐳 Construcción del contenedor
+<h3 id="section-6.3">6.3. 🐳 Construcción del contenedor</h3>
 
-El proyecto **Genoscribe** está diseñado principalmente para ejecutarse en Docker, lo que asegura entornos reproducibles y consistentes en distintas plataformas. Para entornos HPC, se puede adaptar fácilmente a **Apptainer** (anteriormente Singularity) usando el mismo Dockerfile como base.
-
-Existen dos estrategias principales para trabajar con contenedores:
+GenoScribe puede ejecutarse en **Docker** o adaptarse a **Apptainer/HPC**. Se recomienda construir la imagen localmente para mayor flexibilidad y control.
 
 
-#### 1. Construir la imagen localmente desde el Dockerfile (recomendado)
 
-Construir la imagen en tu máquina ofrece **máxima flexibilidad**, permitiéndote personalizar dependencias y optimizar el contenedor según tu sistema y recursos. Esta estrategia es especialmente útil si planeas adaptar la imagen a entornos HPC con Apptainer.
+<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
 
-> ⚠️ **Importante:** Todos los comandos de construcción se deben ejecutar desde el **directorio raíz del proyecto (`genoscribe`)**, ya que el Dockerfile hace referencia a rutas relativas para copiar archivos dentro del contenedor. El Dockerfile está guardado en `3-containers/1-docker` solo para mantener el proyecto organizado.
-
-**Comandos de ejemplo:**
+<h4 id="section-6.3.1">6.3.1. Construir imagen local (recomendado)</h4>
 
 ```bash
-# Construcción normal usando cache (más rápida)
+# Con cache (rápido)
 docker build -f 3-containers/1-docker/Dockerfile -t genoscribe:1.0 .
 
-# Construcción sin usar cache (recomendado si cambias dependencias o quieres reconstruir todo desde cero)
+# Sin cache (reconstrucción completa)
 docker build --no-cache -f 3-containers/1-docker/Dockerfile -t genoscribe:1.0 .
 ```
 
-**Cuándo usar `--no-cache` o cache:**  
-
-* **Con cache (por defecto):** más rápido, reutiliza capas previamente construidas. Ideal si solo cambias archivos que no afectan a todas las dependencias.
-* **Sin cache (`--no-cache`):** fuerza la reconstrucción completa de todas las capas. Recomendado si actualizas dependencias, modificas archivos base del contenedor o quieres asegurarte de que todo se construya desde cero.
-
-**Ventajas:**  
-
-* Control total sobre configuración y dependencias ✅
-* Evita descargar imágenes pesadas desde repositorios externos 💾
-* Recomendado para la mayoría de usuarios que busquen reproducibilidad y personalización 🔒
-
-**Adaptación a Apptainer / HPC:**  
-
-Se puede generar una imagen de Apptainer directamente a partir del Dockerfile utilizando `apptainer build` desde el directorio raíz del proyecto:
+**Adaptación a Apptainer/HPC:**
 
 ```bash
 apptainer build genoscribe.sif docker-daemon://genoscribe:1.0
 ```
 
-Esto permite llevar la misma imagen de Docker al entorno HPC sin cambios en la configuración, asegurando consistencia con tu entorno local o de desarrollo.
+> 🔹 Construir localmente permite personalizar dependencias, optimizar recursos y garantizar que la misma imagen funcione tanto en entornos locales como HPC/nube, asegurando reproducibilidad total.
 
 
-#### 2. Descargar la imagen preconstruida desde un repositorio Docker (opción alternativa)
 
-Si no deseas construir la imagen localmente, puedes descargarla directamente desde Docker Hub u otro registro público.
+<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
 
-**Comando:**  
+<h4 id="section-6.3.2">6.3.2. Descargar imagen preconstruida (alternativa rápida)</h4>
 
 ```bash
 docker pull adrichez/genoscribe:1.0
 ```
 
-**Ventajas:**  
-
-* Inicio inmediato, sin necesidad de construir la imagen. ⚡
-* Reproducibilidad garantizada usando la versión exacta de la imagen. 📦
-
-**Consideraciones:**  
-
-* La imagen puede ser pesada. 💾
-* Menor flexibilidad para personalizar dependencias. ⚙️
-
-**Adaptación a Apptainer / HPC:**  
-
-Incluso usando una imagen preconstruida, puedes generar un contenedor Apptainer desde Docker:
+**Adaptación a Apptainer/HPC:**
 
 ```bash
 apptainer build genoscribe.sif docker://adrichez/genoscribe:1.0
 ```
 
-Esto permite ejecutar la misma imagen en entornos HPC, conservando las dependencias y la configuración de Docker, sin necesidad de reconstruir la imagen desde cero.
-
-> 🔹 **Recomendación:** Construir la imagen localmente desde el Dockerfile es la opción más flexible y reproducible. Descargar la imagen preconstruida es conveniente para quienes buscan rapidez y simplicidad. Para entornos HPC, lo más eficiente es construir primero la imagen Docker y luego convertirla a Apptainer, asegurando compatibilidad y manteniendo el flujo reproducible entre diferentes sistemas.
-
+> ⚡ Ventaja: inicio inmediato, sin construcción local.
+> ⚙️ Desventaja: menos flexible para modificar dependencias o personalizar el contenedor.
 
 
 
-<br>
 
-### 🔄 Flujo mínimo para usar la app
+<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
 
-Sigua estos pasos para generar informes bioinformáticos de forma reproducible, flexible y adaptada a distintos entornos:
+<h3 id="section-6.4">6.4. 🔄 Lanzar la app o ejecutar pipelines</h3>
 
+Una vez descargado el proyecto y construido el contenedor, el siguiente paso es **poner en marcha GenoScribe**.  
+Existen varias formas de hacerlo según las necesidades del usuario:  
 
-#### 1. Descargar el repositorio  
+* 👉 mediante la **app Shiny**, que ofrece una experiencia visual e interactiva guiada.  
+* ⚡ o bien mediante **Nextflow en la terminal (CLI)**, pensado para flujos más rápidos, lotes de datos o entornos HPC.  
 
-Clona el proyecto con Git o descarga el ZIP del repositorio:
-
-```bash
-git clone https://github.com/usuario/genoscribe.git
-cd genoscribe
-```
+A continuación se describen ambas opciones, comenzando por la ejecución con Shiny.
 
 
-#### 2. Construir la imagen Docker localmente *(opcional, recomendado si usa contenedor)*  
 
-Construir la imagen garantiza un entorno consistente con todas las dependencias.
+<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
 
-> ⚠️ Recuerde ejecutar el comando desde el **directorio raíz del proyecto** (`genoscribe`), ya que el Dockerfile hace referencia a rutas relativas para copiar archivos dentro del contenedor.
-
-```bash
-# Construir la imagen usando cache
-docker build -f 3-containers/1-docker/Dockerfile -t genoscribe:1.0 .
-
-# O, si quiere reconstruir desde cero sin usar cache
-docker build --no-cache -f 3-containers/1-docker/Dockerfile -t genoscribe:1.0 .
-```
-
-**Adaptación a HPC / Apptainer:**  
-
-Se puede generar un contenedor Apptainer a partir de la imagen Docker:
-
-```bash
-apptainer build genoscribe.sif docker-daemon://genoscribe:1.0
-```
-
-Esto permite ejecutar la misma imagen reproducible en entornos HPC.
-
-
-#### 3. Lanzar la app Shiny o ejecutar Nextflow desde scripts
-
-Todos los scripts deben ejecutarse desde el **directorio raíz del proyecto (`genoscribe`)**, ya que las rutas relativas del proyecto son importantes para que los scripts funcionen correctamente.
-
-Dependiendo de si deseas usar contenedores Docker, Apptainer/HPC, o trabajar en local, los scripts se encuentran en:
-
-* **Dentro del contenedor Docker:** `./4-launch/2-docker/`
-* **Ejecución en local sin contenedor:** `./4-launch/1-local/` *(requiere tener instaladas todas las dependencias: R, Quarto, Nextflow, Conda, etc.)*
-* **Ejecución en HPC con Apptainer:** `./4-launch/3-apptainer-hpc/` *(requiere generar previamente la imagen `.sif` a partir de Docker o del `genoscribe.def`)*
-
-Los scripts principales son:
-
-```bash
-# Conceder permisos de ejecución
-chmod +x ./4-launch/2-docker/run_app_shiny.sh
-chmod +x ./4-launch/2-docker/run_app_shell.sh
-```
-
-**💻 Interfaz Shiny (visual)**
+<h4 id="section-6.4.1">6.4.1. Ejecutar Shiny (visual)</h4>
 
 ```bash
 ./4-launch/2-docker/run_app_shiny.sh
 ```
 
-* Abre automáticamente un navegador con la **interfaz gráfica Shiny**.
-* Permite elegir entre los tres tipos de análisis disponibles (Bulk RNA-Seq, Single-cell RNA-Seq y Metagenomic).
-* Muestra un formulario guiado donde se introducen los parámetros necesarios.
-* Al pulsar **“Ejecutar pipeline”**, Shiny lanza internamente **Nextflow** con los parámetros proporcionados.
-* Como resultado final se genera un **informe HTML** reproducible.
+* Abre automáticamente la interfaz gráfica en el navegador.
+* Permite seleccionar tipo de análisis y completar parámetros del experimento de forma guiada.
+* Lanza pipelines con Nextflow internamente.
+* Genera informes HTML interactivos reproducibles.
 
-> 🔹 Este enfoque es más visual y amigable para usuarios novatos, pero puede ser más lento que ejecutar Nextflow directamente desde la terminal, especialmente con grandes volúmenes de datos.
+> 🔹 Ideal para usuarios novatos o flujos guiados paso a paso.
 
-**⚡ Nextflow desde la terminal (sin interfaz gráfica)**
+
+
+<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+
+<h4 id="section-6.4.2">6.4.2. Ejecutar Nextflow (CLI)</h4>
 
 ```bash
 ./4-launch/2-docker/run_app_shell.sh
 ```
 
-* Ejecuta los pipelines **directamente desde la terminal**, sin Shiny.
-* Los parámetros se proporcionan mediante la terminal o archivos de configuración YAML.
-* Genera los informes HTML de la misma manera que con Shiny.
-* Más rápido que usar Shiny, ideal para usuarios avanzados, automatización por lotes o grandes volúmenes de datos.
+* Ejecuta pipelines directamente desde la terminal.
+* Genera informes Quarto automáticamente.
+* Más rápido y adecuado para grandes volúmenes o automatización por lotes.
 
-> 🔹 La misma lógica se aplica para **Apptainer/HPC**: una vez generada la imagen `.sif`, se puede ejecutar:
+**Apptainer/HPC:**
 
 ```bash
 apptainer exec genoscribe.sif ./4-launch/3-apptainer-hpc/run_app_shell.sh
 ```
 
-o, si se desea la interfaz Shiny dentro del HPC:
 
-```bash
-apptainer exec genoscribe.sif ./4-launch/3-apptainer-hpc/run_app_shiny.sh
-```
 
-**🖥️ Ejecución en local sin contenedor**
+<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
 
-Si deseas trabajar sin contenedores y ya tienes instaladas todas las dependencias, los scripts equivalentes se encuentran en:
+<h4 id="section-6.4.3">6.4.3. Ejecución en local sin contenedor</h4>
 
 ```bash
 ./4-launch/1-local/run_app_shiny.sh
 ./4-launch/1-local/run_app_shell.sh
 ```
 
-* Funcionalidad idéntica a la de Docker o Apptainer, pero ejecutándose directamente en tu máquina local.
-* Útil para depuración, desarrollo o pruebas rápidas.
-
-**🧹 Otros scripts disponibles**
-
-* **run\_cleaning.sh**: limpia directorios generados por Quarto y Nextflow, incluyendo logs, cachés y la carpeta `work`, que pueden ocupar mucho espacio tras múltiples ejecuciones. Disponible en `1-local`, `2-docker` y `3-apptainer-hpc`.
-* **access\_container.sh**: permite acceder a la terminal de un contenedor Docker o Apptainer ya creado, explorar archivos y ejecutar comandos manualmente.
-
-> 💡 Con estos scripts, se puede mantener el entorno limpio y tener un control completo de los pipelines, tanto en local como dentro de contenedores Docker o HPC/Apptainer.
+> 🔹 Funcionalidad idéntica a contenedores, útil para depuración, desarrollo y pruebas rápidas.
 
 
 
 
+<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
 
+<h3 id="section-6.5">6.5. 🧹 Scripts útiles</h3>
 
-<br>
-<br>
+* **run\_cleaning.sh** – limpia logs, cachés y directorios temporales (`work`, `_quarto`, etc.) para liberar espacio y evitar conflictos en ejecuciones sucesivas.
+* **access\_container.sh** – abre terminal dentro de contenedor Docker o Apptainer para inspección manual, depuración o ejecución de comandos personalizados.
 
----
-
-## 📚 Documentación detallada
-
-Toda la documentación técnica y guías de uso se encuentran organizadas en la carpeta [`6-info/`](6-info/), diseñada para que el usuario pueda acceder fácilmente a instrucciones generales y específicas según el tipo de análisis.  
- 
-- [Bulk RNA-Seq](6-info/1_BULK_RNA_SEQ_SPECS.md) → Detalla las especificaciones técnicas, entradas requeridas, outputs esperados y ejemplos de informes para análisis de RNA convencional.  
-- [scRNA-Seq](6-info/2_SC_RNA_SEQ_SPECS.md) → Contiene las instrucciones específicas para análisis de células individuales, incluyendo parámetros de filtrado, normalización y visualización interactiva.  
-- [Metagenómica](6-info/3_METAGENOMIC_SPECS.md) → Proporciona la documentación necesaria para análisis metagenómicos, desde el preprocesamiento de secuencias hasta la interpretación de resultados y generación de informes.  
-
-> 💡 Esta estructura permite consultar rápidamente la guía adecuada según el tipo de experimento y profundizar en los detalles técnicos sin perder la visión global del proyecto.
+> 💡 Mantener el entorno limpio y con control total sobre pipelines y outputs garantiza reproducibilidad y facilita la gestión de proyectos bioinformáticos complejos.
 
 
 
@@ -549,7 +536,38 @@ Toda la documentación técnica y guías de uso se encuentran organizadas en la 
 
 ---
 
-## 🛠 Tecnologías principales
+<h2 id="section-7">7. 📚 Documentación detallada</h2>
+
+Toda la documentación técnica y guías de uso de **GenoScribe** se encuentran organizadas en la carpeta [`6-info/`](6-info/), diseñada para guiar al usuario paso a paso en la generación de informes, desde la **descarga del proyecto** hasta la obtención del **informe final**, adaptándose a cada tipo de análisis ómico. Esta estructura permite acceder fácilmente a instrucciones generales y específicas según las necesidades del experimento.
+
+Cada guía incluye:
+
+1. **Preparación del entorno** → descarga del proyecto desde GitHub o ZIP, construcción de contenedores (Docker/Apptainer) y configuración de dependencias.
+2. **Selección del tipo de análisis** → Bulk RNA-Seq, scRNA-Seq o Metagenómica, con descripción de los objetivos biológicos y aplicaciones típicas.
+3. **Parámetros de ejecución** → instrucciones detalladas sobre qué archivos de entrada se requieren, cómo rellenar formularios en Shiny o configurar YAML/CLI en Nextflow, y parámetros específicos de cada pipeline.
+4. **Ejecución del pipeline** → paso a paso del flujo automatizado, incluyendo generación de resultados intermedios, logs y trazabilidad de los procesos.
+5. **Generación de informes interactivos** → instrucciones para obtener los informes Quarto en HTML, incluyendo visualizaciones dinámicas, tablas filtrables, resúmenes ejecutivos y metadatos de ejecución.
+6. **Interpretación y seguimiento** → consejos para explorar los resultados, identificar hallazgos clave y mantener un registro reproducible de cada análisis.
+
+Guías específicas por tipo de análisis:
+
+* [**Bulk RNA-Seq**](6-info/1_BULK_RNA_SEQ_SPECS.md) → describe el flujo completo de análisis de RNA convencional, desde la preparación de archivos `.fastq` hasta la generación de informes interactivos, incluyendo ejemplos de visualizaciones y tablas de expresión diferencial.
+* [**scRNA-Seq**](6-info/2_SC_RNA_SEQ_SPECS.md) → guía paso a paso para el análisis de células individuales, detallando filtrado de células y genes, normalización, reducción de dimensionalidad y generación de informes interactivos específicos.
+* [**Metagenómica**](6-info/3_METAGENOMIC_SPECS.md) → documentación completa para análisis de comunidades microbianas, desde el preprocesamiento de secuencias, identificación de taxonomía y diversidad microbiana, hasta la interpretación de resultados y visualización de informes interactivos.
+
+> 💡 Esta estructura permite que el usuario pueda **consultar rápidamente la guía adecuada** según el tipo de experimento, comprender el flujo completo de generación de informes y profundizar en los detalles técnicos sin perder la visión global del proyecto. Cada guía está pensada para acompañar al usuario desde la **configuración inicial** hasta la **exploración de resultados finales**, asegurando reproducibilidad y trazabilidad en todos los análisis.
+
+
+
+
+
+
+<br>
+<br>
+
+---
+
+<h2 id="section-8">8. 🛠 Tecnologías principales</h2>
 
 El proyecto combina un conjunto de herramientas y librerías modernas que permiten un flujo de trabajo **inteligente, reproducible e interactivo**. Se integran lenguajes de programación, sistemas de contenedores, plataformas de computación en la nube y librerías de visualización y procesamiento de lenguaje natural, asegurando que tanto el análisis como la generación de informes sean robustos y escalables.  
 
@@ -575,7 +593,7 @@ El uso de **R y Python** permite ejecutar análisis bioinformáticos complejos y
 
 ---
 
-## 🎯 Objetivos y casos de uso
+<h2 id="section-9">9. 🎯 Objetivos y casos de uso</h2>
 
 El proyecto tiene como objetivo principal ofrecer un **sistema inteligente, reproducible y fácil de usar** para generar **informes bioinformáticos automáticos e interactivos** a partir de los resultados de pipelines ómicos. Esto permite a los investigadores y analistas de datos **ahorrar tiempo**, reducir errores manuales y estandarizar la presentación de resultados complejos.
 
@@ -604,12 +622,37 @@ En resumen, este sistema está dirigido a **investigadores, bioinformáticos y e
 
 ---
 
-## 📬 Contacto
+<h2 id="section-10">10. 📬 Contacto</h2>
 
 Para consultas, sugerencias o reportes de errores relacionados con este proyecto, puedes contactarnos a través de:
 
-* 📧 **Correo electrónico:** [asanca33@gmail.com](mailto:asanca33@gmail.com).  
-* 🐙 **Repositorio GitHub:** [https://github.com/adrichez/genoscribe](https://github.com/adrichez/genoscribe) → issues, pull requests, contribuciones bienvenidas. 🚀  
-* 📚 **Documentación adicional:** revisa la carpeta [6-info/](6-info/) para guías, especificaciones y ejemplos de uso. 📝
+<ul style="list-style:none; padding:0; margin:0; gap:10px;">
+  <li style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+    <a href="mailto:asanca33@gmail.com" style="text-decoration:none;">
+      <span style="background-color:#ff6f61;color:white;padding:4px 10px;border-radius:12px;font-weight:bold;">📧 Email</span>
+    </a>
+    <span>Correo electrónico para consultas: <a href="mailto:asanca33@gmail.com">asanca33@gmail.com</a></span>
+  </li>
 
-Estamos abiertos a colaboraciones y mejoras, y agradecemos cualquier retroalimentación que ayude a que el sistema sea más **útil, reproducible y accesible** para la comunidad bioinformática.
+  <li style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+    <a href="https://github.com/adrichez/genoscribe" style="text-decoration:none;">
+      <span style="background-color:#6cc644;color:white;padding:4px 10px;border-radius:12px;font-weight:bold;">🐙 GitHub</span>
+    </a>
+    <span>Repositorio y contribuciones: <a href="https://github.com/adrichez/genoscribe">https://github.com/adrichez/genoscribe</a></span>
+  </li>
+
+  <li style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+    <a href="6-info/" style="text-decoration:none;">
+      <span style="background-color:#1da1f2;color:white;padding:4px 10px;border-radius:12px;font-weight:bold;">📚 Docs</span>
+    </a>
+    <span>Documentación adicional: <a href="6-info/">6-info/</a></span>
+  </li>
+</ul>
+
+<br>
+
+<hr style="border:none; height:0.3px; background-color:#777; width:65%; margin:20px auto 25px auto;">
+
+<p align="center" style="margin-top:0.5rem; color:#777; font-size:0.95rem;">
+💡 Sus comentarios y contribuciones ayudan a que GenoScribe sea más <strong>robusto, reproducible y accesible</strong> para la comunidad bioinformática.
+</p>
