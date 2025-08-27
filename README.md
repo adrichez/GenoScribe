@@ -125,7 +125,7 @@ Antes de utilizar el sistema, se recomienda asegurarse de contar con los siguien
 
 ## 🎯 Flujo de trabajo
 
-A continuación, se presenta el diagrama de flujo (workfloe) del sistema donde se representa de forma esquemática todas las decisiones y caminos que un **usuario** puede seguir para generar un informe bioinformático a partir de sus **datos de entrada**:
+A continuación, se muestra el diagrama de flujo del sistema (workflow) donde se representa de forma esquemática todas las decisiones y caminos que un **usuario** puede seguir para generar un informe bioinformático a partir de sus **datos de entrada**:
 
 <p align="center">
   <img src="6-info/assets/workflow/general_workflow.png" alt="Diagrama del sistema de informes bioinformáticos" width="65%">
@@ -133,21 +133,25 @@ A continuación, se presenta el diagrama de flujo (workfloe) del sistema donde s
 
 Así, el recorrido comienza con una primera decisión: **¿dónde ejecutar el análisis?**. 
 
-* **En Local**:  
+* 💻 **En Local**:  
 
   * Puede ejecutarlo **directamente en su ordenador** o dentro de un **contenedor (recomendado)**.  
   * Si opta por un contenedor, puede elegir entre **Docker** o **Apptainer**.  
   * A continuación, decide **cómo interactuar** con el sistema: mediante **terminal (CLI)** o a través de la **interfaz gráfica Shiny**.  
 
-* **En HPC/Cloud (cluster)**:  
+* 🖥️ **En HPC/Cloud (cluster)**:  
 
   * Puede ejecutarlo **directamente en el cluster** o en un **contenedor con Apptainer** (Docker no suele estar permitido en HPC).  
   * En estos entornos no se dispone de interfaces gráficas, por lo que la interacción se realiza siempre mediante **CLI**.  
 
+> 💡 **Nota:** Siempre será recomendable ejecutar el análisis en un contenedor para garantizar la reproducibilidad y facilitar la gestión de dependencias. La ejecución directamente en el ordenador (o en el cluster) está más bien pensada para la realización de pruebas o debugging, cuando se dispone de todas las herramientas necesarias ya disponibles en el propio entorno.
+>
+> Además, en entornos HPC/Cloud, es posible que se requieran configuraciones adicionales, como la carga de módulos o la configuración de variables de entorno, para garantizar que todas las dependencias estén disponibles.
+
 Una vez seleccionado el entorno, el usuario completa un **formulario** para definir los parámetros del análisis:  
 
-* **Formulario visual (GUI)** si está usando Shiny en Local.  
-* **Formulario en shell (CLI)** si ejecuta el análisis en terminal, tanto en Local como en HPC.  
+* 📄 **Formulario visual (GUI)** si está usando Shiny en Local.  
+* 📄 **Formulario en shell (CLI)** si ejecuta el análisis en terminal, tanto en Local como en HPC.  
 
 Luego, el usuario selecciona el **tipo de análisis** a realizar:  
 
@@ -198,7 +202,7 @@ De manera resumida, el flujo de uso del sistema puede describirse así:
 
 ### 🎬 Demostración visual
 
-El GIF a continuación ofrece una **representación rápida** del flujo principal del sistema, mostrando cómo se inicia la **app Shiny**, se completa el **formulario con los parámetros del experimento**, se selecciona el **tipo de análisis** y finalmente se ejecuta el pipeline correspondiente dentro del contenedor. El proceso culmina con la **generación automática del informe HTML interactivo**, listo para explorarse, descargarse y compartirse:
+El siguiente GIF ofrece una **representación rápida** del flujo principal del sistema, mostrando cómo se inicia la **app Shiny**, se completa el **formulario con los parámetros del experimento**, se selecciona el **tipo de análisis** y finalmente se ejecuta el pipeline correspondiente dentro del contenedor. El proceso culmina con la **generación automática del informe HTML interactivo**, listo para explorarse, descargarse y compartirse:
 
 <p align="center">
   <img src="6-info/assets/bulk_rna_seq_demo.gif" alt="Demostración del proceso para crear un informe de Bulk RNA-Seq con la app de Shiny en un contenedor Docker" width="65%">
