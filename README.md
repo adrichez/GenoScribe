@@ -125,15 +125,13 @@ Antes de utilizar el sistema, se recomienda asegurarse de contar con los siguien
 
 ## 🎯 Flujo de trabajo
 
-El siguiente diagrama muestra la **arquitectura general del sistema**, resumiendo las conexiones entre la **app Shiny**, los **pipelines bioinformáticos**, los **contenedores** y la generación final de los **informes interactivos**:
+A continuación, se presenta el diagrama de flujo (workfloe) del sistema donde se representa de forma esquemática todas las decisiones y caminos que un **usuario** puede seguir para generar un informe bioinformático a partir de sus **datos de entrada**:
 
 <p align="center">
-  <img src="6-info/assets/workflow/general_workflow.png" alt="Diagrama del sistema de informes bioinformáticos" width="60%">
+  <img src="6-info/assets/workflow/general_workflow.png" alt="Diagrama del sistema de informes bioinformáticos" width="65%">
 </p>
 
-Este workflow representa de forma esquemática todas las decisiones y caminos que un **usuario** puede seguir para generar un informe bioinformático a partir de sus **datos de entrada**.  
-
-El recorrido comienza con una primera decisión: **¿dónde ejecutar el análisis?**. 
+Así, el recorrido comienza con una primera decisión: **¿dónde ejecutar el análisis?**. 
 
 * **En Local**:  
 
