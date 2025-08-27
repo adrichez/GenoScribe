@@ -123,6 +123,104 @@ Antes de utilizar el sistema, se recomienda asegurarse de contar con los siguien
 
 ---
 
+## 🎯 Flujo de trabajo
+
+El siguiente diagrama muestra la **arquitectura general del sistema**, resumiendo las conexiones entre la **app Shiny**, los **pipelines bioinformáticos**, los **contenedores** y la generación final de los **informes interactivos**:
+
+<p align="center">
+  <img src="6-info/assets/workflow/general_workflow.png" alt="Diagrama del sistema de informes bioinformáticos" width="60%">
+</p>
+
+Este workflow representa de forma esquemática todas las decisiones y caminos que un **usuario** puede seguir para generar un informe bioinformático a partir de sus **datos de entrada**.  
+
+El recorrido comienza con una primera decisión: **¿dónde ejecutar el análisis?**. 
+
+* **En Local**:  
+
+  * Puede ejecutarlo **directamente en su ordenador** o dentro de un **contenedor (recomendado)**.  
+  * Si opta por un contenedor, puede elegir entre **Docker** o **Apptainer**.  
+  * A continuación, decide **cómo interactuar** con el sistema: mediante **terminal (CLI)** o a través de la **interfaz gráfica Shiny**.  
+
+* **En HPC/Cloud (cluster)**:  
+
+  * Puede ejecutarlo **directamente en el cluster** o en un **contenedor con Apptainer** (Docker no suele estar permitido en HPC).  
+  * En estos entornos no se dispone de interfaces gráficas, por lo que la interacción se realiza siempre mediante **CLI**.  
+
+Una vez seleccionado el entorno, el usuario completa un **formulario** para definir los parámetros del análisis:  
+
+* **Formulario visual (GUI)** si está usando Shiny en Local.  
+* **Formulario en shell (CLI)** si ejecuta el análisis en terminal, tanto en Local como en HPC.  
+
+Luego, el usuario selecciona el **tipo de análisis** a realizar:  
+
+* 🧬 **Bulk RNA-Seq**.
+* 🧫 **Single-cell RNA-Seq (scRNA-Seq)**.
+* 🌱 **Metagenómica**.
+
+Cada tipo de análisis requiere configurar **parámetros específicos**, tras lo cual se lanza el **pipeline correspondiente**.  
+
+Finalmente, el sistema genera un **informe interactivo en HTML** con los resultados del análisis seleccionado, listo para explorarse, descargarse y compartirse.  
+
+En resumen, este workflow ilustra cómo:
+
+1. El usuario parte de sus **datos de entrada**.  
+2. Decide el **entorno de ejecución** (Local vs HPC/Cloud). 
+3. Determina si utilizar un **contenedor** o no. 
+4. Selecciona la **forma de interacción** (CLI o Shiny).  
+5. Define el **tipo de análisis** a realizar.  
+6. Configura los **parámetros específicos** y ejecuta el pipeline.  
+7. Obtiene un **informe interactivo en HTML** como producto final.  
+
+
+
+
+<br>
+
+### 📐 Flujo principal paso a paso
+
+De manera resumida, el flujo de uso del sistema puede describirse así:
+
+```ascii
+→ Descarga del proyecto desde GitHub
+   → Construcción de la imagen GenoScribe
+   → Creación de un contenedor genoscribe_container
+   → Inicio del contenedor genoscribe_container
+   → Se inicia la app Shiny en el puerto 3838
+   → Selección del tipo de análisis en el formulario
+   → Completar el formulario con los parámetros solicitados
+   → Ejecución del pipeline mediante Nextflow
+   → Generación de outputs y del informe interactivo HTML
+   → Acceso al informe interactivo (HTML)
+```
+
+
+
+
+<br>
+
+### 🎬 Demostración visual
+
+El GIF a continuación ofrece una **representación rápida** del flujo principal del sistema, mostrando cómo se inicia la **app Shiny**, se completa el **formulario con los parámetros del experimento**, se selecciona el **tipo de análisis** y finalmente se ejecuta el pipeline correspondiente dentro del contenedor. El proceso culmina con la **generación automática del informe HTML interactivo**, listo para explorarse, descargarse y compartirse:
+
+<p align="center">
+  <img src="6-info/assets/bulk_rna_seq_demo.gif" alt="Demostración del proceso para crear un informe de Bulk RNA-Seq con la app de Shiny en un contenedor Docker" width="65%">
+</p>
+
+Este GIF funciona como **guía visual rápida**, ideal para obtener una visión global antes de entrar en detalles técnicos.
+Cabe destacar que **no incluye todos los pasos intermedios ni outputs secundarios**, los cuales están documentados en la guía de usuario completa para cada tipo de análisis.
+
+> 💡 **Nota:** para una descripción más detallada del flujo, incluyendo **entradas, salidas y parámetros específicos**, consulta las [Guías de usuario extendidas](6-info).
+
+
+
+
+
+
+<br>
+<br>
+
+---
+
 ## 🚀 Guía rápida de uso (Quickstart)
 
 Antes de comenzar a usar GenoScribe, es necesario obtener los archivos del proyecto y preparar el entorno. Esta sección proporciona un **resumen introductorio**; para más detalles sobre cada tipo de análisis y flujos específicos, consulta las guías completas en la carpeta `6-info/`.  
@@ -429,51 +527,10 @@ Si deseas trabajar sin contenedores y ya tienes instaladas todas las dependencia
 
 ---
 
-## 🎯 Flujo de trabajo (visual)
-
-A continuación, a modo de resumen, se muestra el **flujo principal** del sistema de generación automática de informes bioinformáticos, mediante el uso de contenedores y la interfaz visual de Shiny.
-
-```ascii
-→ Descarga del proyecto desde GitHub.
-   → Construcción de la imagen GenoScribe.
-   → Creación de un contenedor genoscribe_container.
-   → Inicio del contenedor genoscribe_container.
-   → Se inicia la app Shiny en el puerto 3838.
-   → Seleccionar un tipo de análisis en el Shiny form.
-   → Completar el formulario con los parámetros solicitados.
-   → Se lanza un pipeline con Nextflow.
-   → Se generan los outputs y el informe interactivo HTML.
-   → Acceder al informe interactivo (HTML).
-```
-
-<br>
-
-El GIF incluido a continuación ofrece una **representación visual rápida** del flujo principal del sistema, permitiendo al usuario comprender de manera inmediata cómo interactuar con la aplicación. En él se puede observar cómo se **inicia la app Shiny**, se completa el **formulario con los parámetros del experimento**, se selecciona el **tipo de análisis** (Bulk RNA-Seq, scRNA-Seq o Metagenómica) y finalmente se ejecuta el pipeline correspondiente dentro del contenedor. El proceso culmina con la **generación automática del informe HTML interactivo**, que puede ser explorado, descargado y compartido de manera sencilla. En este caso, a modo de ejemplo, se muestra el flujo para un análisis de Bulk RNA-Seq.  
-
-<p align="center">
-  <img src="6-info/assets/bulk_rna_seq_demo.gif" alt="Demostración del proceso para crear un informe de Bulk RNA-Seq con la app de Shiny en un contenedor Docker" width="65%">
-</p>
-
-Así, este GIF sirve como **guía visual rápida**, ideal para tener una idea general del flujo antes de profundizar en los detalles técnicos. Cabe destacar que **no incluye todos los pasos intermedios**, configuraciones específicas ni outputs secundarios, los cuales están documentados en la guía de usuario completa para cada tipo de análisis.
-
-> 💡 **Nota:** este GIF es solo ilustrativo. Para una descripción completa del flujo, incluyendo **entradas, outputs y pasos detallados**, consulte las [Guías de usuario extendidas](6-info).
-
-
-
-
-
-
-
-<br>
-<br>
-
----
-
 ## 📚 Documentación detallada
 
 Toda la documentación técnica y guías de uso se encuentran organizadas en la carpeta [`6-info/`](6-info/), diseñada para que el usuario pueda acceder fácilmente a instrucciones generales y específicas según el tipo de análisis.  
-
-- [Guía general de usuario](6-info/0_GENERAL_USER_GUIDE.md) → Explica el flujo completo del sistema, la instalación, la configuración de contenedores y cómo interactuar con la app Shiny.  
+ 
 - [Bulk RNA-Seq](6-info/1_BULK_RNA_SEQ_SPECS.md) → Detalla las especificaciones técnicas, entradas requeridas, outputs esperados y ejemplos de informes para análisis de RNA convencional.  
 - [scRNA-Seq](6-info/2_SC_RNA_SEQ_SPECS.md) → Contiene las instrucciones específicas para análisis de células individuales, incluyendo parámetros de filtrado, normalización y visualización interactiva.  
 - [Metagenómica](6-info/3_METAGENOMIC_SPECS.md) → Proporciona la documentación necesaria para análisis metagenómicos, desde el preprocesamiento de secuencias hasta la interpretación de resultados y generación de informes.  
@@ -494,15 +551,15 @@ Toda la documentación técnica y guías de uso se encuentran organizadas en la 
 
 El proyecto combina un conjunto de herramientas y librerías modernas que permiten un flujo de trabajo **inteligente, reproducible e interactivo**. Se integran lenguajes de programación, sistemas de contenedores, plataformas de computación en la nube y librerías de visualización y procesamiento de lenguaje natural, asegurando que tanto el análisis como la generación de informes sean robustos y escalables.  
 
-| Categoría         | Herramientas / Librerías                     |
-|-------------------|----------------------------------------------|
-| Lenguajes         | R, Python, JavaScript, HTML, CSS, Markdown   |
-| Pipelines         | Nextflow, Conda                               |
-| Informes          | Quarto, R Markdown, Jupyter                  |
-| Contenedores      | Apptainer / Docker                           |
-| Visualización     | D3.js, ggplot2, plotly                       |
-| IA / NLP          | spaCy, HuggingFace Transformers              |
-| Cloud / HPC       | Picasso, Finisterrae III, almacenamiento S3  |
+| Categoría         | Herramientas / Librerías                           |
+|-------------------|----------------------------------------------------|
+| Lenguajes         | R, Python, JavaScript, HTML, CSS, bash, Markdown   |
+| Pipelines         | Nextflow, Conda                                     |
+| Informes          | Quarto, R Markdown, Jupyter                        |
+| Contenedores      | Apptainer / Docker                                 |
+| Visualización     | D3.js, ggplot2, plotly                             |
+| IA / NLP          | spaCy, HuggingFace Transformers                    |
+| Cloud / HPC       | Picasso, Finisterrae III, almacenamiento S3        |
 
 El uso de **R y Python** permite ejecutar análisis bioinformáticos complejos y manipular grandes volúmenes de datos, mientras que **JavaScript** y **D3.js** potencian la interactividad en los informes. La combinación de **Quarto, R Markdown y Jupyter** garantiza una documentación reproducible y flexible. Los **contenedores Apptainer/Docker** aseguran que los pipelines se ejecuten de manera consistente en distintos entornos, y la integración con **cloud/HPC** permite escalar el procesamiento según la complejidad de los experimentos. Además, las librerías de **IA y NLP** como spaCy y HuggingFace Transformers facilitan el análisis de texto y la generación de informes automatizados.
 

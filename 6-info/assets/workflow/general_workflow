@@ -1,0 +1,82 @@
+digraph Pipeline {
+	bgcolor="#e1e4eb" dpi=400 fontsize=45 nodesep=2 pad=2 rankdir=TB ranksep=2 size="10,6!" splines=true
+	node [fillcolor="#A8DADC" fontcolor="#FFFFFF" fontname="Helvetica-Bold" fontsize=40 margin="1,0.6" penwidth=4 shape=oval style=filled]
+	edge [arrowhead=normal color="#1D3557" fontcolor="#1D3557" fontsize=15 penwidth=8]
+	USUARIO [label="🧑  Usuario" fillcolor="#a23f5d" fontsize=55 margin="1.8,1" shape=box style=filled]
+	N1 [label="📁  Datos de entrada con los que elaborar el informe" fillcolor="#dadada" fontcolor="#000000" fontsize=42 margin="1.2,0.6" shape=note style=filled]
+	D1 [label="¿Dónde quiere ejecutar el análisis?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	LOCAL [label="💻  Local" fillcolor="#438eac" shape=ellipse style=filled]
+	HPC [label="🖥️  HPC / ☁️  Cloud (cluster)" fillcolor="#438eac" shape=ellipse style=filled]
+	D_LOCAL_1 [label="⚙️  ¿Cómo quiere ejecutar en Local?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	DIRECT_LOCAL [label="🖥️  Directo en su ordenador" fillcolor="#438eac" shape=ellipse style=filled]
+	CONTENEDOR_LOCAL [label="📦  En un contenedor (recomendado)" fillcolor="#438eac" shape=ellipse style=filled]
+	D_LOCAL_2 [label="📦  ¿Qué contenedor usar?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	DOCKER_LOCAL [label="🐳  Docker" fillcolor="#438eac" shape=ellipse style=filled]
+	APPTAINER_LOCAL [label="🧪  Apptainer" fillcolor="#438eac" shape=ellipse style=filled]
+	D_LOCAL_3 [label="🛠️  ¿Cómo quiere interactuar?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	CLI_LOCAL [label="⌨️  Terminal (CLI)" fillcolor="#438eac" shape=ellipse style=filled]
+	SHINY_LOCAL [label="🖼️  Interfaz gráfica (Shiny)" fillcolor="#438eac" shape=ellipse style=filled]
+	D_HPC_1 [label="⚙️  ¿Cómo quiere ejecutar en HPC?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	DIRECT_HPC [label="🖥️  Directo en el cluster" fillcolor="#438eac" shape=ellipse style=filled]
+	CONTENEDOR_HPC [label="📦  En contenedor (recomendado)" fillcolor="#438eac" shape=ellipse style=filled]
+	APPTAINER_HPC [label="🧪  Apptainer" fillcolor="#438eac" shape=ellipse style=filled]
+	CLI_HPC [label="⌨️  Terminal (CLI)" fillcolor="#438eac" shape=ellipse style=filled]
+	N_HPC_1 [label="ℹ️  Nota sobre entornos HPC:
+
+🚫  Docker no suele estar permitido en clústeres por restricciones de seguridad → se utiliza Apptainer.
+🚫  Interfaces gráficas como Shiny no están disponibles en HPC → la ejecución debe hacerse por terminal (CLI)." fillcolor="#dadada" fontcolor="#000000" fontsize=40 margin="1.2,0.8" shape=note style=filled]
+	FORMULARIO_VISUAL [label="📄  Formulario Visual (GUI)" fillcolor="#438eac" shape=ellipse style=filled]
+	FORMULARIO_SHELL [label="📄  Formulario en Shell (CLI)" fillcolor="#438eac" shape=ellipse style=filled]
+	D2 [label="🔬  ¿Qué tipo de análisis quiere hacer?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	A1 [label="🧬  Bulk RNA-Seq" fillcolor="#438eac" shape=ellipse style=filled]
+	A2 [label="🧫  Single-cell RNA-Seq" fillcolor="#438eac" shape=ellipse style=filled]
+	A3 [label="🌱  Metagenómica" fillcolor="#438eac" shape=ellipse style=filled]
+	PARAMS_A1 [label="⚙️  Configurar parámetros: Bulk RNA-Seq" fillcolor="#297c71" margin="0.2,0.3" shape=parallelogram style=filled]
+	PARAMS_A2 [label="⚙️  Configurar parámetros: Single-cell RNA-Seq" fillcolor="#297c71" margin="0.2,0.3" shape=parallelogram style=filled]
+	PARAMS_A3 [label="⚙️  Configurar parámetros: Metagenómica" fillcolor="#297c71" margin="0.2,0.3" shape=parallelogram style=filled]
+	PIPELINE_A1 [label="🚀  Ejecutar pipeline: Bulk RNA-Seq" fillcolor="#438eac" shape=ellipse style=filled]
+	PIPELINE_A2 [label="🚀  Ejecutar pipeline: Single-cell RNA-Seq" fillcolor="#438eac" shape=ellipse style=filled]
+	PIPELINE_A3 [label="🚀  Ejecutar pipeline: Metagenómica" fillcolor="#438eac" shape=ellipse style=filled]
+	REPORT_A1 [label="📊  Resultados interactivos: Bulk RNA-Seq" fillcolor="#e5cb3f" fontcolor="#000000" fontsize=50 margin="1.8,1" shape=box style=filled]
+	REPORT_A2 [label="📊  Resultados interactivos: Single-cell RNA-Seq" fillcolor="#e5cb3f" fontcolor="#000000" fontsize=50 margin="1.8,1" shape=box style=filled]
+	REPORT_A3 [label="📊  Resultados interactivos: Metagenómica" fillcolor="#e5cb3f" fontcolor="#000000" fontsize=50 margin="1.8,1" shape=box style=filled]
+	USUARIO -> D1
+	D1 -> LOCAL
+	D1 -> HPC
+	LOCAL -> D_LOCAL_1
+	D_LOCAL_1 -> DIRECT_LOCAL
+	D_LOCAL_1 -> CONTENEDOR_LOCAL
+	CONTENEDOR_LOCAL -> D_LOCAL_2
+	D_LOCAL_2 -> DOCKER_LOCAL
+	D_LOCAL_2 -> APPTAINER_LOCAL
+	DIRECT_LOCAL -> D_LOCAL_3
+	DOCKER_LOCAL -> D_LOCAL_3
+	APPTAINER_LOCAL -> D_LOCAL_3
+	D_LOCAL_3 -> CLI_LOCAL
+	D_LOCAL_3 -> SHINY_LOCAL
+	HPC -> D_HPC_1
+	D_HPC_1 -> DIRECT_HPC
+	D_HPC_1 -> CONTENEDOR_HPC
+	CONTENEDOR_HPC -> APPTAINER_HPC
+	DIRECT_HPC -> CLI_HPC
+	APPTAINER_HPC -> CLI_HPC
+	SHINY_LOCAL -> FORMULARIO_VISUAL
+	CLI_LOCAL -> FORMULARIO_SHELL
+	CLI_HPC -> FORMULARIO_SHELL
+	FORMULARIO_VISUAL -> D2
+	FORMULARIO_SHELL -> D2
+	D2 -> A1
+	D2 -> A2
+	D2 -> A3
+	A1 -> PARAMS_A1
+	A2 -> PARAMS_A2
+	A3 -> PARAMS_A3
+	PARAMS_A1 -> PIPELINE_A1
+	PARAMS_A2 -> PIPELINE_A2
+	PARAMS_A3 -> PIPELINE_A3
+	PIPELINE_A1 -> REPORT_A1
+	PIPELINE_A2 -> REPORT_A2
+	PIPELINE_A3 -> REPORT_A3
+	USUARIO -> N1 [style=dotted]
+	CLI_HPC -> N_HPC_1 [style=dotted]
+}
