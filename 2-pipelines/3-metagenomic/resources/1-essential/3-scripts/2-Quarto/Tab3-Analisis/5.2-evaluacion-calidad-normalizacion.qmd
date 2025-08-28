@@ -1,0 +1,202 @@
+---
+title: "RNA-Seq Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../1-images/0-icono/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../1-images/0-icono/favicon.ico">
+
+params:
+  ruta_proyecto: ""
+  nombre_experimento: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 5.2. EVALUACIÓN DEL CONTROL DE CALIDAD TRAS LA NORMALIZACIÓN -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+```{r}
+library(stringr)
+library(glue)
+library(fs)
+library(dplyr)
+
+# Definir rutas clave
+ruta_qmd <- getwd()
+
+ruta_rnaseq_pipeline <- sub("(.*?/1-bulk-rna-seq).*", "\\1", ruta_qmd)
+
+nombre_proyecto <- basename(params$ruta_proyecto)
+
+ruta_nextflow_results <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results")
+ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results", "1-project-data", nombre_proyecto)
+
+
+ruta_experimento_QC <- file.path(params$ruta_proyecto, "Resultados", params$nombre_experimento, paste0(params$nombre_experimento, "_QC.pdf"))
+ruta_experimento_QC_relativa <- file.path(ruta_proyecto_relativa, "Resultados", params$nombre_experimento, paste0(params$nombre_experimento, "_QC.pdf"))
+experimento_QC <- basename(ruta_experimento_QC)
+```
+
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis bioinformático completo</h2>
+</div>
+
+<div class="informe-titulo-seccion">
+  <h1>Sección 5</h1>
+  <h2>Análisis estadístico de la expresión génica</h2>
+</div>
+
+<div class="informe-titulo-subseccion">
+  <h1>Subsección 5.2</h1>
+  <h2>Evaluación del control de calidad tras la normalización</h2>
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    En este apartado se realiza una <strong>evaluación exhaustiva del control de calidad</strong> tras la normalización de los datos de expresión génica. Este paso es crucial para comprobar que la normalización ha corregido adecuadamente las <em>variaciones técnicas</em> inherentes al proceso experimental, sin afectar la <em>estructura biológica real</em> de las muestras analizadas.
+  </p>
+
+  <p>
+    Para ello, se aplican diversas técnicas exploratorias y visualizaciones estadísticas que permiten evaluar la homogeneidad y coherencia de los datos normalizados. Entre estas técnicas se incluyen el <strong>Análisis de Componentes Principales (PCA)</strong>, que facilita la identificación de agrupamientos y posibles outliers; el cálculo de la <strong>matriz de correlación</strong> entre muestras, que cuantifica similitudes globales; y el <strong>clustering jerárquico</strong>, que organiza las muestras según patrones de expresión comunes.
+  </p>
+
+  <p>
+    Asimismo, se generan <strong>mapas de calor (heatmaps)</strong> y gráficos de distribución como <em>boxplots</em> y <em>density plots</em> que ofrecen una visión integral sobre la variabilidad y consistencia de la expresión génica tras el ajuste. Estas herramientas facilitan la detección de posibles muestras problemáticas o artefactos remanentes que podrían afectar la interpretación biológica.
+  </p>
+
+  <p>
+    Todos estos análisis y visualizaciones se compilan en un <strong>informe consolidado en formato PDF</strong>, disponible para consulta y descarga en la ruta especificada, sirviendo como una guía valiosa para validar la calidad del dataset y asegurar la fiabilidad de los análisis posteriores de expresión diferencial y enriquecimiento funcional.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta subsección
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="5-Analisis-estadistico.html#tab3-seccion5">
+        5<span>.</span> Análisis estadístico de la expresión génica
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion5.2">
+            5.2. Evaluación del control de calidad tras la normalización
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- REDACCIÓN -->
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.2">
+  5.2. Evaluación del control de calidad tras la normalización
+</div>
+
+<p>
+  Tras aplicar el <strong>proceso de normalización</strong> a la matriz de expresión génica, es fundamental realizar una <strong>evaluación global de la calidad</strong> de los datos resultantes.
+  Esta etapa permite verificar que el <strong>preprocesamiento</strong> ha corregido adecuadamente las <em>fuentes de variación técnica</em>, sin alterar la <em>estructura biológica</em> de las muestras.
+</p>
+
+<p>
+  Para ello, se han generado una serie de <strong>gráficos diagnósticos</strong> a partir de la matriz normalizada, utilizando enfoques exploratorios como:
+</p>
+
+<ul>
+  <li><strong>Análisis de Componentes Principales (PCA)</strong></li>
+  <li><strong>Matriz de correlación entre muestras</strong></li>
+  <li><strong>Clustering jerárquico</strong></li>
+  <li><strong>Mapas de calor (heatmaps)</strong></li>
+  <li><strong>Distribuciones de expresión (boxplots, density plots)</strong></li>
+</ul>
+
+<p>
+  Este conjunto de visualizaciones se ha reunido en un único <strong>informe en formato PDF</strong>, disponible, en el momento de la generación de este informe, en el siguiente directorio:
+</p>
+
+```{r, results='asis'}
+cat(glue::glue('
+<p>
+  <code>{ruta_experimento_QC}</code>
+</p>
+
+<p>
+  Y el cuál podemos visualizar en la siguiente ventana dinámica:
+</p>
+
+<iframe src="{ruta_experimento_QC_relativa}" width="100%" height="700px" style="border: 1px solid #ccc; border-radius: 6px;"></iframe>
+
+<p style="text-align:center;">
+  <a href="{ruta_experimento_QC_relativa}" target="_blank" class="boton-iframe">
+    🔍 Ver el documento con todos los gráficos en una nueva página
+  </a>
+</p>
+
+<div style="height: 15px; background-color: transparent;"></div>
+\n\n'))
+```
+
+<p>
+  Así, más en detalle, en este documento se encuentran los siguientes tipos de gráficos:
+</p>
+
+<ul>
+  <li>
+    <strong>Curvas de densidad log-CPM:</strong> permiten visualizar la distribución de los valores de expresión (en escala logarítmica) para cada muestra antes y después del filtrado de baja expresión. Estas curvas ayudan a detectar diferencias entre muestras y evaluar la homogeneidad tras el filtrado.
+  </li>
+  <li>
+    <strong>Boxplots de expresión por muestra:</strong> muestran la distribución estadística de los valores normalizados para cada muestra, antes y después de la normalización. Permiten identificar posibles outliers o sesgos sistemáticos eliminados.
+  </li>
+  <li>
+    <strong>Tamaño de las bibliotecas:</strong> indica el número total de lecturas asignadas por muestra, lo que proporciona una medida de la profundidad de secuenciación y justifica la necesidad de normalizar.
+  </li>
+  <li>
+    <strong>Matriz de correlación entre muestras:</strong> muestra el coeficiente de correlación entre todos los pares de muestras en base a sus perfiles de expresión génica normalizada. 
+    Una alta correlación entre réplicas biológicas indica consistencia experimental y buena calidad de los datos. Las discrepancias pueden sugerir outliers o errores técnicos.
+  </li>
+  <li>
+    <strong>Análisis de componentes principales (PCA) y MDS:</strong> ofrecen representaciones bidimensionales de la varianza entre muestras, agrupándolas según su perfil de expresión génica. Una separación clara entre grupos experimentales respalda la existencia de diferencias biológicas significativas.
+  </li>
+  <li>
+    <strong>Mapa de calor con clustering jerárquico:</strong> representa los genes más variables del experimento, mostrando su expresión en todas las muestras. El agrupamiento resultante permite evaluar la coherencia entre réplicas y condiciones experimentales.
+  </li>
+</ul>
+
+<p>
+  Estas representaciones gráficas permiten confirmar la calidad de los datos normalizados y ofrecen una visión global que facilita la interpretación de los patrones biológicos presentes en el experimento. 
+  A partir de este punto, el análisis se centra en la identificación de genes diferencialmente expresados entre condiciones.
+</p>

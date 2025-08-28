@@ -1,0 +1,151 @@
+---
+title: "RNA-Seq Report"
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 1: INICIO -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+<div class="informe-titulo">
+  <h1>Informe Automatizado de Metagenómica</h1>
+  <p>Generado con Nextflow + Quarto · IPBLN-CSIC · Granada</p>
+</div>
+
+
+<div class="portada-imagen">
+  <img src="resources/1-essential/1-images/1-portada/metagenomic_cover.png" alt="Portada Metagenómica">
+</div>
+
+
+<div class="informe-resumen">
+
+<h2>Contexto y pipeline empleado</h2>
+
+<p>
+    Este informe presenta un análisis integral de datos de <strong>RNA-Seq</strong> (mRNA, miRNA y circRNA) mediante el uso del pipeline <strong>miARma‑Seq</strong> (<em>Eduardo Andrés-León et al.</em>), una herramienta modular, escalable y fácil de usar que integra múltiples pasos clave en un flujo de trabajo reproducible. Este pipeline está diseñado para funcionar con cualquier organismo con genoma secuenciado y combina herramientas bioinformáticas ampliamente utilizadas en un marco automatizado.
+</p>
+
+<p>
+    <strong>Resumen del flujo de trabajo de miARma‑Seq:</strong>
+</p>
+
+<ol>
+    <li><strong>Control de calidad inicial</strong>: Evaluación de los datos crudos mediante <em>FastQC</em>, permitiendo detectar adaptadores, sesgos de composición y problemas de calidad por posición.</li>
+    <li><strong>Recorte de lecturas</strong>: Eliminación de adaptadores y bases de baja calidad utilizando herramientas como <em>Cutadapt</em> o <em>Reaper</em>, mejorando la calidad de los datos antes del alineamiento.</li>
+    <li><strong>Alineamiento</strong>: Mapeo de lecturas contra el genoma de referencia utilizando alineadores como <em>HISAT2</em>, <em>STAR</em>, <em>Bowtie</em> o <em>BWA</em>, según el tipo de datos.</li>
+    <li><strong>Cuantificación de entidades</strong>: Cuantificación de genes o isoformas mediante <em>featureCounts</em>, detección de circRNAs con <em>CIRI</em> y cuantificación de miRNAs con <em>miRDeep2</em>.</li>
+    <li><strong>Análisis diferencial</strong>: Identificación de genes o miRNAs diferencialmente expresados usando paquetes como <em>edgeR</em> o <em>NOISeq</em>, según el diseño experimental.</li>
+    <li><strong>Análisis funcional</strong>: Predicción de interacciones miRNA‑mRNA, evaluación de correlaciones inversas de expresión y análisis funcional de enriquecimiento en términos de <em>Gene Ontology (GO)</em> y <em>KEGG</em>.</li>
+</ol>
+
+<p>
+    El diseño modular de <strong>miARma‑Seq</strong>  permite ejecutar el pipeline completo de forma automática o seleccionar pasos individuales según las necesidades del usuario. Esta flexibilidad lo hace especialmente adecuado para ser integrado en sistemas de análisis reproducibles como <strong>Nextflow</strong>, donde cada módulo puede definirse como un proceso independiente.
+</p>
+
+<p>
+    En este análisis, automatizado mediante <strong>Nextflow</strong> y presentado con <strong>Quarto</strong>, se parte de una carpeta raíz generada por <strong>miARma‑Seq</strong>, conteniendo los resultados estructurados de cada paso. El objetivo de este informe es resumir visualmente y de forma comprensible cada etapa, desde el control de calidad inicial hasta el análisis funcional, proporcionando una herramienta clara y reproducible para la interpretación de datos transcriptómicos.
+</p>
+
+<table style="width:100%; border-collapse: collapse; margin-top: 1.5em;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+        <th style="border: 1px solid #ddd; padding: 8px;">Característica</th>
+        <th style="border: 1px solid #ddd; padding: 8px;">Beneficio</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Modularidad</strong></td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Permite ejecutar pasos individuales o el pipeline completo.</td>
+        </tr>
+        <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Multithreading</strong></td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Aprovecha múltiples núcleos para acelerar el procesamiento.</td>
+        </tr>
+        <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Integración miRNA‑mRNA</strong></td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Permite explorar relaciones regulatorias mediante análisis de expresión inversa.</td>
+        </tr>
+        <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Funcionalidad avanzada</strong></td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Incluye análisis de enriquecimiento funcional y detección de rutas biológicas.</td>
+        </tr>
+    </tbody>
+    </table>
+
+</div>
+
+
+<div style="height: 5px; background-color: transparent;"></div>
+
+<p>
+A continuación, se muestra una representación esquemática del flujo de trabajo que sigue el pipeline <code>miARma‑Seq</code> para el análisis de datos de <code>RNA-Seq</code> y <code>miRNA-Seq</code>. Este diagrama ilustra claramente la naturaleza modular del pipeline, permitiendo observar cada etapa del proceso, desde el control de calidad inicial hasta el análisis funcional de los resultados.
+</p>
+
+<div class="box-images">
+  <img src="resources/1-essential/1-images/2-inicio/miARma-Seq-workflow.png" alt="Pipeline de RNA-Seq">
+</div>
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<p>
+El pipeline se estructura en diferentes <code>módulos</code>, cada uno de los cuales desempeña una función específica:
+</p>
+
+<ul>
+  <li><strong>Módulo de calidad:</strong> Utiliza <code>FastQC</code> para evaluar la calidad de las lecturas crudas en formato <code>FASTQ</code>. Genera informes <code>HTML</code> que permiten detectar problemas comunes como adaptadores, baja calidad o sesgos.</li>
+  <li><strong>Módulo de recorte (opcional para miRNA):</strong> Herramientas como <code>Cutadapt</code> y <code>Reaper</code> eliminan adaptadores y regiones de baja calidad, especialmente relevantes en <code>miRNA-Seq</code>.</li>
+  <li><strong>Módulo de alineamiento:</strong> Dependiendo del tipo de RNA, se emplean diferentes alineadores:
+    <ul>
+      <li><code>BWA</code> para <code>circRNAs</code>.</li>
+      <li><code>Bowtie1</code>/<code>Bowtie2</code> para <code>mRNAs</code> y <code>miRNAs</code>.</li>
+      <li><code>miRDeep2</code> como alternativa específica para <code>miRNA</code>.</li>
+    </ul>
+  </li>
+  <li><strong>Módulo de cuantificación:</strong> <code>featureCounts</code> permite cuantificar la expresión génica a partir de los archivos alineados (<code>BAM</code>). Para <code>circRNAs</code>, se usa <code>CIRI</code>.</li>
+  <li><strong>Análisis diferencial:</strong> El pipeline permite realizar análisis de expresión diferencial mediante <code>edgeR</code> y <code>NOISeq</code>, adaptándose a la disponibilidad de réplicas o diseño experimental.</li>
+  <li><strong>Módulo funcional:</strong> Finalmente, se lleva a cabo la anotación funcional y análisis de enriquecimiento usando <code>GOSeq</code>, permitiendo vincular los resultados con rutas <code>KEGG</code> y términos <code>GO</code>.</li>
+  <li><strong>Predicción de objetivos:</strong> En el caso del análisis de <code>miRNAs</code>, se incluye un paso de predicción de interacciones <code>miRNA‑mRNA</code> mediante <code>miRGate</code>.</li>
+</ul>
+
+<p>
+Este flujo de trabajo proporciona una visión clara y organizada del enfoque integral del análisis, combinando <em>flexibilidad</em>, <em>eficiencia</em> y <em>reproducibilidad</em>, elementos clave que se trasladan directamente al sistema automatizado desarrollado en este informe.
+</p>
+
+<div style="height: 18px; background-color: transparent;"></div>
+
+---
+
+<p>
+Para garantizar la <strong>reproducibilidad</strong> y <strong>modularidad</strong> del pipeline, <code>miARma‑seq</code> utiliza un archivo de configuración con extensión <code>.ini</code>. Este archivo permite especificar todos los parámetros necesarios para ejecutar el análisis, sin necesidad de escribir comandos complejos en la línea de comandos.
+</p>
+
+<p>
+El archivo <code>.ini</code> se estructura en secciones bien definidas (por ejemplo, <code>[General]</code>, <code>[Aligner]</code>, <code>[ReadCount]</code>…), cada una dedicada a un módulo del análisis. En cada sección, se indican los valores clave a utilizar: rutas de entrada y salida, tipo de datos, número de hilos, herramientas a emplear, criterios estadísticos, etc.
+</p>
+
+<p>
+A continuación, se muestra un ejemplo sencillo y real de archivo <code>.ini</code> utilizado para este análisis, incluyendo los módulos de calidad, alineamiento, cuantificación y análisis diferencial para datos de <code>mRNA</code>:
+</p>
+
+<iframe src="resources/1-essential/2-archives/miARma_mRNAs_pipeline_STAR.txt" width="100%" height="500px" frameborder="0" style="border: none; display: block;"></iframe>
+
+<p style="text-align:center;">
+  <a href="resources/1-essential/2-archives/miARma_mRNAs_pipeline_STAR.txt" target="_blank" class="boton-iframe">
+    🔍 Ver documento completo en una nueva página
+  </a>
+</p>
+
+
+<p>
+Este archivo fue ejecutado mediante el siguiente comando, después realizar la instalación y configuración de la herramienta <code>miARma-seq</code>:
+</p>
+
+```bash
+./miARma miarma_config_example.ini check
+```
+
+<p>
+Para más información sobre esta herramienta, visitar el respectivo repositorio de <em>GitHub</em>: <a href="https://github.com/eandresleon/miARma-seq" target="_blank" class="normalink">miARma-seq</a>.
+</p>

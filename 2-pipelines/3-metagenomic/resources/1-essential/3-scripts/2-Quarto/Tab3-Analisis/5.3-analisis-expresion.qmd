@@ -1,0 +1,589 @@
+---
+title: "RNA-Seq Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../1-images/0-icono/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../1-images/0-icono/favicon.ico">
+
+params:
+  ruta_proyecto: ""
+  nombre_experimento: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 5.3. ANÁLISIS DE EXPRESIÓN DIFERENCIAL -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+```{r}
+library(stringr)
+library(glue)
+library(fs)
+library(dplyr)
+
+# Definir rutas clave
+ruta_qmd <- getwd()
+
+ruta_rnaseq_pipeline <- sub("(.*?/1-bulk-rna-seq).*", "\\1", ruta_qmd)
+
+nombre_proyecto <- basename(params$ruta_proyecto)
+
+ruta_nextflow_results <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results")
+ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results", "1-project-data", nombre_proyecto)
+
+
+# Ruta donde están los resultados de DEG y volcano
+ruta_resultados_experimento <- file.path(params$ruta_proyecto, "Resultados", params$nombre_experimento)
+ruta_resultados_experimento_relativa <- file.path(ruta_proyecto_relativa, "Resultados", params$nombre_experimento)
+
+
+# Buscar archivos .xlsx y .pdf
+archivos_deg <- list.files(ruta_resultados_experimento_relativa, pattern = "^DEG_.*\\.xlsx$", full.names = TRUE)
+archivos_volcano <- list.files(ruta_resultados_experimento_relativa, pattern = "^Volcano_plot_.*\\.pdf$", full.names = TRUE)
+
+# Extraer nombres base de comparación
+comparaciones <- gsub("^DEG_(.*)\\.xlsx$", "\\1", basename(archivos_deg))
+comparaciones <- gsub("_", " ", comparaciones)
+```
+
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis bioinformático completo</h2>
+</div>
+
+<div class="informe-titulo-seccion">
+  <h1>Sección 5</h1>
+  <h2>Análisis estadístico de la expresión génica</h2>
+</div>
+
+<div class="informe-titulo-subseccion">
+  <h1>Subsección 5.3</h1>
+  <h2>Análisis de expresión diferencial</h2>
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    En este apartado se lleva a cabo el <strong>análisis de expresión diferencial</strong>, una etapa central en los estudios transcriptómicos que tiene como objetivo 
+    identificar <em>genes cuya expresión varía significativamente</em> entre distintas <strong>condiciones experimentales</strong>. A partir de los datos previamente 
+    <em>normalizados</em> y validados en términos de calidad, se establecen comparaciones por pares entre grupos definidos en el diseño experimental.
+  </p>
+
+  <p>
+    Para cada una de estas comparaciones, se calcula el <strong>cambio de expresión</strong> de cada gen y su <em>significancia estadística</em>, lo que permite detectar 
+    genes <strong>activados o reprimidos</strong> en respuesta a una determinada condición. Los resultados se resumen en <code>archivos .xlsx</code> que incluyen métricas clave 
+    como el <em>log2 fold-change (logFC)</em>, el <em>nivel medio de expresión (logCPM)</em>, el <em>valor p</em> y su corrección por <strong>FDR</strong> (tasa de falsos descubrimientos). 
+    Cada gen es clasificado como <strong>Diferencialmente Expresado (DEG)</strong> o no, en función de estos criterios.
+  </p>
+
+  <p>
+    Adicionalmente, se generan <strong>gráficos volcano</strong> que proporcionan una representación visual clara de los resultados, permitiendo identificar de forma rápida 
+    los genes más relevantes por su magnitud de cambio y significancia. Estos gráficos son complementados con <strong>otras visualizaciones interactivas</strong> como histogramas, 
+    MA plots, análisis de proporciones DEG/no-DEG y listados de genes más significativos, lo que facilita una <em>exploración visual y comparativa</em> de cada contraste realizado.
+  </p>
+
+  <p>
+    Este análisis diferencial constituye un <strong>punto de partida fundamental</strong> para estudios posteriores de interpretación biológica, ya que los genes identificados como 
+    DEG pueden estar implicados en procesos funcionales relevantes, ser biomarcadores potenciales o servir como hipótesis para nuevas investigaciones. En las siguientes secciones 
+    se abordará precisamente esta interpretación mediante <em>análisis funcionales y de enriquecimiento</em>.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta subsección
+</div>
+
+```{=html}
+```{r, results="asis"}
+cat('
+<div class="toc">
+  <ul>
+    <li>
+      <a href="5-Analisis-estadistico.html#tab3-seccion5">
+        5<span>.</span> Análisis estadístico de la expresión génica
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion5.3">
+            5.3. Análisis de expresión diferencial
+          </a>
+          <ul>
+')
+
+# Subapartados generados automáticamente
+for (i in seq_along(comparaciones)) {
+  cat(glue::glue('
+            <li>
+              <a href="#tab3-seccion5.3.{i}">
+                5.3.{i}. Comparación: {comparaciones[i]}
+              </a>
+            </li>
+\n'))
+}
+
+cat('
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+')
+```
+```
+
+```{=html}
+```
+
+
+
+
+
+
+
+
+
+
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- REDACCIÓN -->
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.3">
+  5.3. Análisis de expresión diferencial
+</div>
+
+<p>
+  Una vez confirmada la calidad de las muestras y normalizados los datos de expresión, el siguiente paso en el análisis transcriptómico consiste en identificar 
+  <strong>genes diferencialmente expresados (DEG)</strong> entre las distintas condiciones experimentales. Este proceso es clave para descubrir qué genes se encuentran 
+  activados o reprimidos como consecuencia de un tratamiento, una mutación o cualquier otro factor biológico de interés.
+</p>
+
+<p>
+  Para llevar a cabo este análisis, se han definido comparaciones entre condiciones experimentales según los grupos establecidos en los metadatos del experimento. 
+  A partir de la matriz de expresión normalizada, se ha realizado un análisis estadístico que calcula, para cada gen, el cambio de expresión entre condiciones, 
+  así como su significancia estadística. 
+</p>
+
+<p>
+  El resultado de cada análisis se ha almacenado en un archivo <code>.xlsx</code>, uno por cada comparación, que incluye los siguientes campos para cada gen evaluado:
+</p>
+
+<ul>
+  <li><code>Gene</code>: Identificador del gen.</li>
+  <li><code>Description</code>: Descripción funcional (si está disponible).</li>
+  <li><code>Length</code>: Longitud del transcrito en pares de bases.</li>
+  <li><code>logFC</code>: Logaritmo en base 2 del cambio de expresión entre condiciones (<em>log2 fold-change</em>).</li>
+  <li><code>logCPM</code>: Nivel medio de expresión del gen, expresado como logaritmo de conteos por millón.</li>
+  <li><code>PValue</code>: Valor p crudo de la prueba estadística.</li>
+  <li><code>FDR</code>: Valor p ajustado según el método de Benjamini-Hochberg para controlar la tasa de falsos descubrimientos.</li>
+  <li><code>Grupo</code>: Clasifica al <em>gen</em> correspondiente como <code>DEG</code> (Gen Diferencialmente Expresado) o <code>no-DEG</code> (Gen No Diferencialmente Expresado).</li>
+</ul>
+
+<p>
+  De manera complementaria, para facilitar la interpretación visual de estos resultados, se han generado <strong>gráficos de tipo volcano</strong> en formato PDF, 
+  donde se representan todos los genes analizados en función de su cambio de expresión y su nivel de significancia. Estos gráficos permiten identificar rápidamente 
+  los genes con una regulación significativa y de gran magnitud.
+</p>
+
+<p>
+  A continuación se listan las comparaciones analizadas en este experimento, junto con sus respectivos archivos de resultados y gráficos volcano asociados:
+</p>
+
+<div class="box-files-nested">
+
+```{r, results='asis'}
+# Función para asignar clase por extensión
+asignar_clase <- function(nombre_archivo) {
+  if (grepl("\\.html$", nombre_archivo)) {
+    "file-html"
+  } else if (grepl("\\.zip$", nombre_archivo)) {
+    "file-zip"
+  } else if (grepl("\\.fastq(\\..+)?\\.gz$", nombre_archivo)) {
+    "file-fastqgz"
+  } else if (grepl("\\.bam$", nombre_archivo)) {
+    "file-bam"
+  } else if (grepl("\\.bai$", nombre_archivo)) {
+    "file-bai"
+  } else if (grepl("\\.sam$", nombre_archivo)) {
+    "file-sam"
+  } else if (grepl("\\.metrics$", nombre_archivo)) {
+    "file-metrics"
+  } else if (grepl("\\.ht2$", nombre_archivo)) {
+    "file-ht2"
+  } else if (grepl("\\.xlsx$", nombre_archivo)) {
+    "file-xlsx"
+  } else if (grepl("\\.pdf$", nombre_archivo)) {
+    "file-pdf"
+  } else {
+    "file-default"
+  }
+}
+
+# Verificar si hay archivos
+if (length(comparaciones) == 0) {
+  cat('<p><em>No se encontraron archivos de expresión diferencial en la ruta especificada.</em></p>\n')
+} else {
+  cat("<ol>\n")  # Comenzar lista numerada
+  
+  for (i in seq_along(comparaciones)) {
+    clase_deg <- asignar_clase(archivos_deg[i])
+    clase_pdf <- asignar_clase(archivos_volcano[i])
+    
+    cat(glue::glue('
+      <li>
+        <strong>{comparaciones[i]}</strong>
+        <ul style="margin-top: 4px; margin-bottom: 4px;">
+          <li class="{clase_deg}" style="margin: 0;"><a href="{archivos_deg[i]}" target="_blank">Tabla de resultados (.xlsx)</a></li>
+          <li class="{clase_pdf}" style="margin: 0;"><a href="{archivos_volcano[i]}" target="_blank">Volcano plot (.pdf)</a></li>
+        </ul>
+      </li>\n\n'))
+  }
+  
+  cat("</ol>\n")  # Cerrar lista numerada
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Para que funcione con rutas absolutas
+enlace <- ruta_resultados_experimento_relativa
+
+# Imprimir el enlace
+cat(glue::glue('
+
+<p style="text-align:center;">
+  <a href="{enlace}" target="_blank" class="boton-files">
+    📂 Explora los archivos de la carpeta "{params$nombre_experimento}" aquí
+  </a>
+</p>
+
+<div style="height: 15px; background-color: transparent;"></div>
+\n\n'))
+```
+
+<p>
+  Una vez detallado esto, en los siguientes apartados se profundiza en los resultados obtenidos en cada comparación individual, incluyendo una visualización interactiva de las tablas de resultados y sus respectivos gráficos volcano.
+</p>
+
+```{r}
+library(readxl)
+library(DT)
+library(htmltools)
+library(glue)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+
+secciones <- tagList()  # Contenedor general
+
+for (i in seq_along(archivos_deg)) {
+  # Leer archivo de DEG
+  deg_data <- readxl::read_excel(
+    archivos_deg[i],
+    col_types = c("text", "text", "numeric", "numeric", "numeric", "numeric", "numeric")
+  )
+  deg_data <- as.data.frame(deg_data)
+  rownames(deg_data) <- deg_data$Gene
+  deg_data$Gene <- NULL
+  deg_data$Description <- NULL
+
+  # Definir DEG como FDR < 0.05 y |logFC| > 1
+  deg_data$grupo <- ifelse(
+    deg_data$FDR < 0.05 & abs(deg_data$logFC) > 1,
+    "DEG",
+    "no-DEG"
+  )
+
+  # Contar número de genes por grupo (DEG vs no-DEG)
+  deg_summary <- deg_data %>%
+    mutate(grupo = ifelse(FDR < 0.05 & abs(logFC) > 1, "DEG", "no-DEG")) %>%
+    count(grupo)
+
+  # Seleccionar top 10 genes por FDR
+  top_genes <- deg_data %>%
+    mutate(Gene = rownames(.)) %>%
+    arrange(FDR) %>%
+    slice_head(n = 10)
+
+  # Reordenar niveles del factor para presentación en orden descendente
+  top_genes$Gene <- factor(top_genes$Gene, levels = rev(top_genes$Gene))
+
+  # Agregar variable lógica para dirección del logFC
+  top_genes <- top_genes %>%
+    mutate(direction = logFC > 0)
+
+  
+  # Crear contenido HTML para esta comparación
+  seccion <- tagList(
+    HTML(glue('
+      <div style="height: 15px; background-color: transparent;"></div>
+
+      <div class="titulo3" id="tab3-seccion5.3.{i}" style="padding-bottom: 10px;">
+        5.3.{i}. Comparación: {comparaciones[i]}
+      </div>
+
+      <div style="height: 15px; background-color: transparent;"></div>
+    ')),
+
+    HTML(glue('
+      <p>
+        En esta sección se presentan los resultados obtenidos para la comparación <strong>{comparaciones[i]}</strong>, realizada como parte del análisis de expresión diferencial dentro del experimento. Esta comparación permite identificar los genes cuya actividad transcripcional varía significativamente entre las dos condiciones biológicas o experimentales evaluadas, lo cual puede reflejar cambios funcionales relevantes o mecanismos de regulación diferencial.
+      </p>
+
+      <p>
+        Para cada gen analizado, se han calculado métricas estadísticas clave como el logaritmo en base 2 del cambio en la expresión (<em>logFC</em>), la abundancia media expresada como <em>logCPM</em> (log counts per million), el valor p crudo y su correspondiente valor ajustado por tasa de falsos descubrimientos (<em>FDR</em>). Aquellos genes con valores de <em>FDR</em> por debajo de un umbral determinado (habitualmente <code>0.05</code>) se consideran diferencialmente expresados con significancia estadística.
+      </p>
+
+      <p>
+        A continuación se presenta una <strong>tabla interactiva</strong> que permite explorar en detalle estos resultados. Esta tabla ofrece funcionalidades como el ordenamiento por columnas, el desplazamiento horizontal y la posibilidad de búsqueda, lo que facilita la identificación de genes de interés según sus niveles de significancia y magnitud del cambio. Además, al estar alineada con el resto de comparaciones, esta visualización contribuye a una comprensión global del comportamiento transcripcional en las distintas condiciones analizadas.
+      </p>
+    ')),
+
+    htmltools::div(
+      class = "scroll-y-max-500",
+      DT::datatable(
+        deg_data,
+        options = list(
+          scrollX = TRUE,
+          paging = FALSE,
+          lengthChange = FALSE,
+          language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+        ),
+        class = 'stripe hover compact'
+      ),
+      tags$hr()
+    ),
+
+    HTML(glue('
+      <div style="height: 40px; background-color: transparent;"></div>
+
+      <p>
+        Como complemento visual a la tabla de resultados, se incluye a continuación el <strong>volcano plot</strong> correspondiente a la comparación <strong>{comparaciones[i]}</strong>. Este gráfico representa la relación entre la magnitud del cambio de expresión (<em>log<sub>2</sub> fold-change</em>, eje X) y la significancia estadística de dicho cambio (−log<sub>10</sub> del valor de <em>FDR</em>, eje Y) para cada gen evaluado.
+      </p>
+
+      <p>
+        En el gráfico, cada punto representa un gen, y su color indica si ha sido clasificado como diferencialmente expresado según los criterios del análisis. En concreto:
+        <ul>
+          <li><strong>DEG</strong> <em>(genes diferencialmente expresados)</em>: resaltados en rojo, representan genes con cambios de expresión significativos.</li>
+          <li><strong>nDEG</strong> <em>(no diferencialmente expresados)</em>: resaltados en azul, corresponden a genes que no superan el umbral de significancia estadística.</li>
+        </ul>
+      </p>
+
+      <p>
+        Este tipo de representación permite una identificación rápida de genes que combinan una alta significancia estadística con un cambio de expresión relevante, facilitando así la priorización de candidatos para análisis funcionales posteriores.
+      </p>
+
+      <iframe src="{archivos_volcano[i]}" width="100%" height="600px" style="border: 1px solid #ccc; border-radius: 6px;"></iframe>
+
+      <div style="height: 10px; background-color: transparent;"></div>
+
+      <p style="text-align:center;">
+        <a href="{archivos_volcano[i]}" target="_blank" class="boton-iframe">
+          🔍 Ver el documento con el gráfico en una nueva página
+        </a>
+      </p>
+
+      <div style="height: 15px; background-color: transparent;"></div>
+    ')),
+
+    HTML(glue('
+      <p>
+        Una vez presentada la tabla de resultados del análisis de expresión diferencial y su correspondiente <em>volcano plot</em>, se incorporan a continuación una serie de <strong>gráficos complementarios e interactivos</strong> que permiten explorar con mayor profundidad las características globales de los datos obtenidos para la comparación <strong>{comparaciones[i]}</strong>.
+      </p>
+
+      <p>
+        En concreto, se han generado <strong>cuatro visualizaciones adicionales</strong> a partir de la matriz de genes diferencialmente expresados, con el objetivo de proporcionar una visión más detallada de la distribución de los resultados, la relación entre expresión y cambio relativo, así como una identificación de los genes más relevantes del estudio:
+      </p>
+
+      <ul>
+        <li><strong>Histograma de log2 Fold Change:</strong> visualiza la distribución global de los cambios de expresión entre las dos condiciones analizadas.</li>
+        <li><strong>MA Plot (logCPM vs logFC):</strong> representa la relación entre la abundancia promedio de expresión y el cambio de expresión relativo, permitiendo detectar tendencias dependientes del nivel de expresión.</li>
+        <li><strong>Distribución DEG vs no-DEG:</strong> muestra cuántos genes han sido identificados como diferencialmente expresados frente a aquellos que no lo han sido.</li>
+        <li><strong>Genes más significativos:</strong> presenta los genes más relevantes de la comparación, seleccionados según criterios como el valor de FDR o el valor absoluto del logFC.</li>
+      </ul>
+
+      <p>
+        A continuación, se presentan y describen de forma individual estos gráficos, los cuales complementan e ilustran los resultados obtenidos del análisis diferencial.
+      </p>
+
+      <p>
+        Comenzamos con el <strong>histograma de log2 Fold Change (logFC)</strong>, que muestra la distribución de los cambios en la expresión génica entre las condiciones comparadas. Podemos ver cómo se distribuyen los genes según el aumento o disminución en su expresión y la magnitud de estos cambios.
+      </p>
+    ')),
+
+    HTML(glue('
+      <div style="height: 10px; background-color: transparent;"></div>
+
+      <div class="plot-center">
+    ')),
+
+    # Suponiendo que `deg_data` es tu data.frame y contiene la columna logFC
+    plot_ly(
+      data = deg_data,
+      x = ~logFC,
+      type = "histogram",
+      nbinsx = 50,
+      marker = list(color = "#098", line = list(color = "white", width = 1))
+    ) %>% 
+    layout(
+      title = "Distribución de log2 Fold Change",
+      xaxis = list(title = "log2 Fold Change"),
+      yaxis = list(title = "Número de genes"),
+      plot_bgcolor = "#ffffff",
+      paper_bgcolor = "#ffffff"
+    ),
+    
+    HTML(glue('
+      </div>
+
+      <div style="height: 30px; background-color: transparent;"></div>
+    ')),
+  
+    HTML(glue('
+      <p>
+        A continuación, presentamos el <strong>MA Plot</strong>, que representa la relación entre la intensidad media de expresión (logCPM) y el cambio en la expresión génica (logFC). Este gráfico es útil para identificar patrones generales y detectar genes con cambios significativos en distintos niveles de expresión.
+      </p>
+    ')),
+
+    HTML(glue('
+      <div style="height: 10px; background-color: transparent;"></div>
+
+      <div class="plot-center">
+    ')),
+
+    # Scatter plot interactivo
+    plot_ly(
+      data = deg_data,
+      x = ~logCPM,
+      y = ~logFC,
+      type = "scatter",
+      mode = "markers",
+      marker = list(color = "gray50", opacity = 0.5)
+    ) %>% add_lines(
+      x = range(deg_data$logCPM, na.rm = TRUE),
+      y = c(0, 0),
+      line = list(dash = "dash", color = "red"),
+      showlegend = FALSE
+    ) %>% layout(
+      title = "MA Plot",
+      xaxis = list(title = "logCPM (Nivel medio de expresión)"),
+      yaxis = list(title = "log2 Fold Change"),
+      plot_bgcolor = "#ffffff",
+      paper_bgcolor = "#ffffff"
+    ),
+    
+    HTML(glue('
+      </div>
+
+      <div style="height: 30px; background-color: transparent;"></div>
+    ')),
+
+    HTML(glue('
+      <p>
+        También mostramos un gráfico que compara el <strong>número de genes identificados como diferencialmente expresados (DEG) frente a los que no presentan cambios significativos (no-DEG)</strong>. Esto nos ayuda a entender la proporción y el alcance del impacto del experimento en la expresión génica.
+      </p>
+    ')),
+
+    HTML(glue('
+      <div style="height: 10px; background-color: transparent;"></div>
+
+      <div class="plot-center">
+    ')),
+
+    # Crear gráfico interactivo de barras
+    plot_ly(
+      data = deg_summary,
+      x = ~grupo,
+      y = ~n,
+      type = "bar",
+      color = ~grupo,
+      colors = c("DEG" = "#E64B35FF", "no-DEG" = "#4DBBD5FF")
+    ) %>% layout(
+      title = "Resumen de genes diferencialmente expresados",
+      xaxis = list(title = ""),
+      yaxis = list(title = "Número de genes"),
+      showlegend = FALSE,
+      plot_bgcolor = "#ffffff",
+      paper_bgcolor = "#ffffff"
+    ),
+
+    HTML(glue('
+      </div>
+
+      <div style="height: 30px; background-color: transparent;"></div>
+    ')),
+
+    HTML(glue('
+      <p>
+        Por último, presentamos un gráfico con los <strong>Top N genes más relevantes</strong>, ordenados según su valor ajustado de significancia (FDR) o la magnitud del cambio de expresión absoluto (|logFC|). Esto permite destacar los genes más importantes y potencialmente más biológicamente significativos del análisis.
+      </p>
+    ')),
+
+    HTML(glue('
+      <div style="height: 10px; background-color: transparent;"></div>
+
+      <div class="plot-center">
+    ')),
+
+    # Crear gráfico de barras horizontales
+    plot_ly(
+      data = top_genes,
+      x = ~logFC,
+      y = ~Gene,
+      type = "bar",
+      orientation = "h",
+      marker = list(color = ifelse(top_genes$direction, "#4c9", "#d55"))
+    ) %>% layout(
+      title = "Top 10 genes más significativos",
+      xaxis = list(title = "log2 Fold Change"),
+      yaxis = list(title = "Gen"),
+      showlegend = FALSE,
+      plot_bgcolor = "#ffffff",
+      paper_bgcolor = "#ffffff"
+    ),
+    
+    HTML(glue('
+      </div>
+
+      <div style="height: 30px; background-color: transparent;"></div>
+    '))
+  )
+  
+  # Agregar esta sección a la lista general
+  secciones <- tagAppendChild(secciones, seccion)
+}
+
+# Mostrar todo el contenido al final
+browsable(secciones)
+```
+
+<div style="height: 5px; background-color: transparent;"></div>
+
+---
+
+<p>
+  Los resultados obtenidos en esta fase nos proporcionan un conjunto robusto de <strong>genes diferencialmente expresados</strong> (DEGs), que actúan como base para la 
+  <em>interpretación biológica</em> del experimento. En la siguiente sección se aprovechará esta información para realizar <strong>análisis funcionales y de enriquecimiento</strong>, 
+  con el fin de descubrir <em>procesos biológicos, rutas metabólicas o funciones moleculares</em> significativamente representadas entre los genes identificados. 
+  Este paso es crucial para transformar los hallazgos estadísticos en <strong>conclusiones biológicamente significativas</strong>, ampliando nuestra comprensión del fenómeno 
+  estudiado.
+</p>

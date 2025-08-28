@@ -25,7 +25,7 @@ run_clean() {
 # Directorios de pipelines
 BULK_DIR="../../2-pipelines/1-bulk-rna-seq"
 SC_DIR="../../2-pipelines/2-sc-rna-seq"
-METAGEN_DIR="../../2-pipelines/3-metagenomica"
+METAGEN_DIR="../../2-pipelines/3-metagenomic"
 
 # Menú interactivo
 echo ""

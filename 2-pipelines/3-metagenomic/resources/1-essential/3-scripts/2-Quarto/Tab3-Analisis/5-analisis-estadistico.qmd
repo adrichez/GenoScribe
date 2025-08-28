@@ -1,0 +1,463 @@
+---
+title: "RNA-Seq Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../1-images/0-icono/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../1-images/0-icono/favicon.ico">
+
+params:
+  ruta_proyecto: ""
+  nombre_experimento: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 5. ANÁLISIS ESTADÍSTICO DE LA EXPRESIÓN GENÉTICA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+```{r}
+library(stringr)
+library(glue)
+library(fs)
+library(dplyr)
+
+# Definir rutas clave
+ruta_qmd <- getwd()
+
+ruta_rnaseq_pipeline <- sub("(.*?/1-bulk-rna-seq).*", "\\1", ruta_qmd)
+
+nombre_proyecto <- basename(params$ruta_proyecto)
+
+ruta_nextflow_results <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results")
+ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results", "1-project-data", nombre_proyecto)
+
+
+# Ruta donde están los resultados de DEG y volcano
+ruta_resultados_experimento <- file.path(params$ruta_proyecto, "Resultados", params$nombre_experimento)
+ruta_resultados_experimento_relativa <- file.path(params$ruta_proyecto_relativa, "Resultados", params$nombre_experimento)
+
+
+# Buscar archivos .xlsx y .pdf
+archivos_deg <- list.files(ruta_resultados_experimento, pattern = "^DEG_.*\\.xlsx$", full.names = TRUE)
+archivos_volcano <- list.files(ruta_resultados_experimento, pattern = "^Volcano_plot_.*\\.pdf$", full.names = TRUE)
+
+
+# Extraer nombres base de comparación
+comparaciones <- gsub("^DEG_(.*)\\.xlsx$", "\\1", basename(archivos_deg))
+comparaciones <- gsub("_", " ", comparaciones)
+
+
+# Ruta donde están los resultados de enriquecimiento
+ruta_enrichment <- file.path(params$ruta_proyecto, "Resultados", params$nombre_experimento, "Enrichment")
+ruta_enrichment_relativa <- file.path(ruta_proyecto_relativa, "Resultados", params$nombre_experimento, "Enrichment")
+
+
+# Archivos
+archivos_enrichment <- list.files(ruta_enrichment, pattern = "^Enrichment_.*\\.(pdf|xls)$", full.names = TRUE)
+archivos_enrichment_relativa <- list.files(ruta_enrichment_relativa, pattern = "^Enrichment_.*\\.(pdf|xls)$", full.names = TRUE)
+
+
+# Extraer categoría funcional y comparación
+info_archivos <- str_match(
+  basename(archivos_enrichment_relativa),
+  "^Enrichment_((?:GO_(?:BP|CC|MF)|KEGG))_([^_]+_vs_[^_]+)_"
+)
+
+
+# Crear un data.frame con columnas útiles
+df_info <- data.frame(
+  ruta_archivo = archivos_enrichment_relativa,
+  categoria_funcional = info_archivos[,2],
+  comparacion = info_archivos[,3],
+  tipo = tools::file_ext(archivos_enrichment_relativa),
+  stringsAsFactors = FALSE
+)
+
+
+# Reemplazar "_" por ":" en la columna 'categoria_funcional'
+df_info$categoria_funcional <- str_replace_all(df_info$categoria_funcional, "_", ":")
+
+
+# Reemplazar "_" por " " en la columna 'comparacion'
+df_info$comparacion <- str_replace_all(df_info$comparacion, "_", " ")
+```
+
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis bioinformático completo</h2>
+</div>
+
+<div class="informe-titulo-seccion">
+  <h1>Sección 5</h1>
+  <h2>Análisis estadístico de la expresión génica</h2>
+</div>
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    Esta sección representa el núcleo del análisis transcriptómico, centrado en el <strong>tratamiento estadístico de los datos de expresión génica</strong> para garantizar su <em>fiabilidad</em>, <em>calidad</em> y <em>valor biológico interpretativo</em>. Abarca desde la <strong>normalización</strong> de los recuentos de expresión hasta la <strong>identificación de genes diferencialmente expresados</strong> y su posterior <strong>interpretación funcional</strong>. Cada uno de estos pasos se implementa de manera secuencial y justificada, asegurando que los resultados finales estén basados en datos rigurosamente procesados y validados.
+  </p>
+
+  <p>
+    Dado el alto volumen de información, visualizaciones interactivas y tablas que forman parte de este bloque, se ha optado por una <em>estructura modular</em> en la que cada subsección está incrustada mediante un <code>&lt;iframe&gt;</code> y acompañada de un botón de acceso directo. Esto permite una <strong>carga eficiente y segmentada</strong> del contenido, mejorando la navegación y evitando bloqueos de rendimiento que podrían afectar la experiencia del usuario.
+  </p>
+
+  <p>
+    En la primera parte del análisis, se aplica un proceso de <strong>normalización de la expresión génica</strong>, crucial para eliminar sesgos técnicos derivados del tamaño de las bibliotecas o de la longitud de los genes. Se emplean medidas como <strong>RPKM</strong> para homogeneizar los datos y se realiza una <em>evaluación visual y cuantitativa</em> de la transformación, asegurando su efectividad antes de avanzar.
+  </p>
+
+  <p>
+    Posteriormente, se lleva a cabo una <strong>evaluación del control de calidad</strong> sobre los datos normalizados, mediante <em>análisis exploratorios</em> como PCA, clustering jerárquico o heatmaps, que permiten verificar la <em>coherencia interna del dataset</em> y detectar posibles muestras atípicas que puedan comprometer la interpretación de los resultados.
+  </p>
+
+  <p>
+    Una vez asegurada la calidad de los datos, se procede con el <strong>análisis de expresión diferencial</strong>, en el que se comparan pares de condiciones experimentales para identificar <strong>genes regulados diferencialmente</strong>. Este paso proporciona listas detalladas de genes con métricas estadísticas relevantes y múltiples representaciones visuales que facilitan su interpretación y priorización.
+  </p>
+
+  <p>
+    Finalmente, se integran estos resultados en un <strong>análisis funcional y de enriquecimiento</strong>, donde se examina la <em>sobrerrepresentación de funciones biológicas</em> (mediante ontologías GO y rutas KEGG) entre los genes diferencialmente expresados. Esta etapa permite conectar los cambios de expresión observados con <strong>procesos celulares o moleculares relevantes</strong>, dando sentido biológico al conjunto del estudio.
+  </p>
+
+  <p>
+    En conjunto, esta sección consolida todo el trabajo realizado previamente en el pipeline, transformando datos de secuenciación masiva en <strong>hallazgos estadística y biológicamente sólidos</strong>. Constituye así un paso esencial para la <em>generación de hipótesis funcionales</em> y la <strong>exploración de mecanismos moleculares</strong> implicados en las condiciones experimentales analizadas.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta sección
+</div>
+
+```{=html}
+```{r, results="asis"}
+cat('
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion5">
+        5<span>.</span> Análisis estadístico de la expresión génica
+      </a>
+      <ul>
+        <li>
+          <a href="5.1-normalizacion.html#tab3-seccion5.1">
+            5.1. Normalización de los datos de expresión
+          </a>
+          <ul>
+            <li>
+              <a href="5.1-normalizacion.html#tab3-seccion5.1.1">
+                5.1.1. Visualización de la matriz normalizada
+              </a>
+            </li>
+            <li>
+              <a href="5.1-normalizacion.html#tab3-seccion5.1.2">
+                5.1.2. Total de expresión por muestra (RPKM)
+              </a>
+            </li>
+            <li>
+              <a href="5.1-normalizacion.html#tab3-seccion5.1.3">
+                5.1.3. Número de genes expresados por muestra (RPKM)
+              </a>
+            </li>
+            <li>
+              <a href="5.1-normalizacion.html#tab3-seccion5.1.4">
+                5.1.4. Genes con mayor expresión total (RPKM)
+              </a>
+            </li>
+            <li>
+            <a href="5.1-normalizacion.html#tab3-seccion5.1.5">
+              5.1.5. Distribución de expresión por muestra (boxplot log10 RPKM)
+            </a>
+            </li>
+            <li>
+              <a href="5.1-normalizacion.html#tab3-seccion5.1.6">
+                5.1.6. Comparación entre recuentos crudos y datos normalizados
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="5.2-evaluacion-calidad-normalizacion.html#tab3-seccion5.2">
+            5.2. Evaluación del control de calidad tras la normalización
+          </a>
+        </li>
+        <li>
+          <a href="5.3-analisis-expresion.html#tab3-seccion5.3">
+            5.3. Análisis de expresión diferencial
+          </a>
+          <ul>
+')
+
+# Subapartados generados automáticamente
+for (i in seq_along(comparaciones)) {
+  cat(glue::glue('
+            <li>
+              <a href="5.3-analisis-expresion.html#tab3-seccion5.3.{i}">
+                5.3.{i}. Comparación: {comparaciones[i]}
+              </a>
+            </li>
+\n'))
+}
+
+cat('
+          </ul>
+        </li>
+        <li>
+          <a href="5.4-analisis-funcional.html#tab3-seccion5.4">
+            5.4. Análisis funcional y enriquecimiento
+          </a>
+          <ul>
+')
+
+comparaciones <- unique(df_info$comparacion)
+for (i in seq_along(comparaciones)) {
+  comp <- comparaciones[i]
+  cat(glue::glue('
+            <li>
+              <a href="5.4-analisis-funcional.html#tab3-seccion-5.4.{i}">
+                5.4.{i}. Comparación: {comp}
+              </a>
+              <ul>
+  '))
+
+  subset_comp <- df_info[df_info$comparacion == comp, ]
+  categorias <- unique(subset_comp$categoria_funcional)
+
+  for (j in seq_along(categorias)) {
+    categ <- categorias[j]
+    cat(glue::glue('
+                <li>
+                  <a href="5.4-analisis-funcional.html#tab3-seccion-5.4.{i}.{j}">
+                    5.4.{i}.{j}. Categoría funcional: {categ}
+                  </a>
+                </li>
+    '))
+  }
+
+  cat('
+              </ul>
+            </li>
+  ')
+}
+
+cat('
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+')
+```
+```
+
+```{=html}
+```
+
+
+
+
+
+
+
+
+
+
+
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- REDACCIÓN -->
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion5">
+  5<span>.</span> Análisis estadístico de la expresión génica
+</div>
+
+<p>
+  Tras la generación de la <em>matriz de expresión génica</em>, el análisis se centra ahora en extraer conocimiento biológicamente relevante a partir de los datos cuantitativos obtenidos. 
+  Para ello, esta sección se enfoca en el <strong>tratamiento estadístico de la expresión génica</strong>, con el propósito de detectar patrones diferenciales que reflejen 
+  <strong>alteraciones en la regulación transcripcional</strong> entre las condiciones o grupos estudiados.
+</p>
+
+<p>
+  En primer lugar, se aplica un proceso de <strong>normalización</strong> para corregir <em>sesgos técnicos</em> derivados, por ejemplo, de diferencias en la <em>profundidad de secuenciación</em> o en la <em>longitud de los genes</em>. 
+  A continuación, se examina la <strong>estructura global del conjunto de muestras</strong> mediante técnicas exploratorias que permiten evaluar su homogeneidad y la posible presencia de agrupamientos naturales.
+  Posteriormente, se procede a la <strong>identificación de genes diferencialmente expresados (DEGs)</strong> mediante métodos de <em>inferencia estadística</em> adaptados a la naturaleza de los datos RNA-Seq.
+  Finalmente, se presentan visualizaciones específicas y se introduce el análisis <strong>funcional y de enriquecimiento</strong>, que permitirá interpretar los resultados en un contexto biológico más amplio.
+</p>
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.1">
+  5.1. Normalización de los datos de expresión
+</div>
+
+<p>
+  En este apartado se lleva a cabo la <strong>normalización de los datos de expresión génica</strong>, un paso esencial para garantizar la <em>comparabilidad entre muestras</em> y minimizar sesgos técnicos derivados del <em>tamaño de las bibliotecas de secuenciación</em> o de la <em>longitud de los genes</em>. Se transforma la matriz de recuentos crudos en medidas normalizadas, como <strong>RPKM (Reads Per Kilobase per Million)</strong>, que permiten interpretar los niveles de expresión de forma más robusta y comparable entre genes y muestras.
+</p>
+
+<p>
+  A lo largo del análisis, se <strong>visualiza la matriz normalizada</strong> y se evalúan métricas clave como el <em>total de expresión por muestra</em> o el <em>número de genes expresados</em>, permitiendo detectar posibles <strong>anomalías o desviaciones</strong> tras la transformación. También se identifican los genes con mayor expresión global y se estudia la <em>distribución de expresión</em> a través de diagramas de caja, comparándola con los datos originales para valorar el efecto de la normalización.
+</p>
+
+<p>
+  Esta fase prepara el terreno para los análisis posteriores, donde se requerirá que los datos estén correctamente ajustados para aplicar <strong>modelos estadísticos fiables</strong>. La normalización, por tanto, constituye un paso fundamental previo a la <em>evaluación de la calidad post-normalización</em> y a los análisis de <strong>expresión diferencial</strong> y <strong>enriquecimiento funcional</strong>, claves para extraer conocimiento biológico relevante a partir del perfil transcriptómico estudiado.
+</p>
+
+<iframe src="5.1-normalizacion.html#tab3-seccion5.1" width="100%" height="600px" style="border: 1px solid #ccc; border-radius: 6px;"></iframe>
+
+<p style="text-align:center;">
+  <a href="5.1-normalizacion.html#tab3-seccion5.1" class="boton-subseccion">
+    🌐 Ir a la sección: 5.1. Normalización de los datos de expresión
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.1">
+  5.2. Evaluación del control de calidad tras la normalización
+</div>
+
+<p>
+  En este apartado se realiza una <strong>evaluación exhaustiva del control de calidad</strong> tras la normalización de los datos de expresión génica. Este paso es crucial para comprobar que la normalización ha corregido adecuadamente las <em>variaciones técnicas</em> inherentes al proceso experimental, sin afectar la <em>estructura biológica real</em> de las muestras analizadas.
+</p>
+
+<p>
+  Para ello, se aplican diversas técnicas exploratorias y visualizaciones estadísticas que permiten evaluar la homogeneidad y coherencia de los datos normalizados. Entre estas técnicas se incluyen el <strong>Análisis de Componentes Principales (PCA)</strong>, que facilita la identificación de agrupamientos y posibles outliers; el cálculo de la <strong>matriz de correlación</strong> entre muestras, que cuantifica similitudes globales; y el <strong>clustering jerárquico</strong>, que organiza las muestras según patrones de expresión comunes.
+</p>
+
+<p>
+  Asimismo, se generan <strong>mapas de calor (heatmaps)</strong> y gráficos de distribución como <em>boxplots</em> y <em>density plots</em> que ofrecen una visión integral sobre la variabilidad y consistencia de la expresión génica tras el ajuste. Estas herramientas facilitan la detección de posibles muestras problemáticas o artefactos remanentes que podrían afectar la interpretación biológica.
+</p>
+
+<p>
+  Todos estos análisis y visualizaciones se compilan en un <strong>informe consolidado en formato PDF</strong>, disponible para consulta y descarga en la ruta especificada, sirviendo como una guía valiosa para validar la calidad del dataset y asegurar la fiabilidad de los análisis posteriores de expresión diferencial y enriquecimiento funcional.
+</p>
+
+<iframe src="5.2-evaluacion-calidad-normalizacion.html#tab3-seccion5.2" width="100%" height="600px" style="border: 1px solid #ccc; border-radius: 6px;"></iframe>
+
+<p style="text-align:center;">
+  <a href="5.2-evaluacion-calidad-normalizacion.html#tab3-seccion5.2" class="boton-subseccion">
+    🌐 Ir a la sección: 5.2. Evaluación del control de calidad tras la normalización
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.3">
+  5.3. Análisis de expresión diferencial
+</div>
+
+<p>
+  En este apartado se lleva a cabo el <strong>análisis de expresión diferencial</strong>, una etapa central en los estudios transcriptómicos que tiene como objetivo 
+  identificar <em>genes cuya expresión varía significativamente</em> entre distintas <strong>condiciones experimentales</strong>. A partir de los datos previamente 
+  <em>normalizados</em> y validados en términos de calidad, se establecen comparaciones por pares entre grupos definidos en el diseño experimental.
+</p>
+
+<p>
+  Para cada una de estas comparaciones, se calcula el <strong>cambio de expresión</strong> de cada gen y su <em>significancia estadística</em>, lo que permite detectar 
+  genes <strong>activados o reprimidos</strong> en respuesta a una determinada condición. Los resultados se resumen en <code>archivos .xlsx</code> que incluyen métricas clave 
+  como el <em>log2 fold-change (logFC)</em>, el <em>nivel medio de expresión (logCPM)</em>, el <em>valor p</em> y su corrección por <strong>FDR</strong> (tasa de falsos descubrimientos). 
+  Cada gen es clasificado como <strong>Diferencialmente Expresado (DEG)</strong> o no, en función de estos criterios.
+</p>
+
+<p>
+  Adicionalmente, se generan <strong>gráficos volcano</strong> que proporcionan una representación visual clara de los resultados, permitiendo identificar de forma rápida 
+  los genes más relevantes por su magnitud de cambio y significancia. Estos gráficos son complementados con <strong>otras visualizaciones interactivas</strong> como histogramas, 
+  MA plots, análisis de proporciones DEG/no-DEG y listados de genes más significativos, lo que facilita una <em>exploración visual y comparativa</em> de cada contraste realizado.
+</p>
+
+<p>
+  Este análisis diferencial constituye un <strong>punto de partida fundamental</strong> para estudios posteriores de interpretación biológica, ya que los genes identificados como 
+  DEG pueden estar implicados en procesos funcionales relevantes, ser biomarcadores potenciales o servir como hipótesis para nuevas investigaciones. En las siguientes secciones 
+  se abordará precisamente esta interpretación mediante <em>análisis funcionales y de enriquecimiento</em>.
+</p>
+
+<iframe src="5.3-analisis-expresion.html#tab3-seccion5.2." width="100%" height="600px" style="border: 1px solid #ccc; border-radius: 6px;"></iframe>
+
+<p style="text-align:center;">
+  <a href="5.3-analisis-expresion.html#tab3-seccion5.2" class="boton-subseccion">
+    🌐 Ir a la sección: 5.3. Análisis de expresión diferencial
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.3">
+  5.4. Análisis funcional y enriquecimiento
+</div>
+
+<p>
+  Este apartado tiene como objetivo interpretar los resultados del análisis de expresión diferencial desde una perspectiva <strong>biológica funcional</strong>, utilizando herramientas de <strong>análisis de enriquecimiento</strong>. Una vez identificados los <strong>genes diferencialmente expresados (DEGs)</strong> entre condiciones experimentales, se evalúa si determinadas <em>funciones biológicas</em>, <em>procesos celulares</em> o <em>rutas metabólicas</em> están sobrerrepresentadas entre estos genes.
+</p>
+
+<p>
+  Para ello, se emplean bases de datos ampliamente reconocidas como <strong>Gene Ontology</strong> (categorías <em>Biological Process</em>, <em>Molecular Function</em> y <em>Cellular Component</em>) y <strong>KEGG</strong>, que permiten relacionar los genes con funciones conocidas en organismos modelo. El análisis se realiza de forma individual para cada <em>comparación por pares</em> entre condiciones, lo que permite contextualizar los efectos de cada contraste experimental dentro de marcos funcionales específicos.
+</p>
+
+<p>
+  Cada conjunto de resultados incluye una tabla interactiva con los <strong>términos enriquecidos</strong> y sus estadísticas asociadas (como valores <em>p</em> ajustados y número de genes implicados), así como <strong>representaciones gráficas</strong> (barplots o dotplots) que resumen visualmente los hallazgos más relevantes. Esta información facilita la priorización de rutas y procesos que podrían estar involucrados en las diferencias observadas, ofreciendo hipótesis biológicas interpretables.
+</p>
+
+<p>
+  En conjunto, este análisis constituye una pieza clave para vincular los cambios transcripcionales con mecanismos funcionales subyacentes, aportando <strong>valor biológico</strong> y <strong>contexto mecanístico</strong> a los datos obtenidos en las etapas anteriores del pipeline de expresión génica.
+</p>
+
+<iframe src="5.4-analisis-funcional.html#tab3-seccion5.2." width="100%" height="600px" style="border: 1px solid #ccc; border-radius: 6px;"></iframe>
+
+<p style="text-align:center;">
+  <a href="5.3-analisis-expresion.html#tab3-seccion5.2" class="boton-subseccion">
+    🌐 Ir a la sección: 5.4. Análisis funcional y enriquecimiento
+  </a>
+</p>
+
+<div style="height: 5px; background-color: transparent;"></div>
+
+---
+
+<p>
+  Con este análisis funcional y de enriquecimiento se culmina el flujo de trabajo completo de análisis de expresión génica, desde la evaluación inicial de la calidad de las lecturas hasta la interpretación biológica de los genes diferencialmente expresados. 
+  A lo largo de este proceso, hemos transformado datos brutos de secuenciación en información biológicamente significativa, permitiendo no solo identificar genes con patrones de expresión relevantes, sino también contextualizarlos dentro de rutas y procesos celulares clave. 
+  Este enfoque sistemático no solo proporciona una comprensión más profunda de los mecanismos moleculares implicados en las condiciones estudiadas, sino que también sienta las bases para futuras hipótesis experimentales, validaciones funcionales o estrategias terapéuticas.
+</p>

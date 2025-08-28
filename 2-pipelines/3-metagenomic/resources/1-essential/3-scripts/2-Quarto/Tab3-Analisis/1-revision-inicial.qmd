@@ -1,0 +1,479 @@
+---
+title: "RNA-Seq Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../1-images/0-icono/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../1-images/0-icono/favicon.ico">
+
+params:
+  ruta_proyecto: ""
+  nombre_experimento: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 1. REVISIÓN INICIAL DEL CONJUNTO DE MUESTRAS Y METADATOS -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis bioinformático completo</h2>
+</div>
+
+<div class="informe-titulo-seccion">
+  <h1>Sección 1</h1>
+  <h2>Revisión inicial del conjunto de muestras y metadatos</h2>
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    En esta primera sección se realiza una exploración preliminar de los datos disponibles con el objetivo de entender la estructura del experimento y garantizar la coherencia de las muestras antes de abordar los análisis posteriores. Para ello, se incorpora un visor interactivo que permite navegar por la organización de carpetas del proyecto, ofreciendo una visión estructurada del entorno de trabajo y de los archivos generados en las etapas iniciales.
+  </p>
+
+  <p>
+    Uno de los elementos clave analizados es el archivo de metadatos, el cual proporciona información esencial sobre cada muestra. En concreto, se examinan tres variables principales:
+  </p>
+
+  <ul>
+    <li><strong>Filename:</strong> indica el nombre del archivo original (.fastq.gz) que contiene las lecturas crudas.</li>
+    <li><strong>Name:</strong> representa el identificador interno asignado a cada muestra, utilizado de forma coherente a lo largo del pipeline.</li>
+    <li><strong>Type:</strong> define el grupo experimental al que pertenece la muestra (por ejemplo, caso, control, replicado, etc.).</li>
+  </ul>
+
+  <p>
+    Esta revisión no solo permite validar la correcta anotación de las muestras y su clasificación experimental, sino también anticipar posibles problemas o inconsistencias. Finalmente, se ofrece una visualización adicional que muestra todos los archivos <code>fastq.gz</code> disponibles, lo que permite confirmar la integridad del conjunto de datos iniciales desde los cuales se iniciará el análisis de calidad y procesamiento técnico.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta sección
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion1">1<span>.</span> Revisión inicial del conjunto de muestras y metadatos</a>
+      <ul>
+        <li><a href="#tab3-seccion1.1">1.1. Organización y estructura del proyecto</a></li>
+        <li><a href="#tab3-seccion1.2">1.2. Revisión del archivo de metadatos</a></li>
+        <li><a href="#tab3-seccion1.3">1.3. Exploración inicial de las muestras de entrada</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- REDACCIÓN -->
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion1">
+  1<span>.</span> Revisión inicial del conjunto de muestras y metadatos
+</div>
+
+```{r}
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+
+# Definir rutas clave
+ruta_qmd <- getwd()
+
+ruta_rnaseq_pipeline <- sub("(.*?/1-bulk-rna-seq).*", "\\1", ruta_qmd)
+
+nombre_proyecto <- basename(params$ruta_proyecto)
+
+ruta_nextflow_results <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results")
+ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results", "1-project-data", nombre_proyecto)
+
+
+targets_experimento <- paste0("targets_", params$nombre_experimento, ".txt")
+
+ruta_targets_experimento <- file.path(params$ruta_proyecto, "Resultados", targets_experimento)
+file_ruta_targets_experimento <- gsub(" ", "%20", paste0("file:///", ruta_targets_experimento))
+
+ruta_targets_experimento_relativa <- file.path(ruta_proyecto_relativa, "Resultados", targets_experimento)
+
+
+reads_down_select_experimento <- paste0("reads_down_select_", params$nombre_experimento)
+
+ruta_reads_down_select_experimento <- file.path(params$ruta_proyecto, "Analisis", reads_down_select_experimento)
+
+ruta_reads_down_select_experimento_relativa <- file.path(ruta_proyecto_relativa, "Analisis", reads_down_select_experimento)
+
+
+ruta_Pre_fastqc_results <- file.path(params$ruta_proyecto, "Analisis", params$nombre_experimento, "Pre_fastqc_results")
+
+ruta_Pre_fastqc_results_relativa <- file.path(ruta_proyecto_relativa, "Analisis", params$nombre_experimento, "Pre_fastqc_results")
+
+
+# Leer targets
+targets <- read.table(ruta_targets_experimento, header = TRUE, fill = TRUE, stringsAsFactors = FALSE)
+
+
+# Listar archivos fastqc y fastq
+archivos_fastqc <- list.files(ruta_Pre_fastqc_results, pattern = "_fastqc\\.html$", full.names = FALSE)
+archivos_fastq <- list.files(ruta_reads_down_select_experimento, pattern = "\\.fastq\\.gz$", full.names = FALSE)
+
+
+# Extraer identificadores base
+ids_fastqc <- unique(gsub("(_R[12])?_fastqc\\.html$", "", archivos_fastqc))
+ids_fastq <- unique(gsub("_R[12]\\.fastq\\.gz$", "", archivos_fastq))
+ids_targets <- targets$Filename
+
+
+# Identificar diferencias
+fastqc_no_targets <- setdiff(ids_fastqc, ids_targets)
+targets_no_fastqc <- setdiff(ids_targets, ids_fastqc)
+targets_no_reads <- setdiff(ids_targets, ids_fastq)
+```
+
+<p>
+  Antes de iniciar el análisis técnico y estadístico de los datos de expresión génica, es fundamental realizar una revisión preliminar del entorno de trabajo, los archivos disponibles y la información asociada a cada muestra. Esta sección tiene como objetivo contextualizar el diseño experimental, validar la organización de los datos y asegurar la integridad y consistencia de las muestras. Para ello, se examina tanto la estructura de carpetas del proyecto como el archivo de metadatos, y se identifican los archivos de lectura cruda que servirán como punto de partida para los análisis posteriores.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion1.1">
+  1.1. Organización y estructura del proyecto
+</div>
+
+```{r, results="asis"}
+cat(glue::glue('
+<p>
+  El análisis de expresión génica que se presenta a continuación se basa en un conjunto de muestras seleccionadas del experimento <strong><em>{params$nombre_experimento}</em></strong>, definido dentro de la ruta general del proyecto:
+</p>
+
+<code>{params$ruta_proyecto}</code>
+
+<p>
+  Los archivos y carpetas que componen este entorno de trabajo pueden explorarse mediante el siguiente visor interactivo, el cual permite navegar por la jerarquía del proyecto y consultar los contenidos de forma estructurada, proporcionándose además un acceso directo a los recursos relevantes mediante botones específicos. Mencionar, eso sí, que aquí podremos visualizar solo los archivos más relevantes y esenciales para la elaboración de este informe, mientras que archivos más pesados (como podrían ser archivos <code>.fastq.gz</code>), han sido ignorados en el proceso de copiado de archivos a la ruta de este informe dado el alto volumen de espacio y tiempo requerido para ello. Así, en el caso de querer explorar estos archivos específicos será necesario consultar la carpeta original con los resultados proporcionados por la herramienta <strong>miARma-Seq</strong>.
+</p>
+\n\n'))
+```
+
+<div class="box-files">
+
+```{r, echo=FALSE, results="asis"}
+if (!dir.exists(ruta_proyecto_relativa)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_proyecto_relativa))
+} else {
+  # Listar todos los archivos, sin filtros
+  files <- list.files(ruta_proyecto_relativa, full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+  } else {
+    enlace <- ruta_proyecto_relativa
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Asignar clase según la extensión
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else if (grepl("\\.html$", f)) {
+        "file-html"
+      } else if (grepl("\\.zip$", f)) {
+        "file-zip"
+      } else if (grepl("\\.fastq\\.gz$", f)) {
+        "file-fastqgz"
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Para que funcione con rutas absolutas
+enlace <- ruta_proyecto_relativa
+
+# Imprimir el enlace
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{enlace}" target="_blank" class="boton-files">
+    📂 Explora los archivos de la carpeta "{nombre_proyecto}" aquí
+  </a>
+</p>
+\n\n'))
+```
+
+```{r, results="asis"}
+cat(glue::glue('
+<p>
+  A continuación, más en detalle se presenta la estructura de carpetas y archivos empleada en el experimento <code>{params$nombre_experimento}</code>, perteneciente al proyecto <code>{nombre_proyecto}</code>. Esta organización ha sido diseñada para facilitar tanto el desarrollo reproducible del análisis como la posterior consulta e interpretación de los resultados.
+</p>
+
+<ul>
+  <li>
+    <code>{nombre_proyecto}/Analisis/</code>
+    <ul>
+      <li>
+        <code>{params$nombre_experimento}/</code>: Directorio principal del análisis computacional, que contiene las salidas intermedias generadas durante el preprocesamiento y cuantificación de la expresión génica:
+        <ul>
+          <li><code>Pre_fastqc_results/</code>: Archivos individuales de control de calidad de las lecturas crudas, obtenidos con <em>FastQC</em>. Permiten verificar la calidad general de las secuencias antes del alineamiento.</li>
+          <li><code>hisat2_results/</code>: Archivos de alineamiento en formato SAM/BAM generados mediante <em>HISAT2</em>, que permiten mapear las secuencias a un genoma de referencia.</li>
+          <li><code>Readcount_results/</code>: Archivos de cuantificación bruta de expresión génica, donde se almacena una matriz de conteos por gen y por muestra antes de la normalización.</li>
+        </ul>
+      </li>
+      <li>
+        <code>reads_down_select_{params$nombre_experimento}/</code>: Directorio donde se encuentral almacenados los archivos de lectura seleccionados para el estudio.
+      </li>
+    </ul>
+  </li>
+
+  <li>
+    <code>{nombre_proyecto}/Resultados/</code>: Carpeta que agrupa todos los resultados derivados del análisis, organizados para facilitar su exploración y revisión:
+    <ul>
+      <li><code>targets_{params$nombre_experimento}.txt</code>: Archivo de metadatos con información sobre las muestras (nombre, condición, replicados, etc.), fundamental para el diseño experimental y el análisis estadístico posterior.</li>
+      <li>
+        <code>{params$nombre_experimento}/</code>: Subcarpeta con productos generados a partir de la matriz de expresión normalizada y los análisis estadísticos derivados:
+        <ul>
+          <li>
+            <code>{params$nombre_experimento}_QC.pdf</code>: Informe gráfico posterior a la normalización. Incluye visualizaciones clave como PCA, clustering jerárquico, correlaciones entre muestras, boxplots y distribuciones de expresión. Estas gráficas permiten evaluar si el preprocesamiento ha corregido adecuadamente la variabilidad técnica sin distorsionar las señales biológicas relevantes.
+          </li>
+          <li>
+            <code>{params$nombre_experimento}_RPKM.xls</code>: Matriz de expresión génica transformada a valores normalizados en unidades RPKM, adecuada para visualización y exploración comparativa entre muestras.
+          </li>
+          <li>
+            Archivos <code>.xlsx</code>: Resultados del análisis de expresión diferencial para cada comparación experimental. Incluyen medidas estadísticas (logFC, p-valor, FDR) para cada gen evaluado.
+          </li>
+          <li>
+            Archivos <code>*.Volcano*.pdf</code>: Gráficos <em>volcano</em> que resumen visualmente los genes diferencialmente expresados más relevantes, combinando magnitud del cambio y significación estadística.
+          </li>
+          <li>
+            <code>Enrichment/</code>: Carpeta que contiene los resultados del análisis funcional y de enriquecimiento basado en los genes diferencialmente expresados (DEG). Para cada comparación entre condiciones experimentales se incluyen:
+            <ul>
+              <li>
+                Un archivo <code>.pdf</code> con representaciones visuales (por ejemplo, <em>barplots</em> o <em>dotplots</em>) que destacan los términos funcionales más significativamente enriquecidos.
+              </li>
+              <li>
+                Un archivo <code>.xls</code> con un listado exhaustivo de categorías enriquecidas (GO:BP, GO:MF, GO:CC y rutas KEGG), incluyendo valores de p, FDR y número de genes asociados a cada término.
+              </li>
+            </ul>
+            Este análisis permite contextualizar biológicamente los resultados identificando procesos, funciones o rutas alteradas en las condiciones evaluadas.
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>
+  Esta estructura modular y coherente no solo permite automatizar los pasos clave del análisis bioinformático, sino que también garantiza trazabilidad, reproducibilidad y facilidad de interpretación. Además, contribuye a una mejor documentación del flujo de trabajo, lo cual es especialmente útil en entornos colaborativos o proyectos de largo recorrido.
+</p>
+\n\n'))
+```
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion1.2">
+  1.2. Revisión del archivo de metadatos
+</div>
+
+<p>
+  Como ya se ha comentado anteriormente, la definición del conjunto de muestras analizadas en este estudio se encuentra detallada en un archivo de metadatos, accesible en la siguiente ubicación (basándonos donde sen encontraba el archivo en el momento de la generación del informe):
+</p>
+
+```{r, results="asis"}
+cat(glue::glue('
+<code>{ruta_targets_experimento}</code>
+\n\n'))
+```
+
+<p>
+  Este archivo desempeña un papel clave en la organización del análisis, ya que proporciona la información necesaria para identificar, clasificar y vincular cada muestra con su contexto experimental. Contiene columnas fundamentales como:
+</p>
+
+<ul>
+  <li><strong>Filename</strong>: nombre del archivo que contiene los datos crudos (por ejemplo, archivos <code>.fastq.gz</code>).</li>
+  <li><strong>Name</strong>: identificador interno único de la muestra, utilizado de manera coherente a lo largo del pipeline.</li>
+  <li><strong>Type</strong>: grupo o condición experimental a la que pertenece la muestra (por ejemplo, <code>pex11a-C</code> o <code>px-ck-C</code>).</li>
+</ul>
+
+<p>
+  A continuación, se muestra una tabla interactiva que resume esta información, permitiendo una revisión visual y filtrada de las muestras incluidas en el experimento. Esto facilita comprobar su denominación interna y su asignación a los grupos experimentales:
+</p>
+
+```{r, results="asis"}
+# Tabla interactiva de metadatos
+library(DT)
+
+htmltools::div(
+  class = "scroll-y-max-500",
+  DT::datatable(
+    targets,
+    options = list(
+      scrollX = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact',
+    rownames = FALSE
+  )
+)
+```
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<p>
+  Para consultar el archivo completo, puede utilizar el visor incrustado que se presenta a continuación o, si lo prefiere, abrir el documento en una pestaña independiente para una exploración más cómoda:
+</p>
+
+```{r, results='asis'}
+cat(glue::glue('
+<iframe src="{ruta_targets_experimento_relativa}" width="100%" height="500px" style="border: 1px solid #ccc; border-radius: 6px;"></iframe>
+
+<p style="text-align:center;">
+  <a href="{ruta_targets_experimento_relativa}" target="_blank" class="boton-iframe">
+    🔍 Ver metadatos completos en una nueva página
+  </a>
+</p>
+
+<div style="height: 15px; background-color: transparent;"></div>
+\n\n'))
+```
+
+<p>
+  El archivo de metadatos es una pieza esencial para asegurar la trazabilidad del análisis, ya que documenta de forma estructurada la correspondencia entre las muestras, sus nombres internos y los grupos experimentales. Esta trazabilidad garantiza tanto la reproducibilidad como una interpretación correcta de los resultados obtenidos.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion1.3">
+  1.3. Exploración inicial de las muestras de entrada
+</div>
+
+
+<p>
+  Este apartado tiene como objetivo ofrecer una primera visión estructurada de los archivos de lectura que constituyen la base del análisis transcriptómico. Estos archivos, en formato <code>.fastq.gz</code>, representan las secuencias crudas obtenidas tras la secuenciación de ARN y han sido previamente sometidos a un proceso de depuración y organización.
+</p>
+
+<p>
+  Las muestras utilizadas han sido definidas en el archivo de metadatos, y sus identificadores han sido cuidadosamente vinculados a los correspondientes archivos de lectura. Esta asociación garantiza la trazabilidad completa desde los datos brutos hasta los resultados del análisis, minimizando posibles inconsistencias o errores en las fases posteriores del pipeline.
+</p>
+
+<p>
+  A continuación, se indica el directorio donde se encontraban almacenados los archivos de lectura seleccionados para el estudio en el momento de generación del informe:
+</p>
+
+```{r, results='asis'}
+cat(glue::glue('
+<code>{ruta_reads_down_select_experimento}</code>
+\n\n'))
+```
+
+<p>
+  Este directorio alberga una copia limpia y estructurada de los archivos de lectura para cada muestra incluida en el análisis. Cada archivo <code>.fastq.gz</code> está nombrado de forma coherente con su correspondiente entrada en la tabla de metadatos, facilitando la automatización y reproducibilidad del flujo de trabajo.
+</p>
+
+<p>
+  En la siguiente tabla interactiva se muestra el listado completo de archivos que serán empleados en los pasos de alineamiento y cuantificación. Esta vista permite verificar de manera rápida la integridad del conjunto de muestras y revisar su correspondencia con la información previamente definida:
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_reads_down_select_experimento)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_reads_down_select_experimento))
+} else {
+  # Listar solo archivos con extensión .ht2
+  files <- list.files(ruta_reads_down_select_experimento, pattern = "\\.fastq.gz$", full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No se encontraron archivos con extensión <code>.fastq.gz</code> en la carpeta especificada.</em></p>\n')
+  } else {
+    enlace <- paste0("file://", ruta_reads_down_select_experimento)
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Asignar clase según la extensión
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else if (grepl("\\.html$", f)) {
+        "file-html"
+      } else if (grepl("\\.zip$", f)) {
+        "file-zip"
+      } else if (grepl("\\.fastq\\.gz$", f)) {
+        "file-fastqgz"
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<p>
+  Tras esta exploración preliminar de las muestras, el informe continúa con una sección dedicada al control de calidad de los datos crudos. En ella se presenta un resumen global generado mediante <code>MultiQC</code>, que consolida las métricas de calidad de todas las muestras analizadas.
+</p>
+
+<p>
+  Además del resumen agregado, también se incluyen los informes individuales generados por <code>FastQC</code>. Estos informes detallan aspectos específicos de cada muestra, como la calidad base a base, la longitud de las secuencias, la proporción de contenido GC, la presencia de secuencias repetidas o adaptadores, entre otras métricas clave para asegurar la fiabilidad del análisis transcriptómico.
+</p>
