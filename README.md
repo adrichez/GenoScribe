@@ -551,9 +551,9 @@ Cada guía incluye:
 
 Guías específicas por tipo de análisis:
 
-* [**Bulk RNA-Seq**](6-info/1_BULK_RNA_SEQ_SPECS.md) → describe el flujo completo de análisis de RNA convencional, desde la preparación de archivos `.fastq` hasta la generación de informes interactivos, incluyendo ejemplos de visualizaciones y tablas de expresión diferencial.
-* [**scRNA-Seq**](6-info/2_SC_RNA_SEQ_SPECS.md) → guía paso a paso para el análisis de células individuales, detallando filtrado de células y genes, normalización, reducción de dimensionalidad y generación de informes interactivos específicos.
-* [**Metagenómica**](6-info/3_METAGENOMIC_SPECS.md) → documentación completa para análisis de comunidades microbianas, desde el preprocesamiento de secuencias, identificación de taxonomía y diversidad microbiana, hasta la interpretación de resultados y visualización de informes interactivos.
+* [**Bulk RNA-Seq**](6-info/1_BULK_RNA_SEQ_GUIDE.md) → describe el flujo completo de análisis de RNA convencional, desde la preparación de archivos `.fastq` hasta la generación de informes interactivos, incluyendo ejemplos de visualizaciones y tablas de expresión diferencial.
+* [**scRNA-Seq**](6-info/2_SC_RNA_SEQ_GUIDE.md) → guía paso a paso para el análisis de células individuales, detallando filtrado de células y genes, normalización, reducción de dimensionalidad y generación de informes interactivos específicos.
+* [**Metagenómica**](6-info/3_METAGENOMIC_GUIDE.md) → documentación completa para análisis de comunidades microbianas, desde el preprocesamiento de secuencias, identificación de taxonomía y diversidad microbiana, hasta la interpretación de resultados y visualización de informes interactivos.
 
 > 💡 Esta estructura permite que el usuario pueda **consultar rápidamente la guía adecuada** según el tipo de experimento, comprender el flujo completo de generación de informes y profundizar en los detalles técnicos sin perder la visión global del proyecto. Cada guía está pensada para acompañar al usuario desde la **configuración inicial** hasta la **exploración de resultados finales**, asegurando reproducibilidad y trazabilidad en todos los análisis.
 
