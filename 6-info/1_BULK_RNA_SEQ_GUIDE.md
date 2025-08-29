@@ -851,7 +851,7 @@ En el caso concreto de **Bulk RNA-Seq**, se necesitan **dos parámetros obligato
     - Ejemplo en un ordenador local:  
 
       ```bash
-      /Users/adrian/Documents/4 Workspace/Prototipo_resultados/PRJ_RNA_Seq
+      /Users/adrian/Documents/4 Workspace/Prototipo-resultados/01-EXT-25-Bulk-RNA-Seq
       ```
 
 2. **Nombre del experimento (`nombre_experimento`)**  
@@ -866,7 +866,7 @@ En el caso concreto de **Bulk RNA-Seq**, se necesitan **dos parámetros obligato
 Ejemplo de parámetros combinados:
 
 ```yaml
-ruta_proyecto: "/Users/adrian/Documents/4 Workspace/Prototipo_resultados/PRJ_RNA_Seq"
+ruta_proyecto: "/Users/adrian/Documents/4 Workspace/Prototipo-resultados/01-EXT-25-Bulk-RNA-Seq"
 nombre_experimento: "exp1"
 ```
 
@@ -875,7 +875,7 @@ nombre_experimento: "exp1"
 Si la ejecución se hace desde **Shiny dentro del contenedor**, la ruta local se monta como volumen. En ese caso, en el formulario Shiny se debe indicar una ruta relativa del tipo:
 
 ```bash
-data/PRJ_RNA_Seq
+data/01-EXT-25-Bulk-RNA-Seq
 ```
 
 En lugar de la ruta completa de tu sistema.
@@ -928,7 +928,7 @@ En el caso de Bulk RNA-Seq, según el protocolo definido, se deben aportar los s
 La siguiente estructura ejemplifica cómo deben organizarse los resultados de un análisis típico de **miARma-seq** para ser utilizados en GenoScribe.
 
 ```plaintext
-PRJ_RNA_Seq
+01-EXT-25-Bulk-RNA-Seq
 ├── Analisis
 │   ├── exp1
 │   │   ├── hisat2_index/              # Índices de referencia HISAT2
@@ -973,7 +973,7 @@ PRJ_RNA_Seq
 
 * Los resultados deben provenir de **miARma-seq**, que garantiza una estructura reproducible.  
 * La carpeta del proyecto debe contener todos los outputs necesarios (FastQC, BAM, conteos, normalizaciones, DEG, enriquecimientos).  
-* Si se ejecuta desde contenedor, usar rutas relativas (`data/PRJ_RNA_Seq`) en la interfaz Shiny y definir un volumen local para almacenar los informes generados.  
+* Si se ejecuta desde contenedor, usar rutas relativas (`data/01-EXT-25-Bulk-RNA-Seq`) en la interfaz Shiny y definir un volumen local para almacenar los informes generados.  
 
 
 

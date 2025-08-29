@@ -67,19 +67,29 @@ website:
       - text: "Resumen"
         href: resources/1-essential/3-scripts/2-Quarto/Tab2-Resumen/resumen.qmd
 
-      - text: "Análisis"
+      - text: "Análisis 16S"
         menu:
           - text: "Introducción contextual"
-            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/0-contexto.qmd
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis-16S/0-contexto.qmd
           - text: "1. Revisión inicial de muestras y metadatos"
-            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/1-revision-inicial.qmd
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis-16S/1-revision-inicial.qmd
           - text: "2. Evaluación de calidad de las lecturas"
-            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/2-evaluacion-calidad.qmd
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis-16S/2-evaluacion-calidad.qmd
           - text: "3. Alineamiento de las lecturas"
-            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/3-alineamiento.qmd
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis-16S/3-alineamiento.qmd
           - text: "4. Cuantificación de la expresión génica"
-            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/4-cuantificacion.qmd
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis-16S/4-cuantificacion.qmd
           - text: "5. Análisis estadístico de la expresión génica"
-            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/5-analisis-estadistico.qmd
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis-16S/5-analisis-estadistico.qmd
           - text: "6. Conclusiones y perspectivas"
-            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/6-conclusiones.qmd
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis-16S/6-conclusiones.qmd
+
+      - text: "Análisis 18S"
+        menu:
+          - text: "Introducción contextual"
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis-18S/0-contexto.qmd
+
+      - text: "Análisis ITS"
+        menu:
+          - text: "Introducción contextual"
+            href: resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis-ITS/0-contexto.qmd

@@ -110,23 +110,24 @@ El pipeline se estructura en diferentes <code>módulos</code>, cada uno de los c
 </ul>
 
 <p>
-Este flujo de trabajo proporciona una visión clara y organizada del enfoque integral del análisis, combinando <em>flexibilidad</em>, <em>eficiencia</em> y <em>reproducibilidad</em>, elementos clave que se trasladan directamente al sistema automatizado desarrollado en este informe.
+  Este flujo de trabajo proporciona una visión clara y organizada del enfoque integral del análisis, combinando <em>flexibilidad</em>, <em>eficiencia</em> y <em>reproducibilidad</em>, elementos clave que se trasladan directamente al sistema automatizado desarrollado en este informe.
 </p>
+
 
 <div style="height: 18px; background-color: transparent;"></div>
 
 ---
 
 <p>
-Para garantizar la <strong>reproducibilidad</strong> y <strong>modularidad</strong> del pipeline, <code>miARma‑seq</code> utiliza un archivo de configuración con extensión <code>.ini</code>. Este archivo permite especificar todos los parámetros necesarios para ejecutar el análisis, sin necesidad de escribir comandos complejos en la línea de comandos.
+  Como comentario adicional, mencionar que `ara garantizar la <strong>reproducibilidad</strong> y <strong>modularidad</strong> del pipeline, <strong>miARma‑seq</strong> utiliza un archivo de configuración con extensión <code>.ini</code>. Este archivo permite especificar todos los parámetros necesarios para ejecutar el análisis, sin necesidad de escribir comandos complejos en la línea de comandos.
 </p>
 
 <p>
-El archivo <code>.ini</code> se estructura en secciones bien definidas (por ejemplo, <code>[General]</code>, <code>[Aligner]</code>, <code>[ReadCount]</code>…), cada una dedicada a un módulo del análisis. En cada sección, se indican los valores clave a utilizar: rutas de entrada y salida, tipo de datos, número de hilos, herramientas a emplear, criterios estadísticos, etc.
+  El archivo <code>.ini</code> se estructura en secciones bien definidas (por ejemplo, <code>[General]</code>, <code>[Aligner]</code>, <code>[ReadCount]</code>…), cada una dedicada a un módulo del análisis. En cada sección, se indican los valores clave a utilizar: rutas de entrada y salida, tipo de datos, número de hilos, herramientas a emplear, criterios estadísticos, etc.
 </p>
 
 <p>
-A continuación, se muestra un ejemplo sencillo y real de archivo <code>.ini</code> utilizado para este análisis, incluyendo los módulos de calidad, alineamiento, cuantificación y análisis diferencial para datos de <code>mRNA</code>:
+  A continuación, se muestra un ejemplo sencillo y real de archivo <code>.ini</code> utilizado para este análisis, incluyendo los módulos de calidad, alineamiento, cuantificación y análisis diferencial para datos de <code>mRNA</code>:
 </p>
 
 <iframe src="resources/1-essential/2-archives/miARma_mRNAs_pipeline_STAR.txt" width="100%" height="500px" frameborder="0" style="border: none; display: block;"></iframe>
@@ -139,7 +140,7 @@ A continuación, se muestra un ejemplo sencillo y real de archivo <code>.ini</co
 
 
 <p>
-Este archivo fue ejecutado mediante el siguiente comando, después realizar la instalación y configuración de la herramienta <code>miARma-seq</code>:
+  Este archivo fue ejecutado mediante el siguiente comando, después realizar la instalación y configuración de la herramienta <code>miARma-seq</code>:
 </p>
 
 ```bash
@@ -147,5 +148,5 @@ Este archivo fue ejecutado mediante el siguiente comando, después realizar la i
 ```
 
 <p>
-Para más información sobre esta herramienta, visitar el respectivo repositorio de <em>GitHub</em>: <a href="https://github.com/eandresleon/miARma-seq" target="_blank" class="normalink">miARma-seq</a>.
+  Para más información sobre esta herramienta, visitar el respectivo repositorio de <em>GitHub</em>: <a href="https://github.com/eandresleon/miARma-seq" target="_blank" class="normalink">miARma-seq</a>.
 </p>
