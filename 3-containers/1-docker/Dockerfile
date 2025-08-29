@@ -67,32 +67,32 @@ RUN /opt/miniconda3/bin/mamba env create -f /tmp/env_bulk_rna_seq.yml \
     && rm /tmp/env_bulk_rna_seq.yml
 
 # 11. Copiar carpetas del proyecto
-COPY 1-app /genoscribe/1-app
-COPY 2-pipelines /genoscribe/2-pipelines
-COPY 3-containers /genoscribe/3-containers
-COPY 4-launch /genoscribe/4-launch
-COPY 5-examples /genoscribe/5-examples
-COPY 6-info /genoscribe/6-info
-COPY README.md /genoscribe/README.md
+COPY 1-app /GenoScribe/1-app
+COPY 2-pipelines /GenoScribe/2-pipelines
+COPY 3-containers /GenoScribe/3-containers
+COPY 4-launch /GenoScribe/4-launch
+COPY 5-examples /GenoScribe/5-examples
+COPY 6-info /GenoScribe/6-info
+COPY README.md /GenoScribe/README.md
 
 # 12. Limpiar caches de Quarto y R que arrastran rutas absolutas del host
-RUN rm -rf /genoscribe/1-app/_freeze /genoscribe/1-app/_cache \
-    && rm -rf /genoscribe/2-pipelines/1-bulk-rna-seq/_freeze /genoscribe/2-pipelines/1-bulk-rna-seq/_cache \
-    && rm -rf /genoscribe/2-pipelines/3-metagenomic/_freeze /genoscribe/2-pipelines/3-metagenomic/_cache \
-    && find /genoscribe -type f -name "*.rds" -delete
+RUN rm -rf /GenoScribe/1-app/_freeze /GenoScribe/1-app/_cache \
+    && rm -rf /GenoScribe/2-pipelines/1-bulk-rna-seq/_freeze /GenoScribe/2-pipelines/1-bulk-rna-seq/_cache \
+    && rm -rf /GenoScribe/2-pipelines/3-metagenomic/_freeze /GenoScribe/2-pipelines/3-metagenomic/_cache \
+    && find /GenoScribe -type f -name "*.rds" -delete
 
 # 13. Crear enlace simbólico para que Shiny sirva la app
-RUN ln -s /genoscribe/1-app /srv/shiny-server/app
+RUN ln -s /GenoScribe/1-app /srv/shiny-server/app
 
 # 14. Crear carpeta de reports dentro de www
 RUN mkdir -p /srv/shiny-server/app/www/reports
 
 # 15. Permisos de Shiny y entrypoint
-RUN chown -R shiny:shiny /srv/shiny-server /genoscribe
-RUN chmod +x /genoscribe/3-containers/1-docker/entrypoint.sh
+RUN chown -R shiny:shiny /srv/shiny-server /GenoScribe
+RUN chmod +x /GenoScribe/3-containers/1-docker/entrypoint.sh
 
 # 16. Exponer el puerto 3838
 EXPOSE 3838
 
 # 17. Comando por defecto
-CMD ["/genoscribe/3-containers/1-docker/entrypoint.sh"]
+CMD ["/GenoScribe/3-containers/1-docker/entrypoint.sh"]

@@ -8,8 +8,8 @@ echo "------------------------------------------------"
 # Gestionar permisos
 chmod -R u+rwX /srv/shiny-server
 chown -R shiny:shiny /srv/shiny-server || echo "⚠️ Algunos archivos no pudieron cambiar ownership"
-chmod -R u+rwX /genoscribe
-chown -R shiny:shiny /genoscribe || echo "⚠️ Algunos archivos no pudieron cambiar ownership"
+chmod -R u+rwX /GenoScribe
+chown -R shiny:shiny /GenoScribe || echo "⚠️ Algunos archivos no pudieron cambiar ownership"
 
 # Mensaje de estado
 echo "👍 Carpetas y permisos listos."
