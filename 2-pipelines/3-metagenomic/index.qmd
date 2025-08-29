@@ -125,9 +125,44 @@ title: "Metagenomic Report"
 </ol>
 
 <p>
-  Aunque miARma‑Seq ofrece todas estas funcionalidades, en este informe únicamente se ha utilizado el <strong>módulo de control de calidad</strong> para los archivos <code>FASTQ</code> de nuestro análisis metagenómico. Este enfoque asegura que las lecturas crudas son de alta calidad antes de procesarlas con QIIME2.  
+  Aunque miARma‑Seq ofrece todas estas funcionalidades, en este informe únicamente se ha utilizado el <strong>módulo de control de calidad</strong> para los archivos <code>FASTQ</code> de nuestro análisis metagenómico. Esto garantiza que las lecturas crudas de 16S son de alta calidad antes de ser procesadas con QIIME2.  
   Toda la documentación y el repositorio de miARma‑Seq están disponibles en <a href="https://github.com/eandresleon/miARma-seq" target="_blank">GitHub</a>.
 </p>
+
+<p>
+  Para garantizar la <strong>reproducibilidad</strong> y <strong>modularidad</strong> del pipeline, <code>miARma‑Seq</code> utiliza un archivo de configuración con extensión <code>.ini</code>. Este archivo permite especificar todos los parámetros necesarios para ejecutar el pipeline completo de RNA-Seq, sin necesidad de escribir comandos complejos en la línea de comandos.  
+  En el contexto de este informe de metagenómica, se ha utilizado únicamente el módulo de control de calidad de lecturas (<code>FASTQ</code>), aunque el archivo <code>.ini</code> podría activar otros pasos del pipeline si se deseara.
+</p>
+
+<p>
+  El archivo <code>.ini</code> se organiza en secciones bien definidas (por ejemplo, <code>[General]</code>, <code>[QC]</code>, <code>[Aligner]</code>, <code>[ReadCount]</code>…), cada una dedicada a un módulo específico del pipeline de miARma‑Seq. En cada sección se indican rutas de entrada y salida, tipo de datos, número de hilos, herramientas a utilizar y criterios estadísticos.
+</p>
+
+<p>
+  A continuación se muestra un ejemplo real de un archivo <code>.ini</code> de miARma‑Seq, incluyendo los módulos de control de calidad, alineamiento, cuantificación y análisis diferencial para datos de RNA. En este informe, solo se ejecuta el módulo de <strong>QC</strong>:
+</p>
+
+<iframe src="resources/1-essential/2-archives/miARma_mRNAs_pipeline_STAR.txt" width="100%" height="500px" frameborder="0" style="border: none; display: block;"></iframe>
+
+<p style="text-align:center;">
+  <a href="resources/1-essential/2-archives/miARma_mRNAs_pipeline_STAR.txt" target="_blank" class="boton-iframe">
+    🔍 Ver archivo completo en una nueva página
+  </a>
+</p>
+
+<p>
+  Este archivo se ejecuta mediante el siguiente comando, una vez realizada la instalación y configuración de <code>miARma‑Seq</code>:
+</p>
+
+```bash
+./miARma miarma_config_example.ini check
+```
+
+<p>
+  Para más información sobre esta herramienta y su pipeline completo, se puede consultar el repositorio oficial en <a href="https://github.com/eandresleon/miARma-seq" target="_blank" class="normalink">GitHub: miARma‑Seq</a>.  
+  En futuras extensiones del análisis metagenómico, se podría aprovechar más módulos del pipeline si se integran otros tipos de datos o se desea automatizar pasos adicionales.
+</p>
+
 
 <!-- Imagen del pipeline de QIIME2 -->
 <div class="box-images">
@@ -180,45 +215,6 @@ title: "Metagenomic Report"
 
 <p>
   En conjunto, ambos pipelines —miARma‑Seq para control de calidad y QIIME2 para análisis metagenómico— se integran mediante <strong>Nextflow</strong> para generar un informe reproducible en <strong>Quarto</strong>. Esto asegura trazabilidad, modularidad y claridad en la interpretación de los resultados.
-</p>
-
-
-<div style="height: 18px; background-color: transparent;"></div>
-
----
-
-<p>
-  Para garantizar la <strong>reproducibilidad</strong> y <strong>modularidad</strong> del análisis, <code>miARma‑Seq</code> utiliza un archivo de configuración con extensión <code>.ini</code>. Este archivo permite especificar todos los parámetros necesarios para ejecutar el pipeline completo de RNA-Seq, sin necesidad de escribir comandos complejos en la línea de comandos.  
-  En el contexto de este informe de metagenómica, se ha utilizado únicamente el módulo de control de calidad de lecturas (<code>FASTQ</code>), pero el archivo <code>.ini</code> podría activar otros pasos del pipeline si se deseara.
-</p>
-
-<p>
-  El archivo <code>.ini</code> se organiza en secciones bien definidas (por ejemplo, <code>[General]</code>, <code>[QC]</code>, <code>[Aligner]</code>, <code>[ReadCount]</code>…), cada una dedicada a un módulo específico del pipeline de miARma‑Seq. En cada sección, se indican rutas de entrada y salida, tipo de datos, número de hilos, herramientas a utilizar y criterios estadísticos.
-</p>
-
-<p>
-  A continuación se muestra un ejemplo real de un archivo <code>.ini</code> de miARma‑Seq, incluyendo los módulos de control de calidad, alineamiento, cuantificación y análisis diferencial para datos de RNA. En este informe, solo se ejecuta el módulo de <strong>QC</strong>:
-</p>
-
-<iframe src="resources/1-essential/2-archives/miARma_mRNAs_pipeline_STAR.txt" width="100%" height="500px" frameborder="0" style="border: none; display: block;"></iframe>
-
-<p style="text-align:center;">
-  <a href="resources/1-essential/2-archives/miARma_mRNAs_pipeline_STAR.txt" target="_blank" class="boton-iframe">
-    🔍 Ver archivo completo en una nueva página
-  </a>
-</p>
-
-<p>
-  Este archivo se ejecuta mediante el siguiente comando, una vez realizada la instalación y configuración de <code>miARma‑Seq</code>:
-</p>
-
-```bash
-./miARma miarma_config_example.ini check
-```
-
-<p>
-  Para más información sobre esta herramienta y su pipeline completo, se puede consultar el repositorio oficial en <a href="https://github.com/eandresleon/miARma-seq" target="_blank" class="normalink">GitHub: miARma‑Seq</a>.  
-  En futuras extensiones del análisis metagenómico, se podría aprovechar más módulos del pipeline de miARma‑Seq si se integran otros tipos de datos o se desea automatizar pasos adicionales.
 </p>
 
 
