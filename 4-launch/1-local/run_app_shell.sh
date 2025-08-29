@@ -8,7 +8,7 @@ echo "
 "
 
 # Configuración de variables
-PROYECTO_BASENAME="genoscribe"
+PROYECTO_BASENAME="GenoScribe"
 RAIZ_PROYECTO="$(pwd)"
 
 # Preguntar tipo de análisis

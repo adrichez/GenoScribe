@@ -2,7 +2,7 @@
 set -e
 
 # Nombre del contenedor
-PROYECTO_BASENAME="genoscribe"
+PROYECTO_BASENAME="GenoScribe"
 CONTAINER_NAME="genoscribe_container"
 MAX_RETRIES=5
 RETRY_DELAY=1

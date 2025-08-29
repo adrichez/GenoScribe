@@ -27,7 +27,7 @@
     <a href="https://apptainer.org/"><img src="https://img.shields.io/badge/Apptainer-429999?style=flat&logo=apptainer&logoColor=white" alt="Apptainer"></a>
     <a href="https://www.markdownguide.org/"><img src="https://img.shields.io/badge/Markdown-000000?style=flat&logo=markdown&logoColor=white" alt="Markdown"></a>
     <a href="https://git-scm.com/"><img src="https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white" alt="Git"></a>
-    <a href="https://github.com/adrichez/genoscribe"><img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub"></a>
+    <a href="https://github.com/adrichez/GenoScribe"><img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub"></a>
     <a href="https://www.latex-project.org/"><img src="https://img.shields.io/badge/LaTeX-008080?style=flat&logo=latex&logoColor=white" alt="LaTeX"></a>
   </p>
 
@@ -111,7 +111,7 @@ Diseñado para ser **flexible y escalable**, GenoScribe puede ejecutarse en **lo
 El repositorio está organizado de forma modular para separar claramente la **interfaz de usuario**, los **pipelines de análisis**, los **entornos reproducibles** y la **documentación**. Esto facilita la navegación, el mantenimiento y la extensión del sistema.
 
 ```plaintext
-genoscribe         # Directorio principal del proyecto
+GenoScribe         # Directorio principal del proyecto
 ├── 1-app          # App Shiny y recursos web
 ├── 2-pipelines    # Pipelines de análisis y plantillas Quarto
 ├── 3-containers   # Definición de entornos reproducibles
@@ -315,8 +315,8 @@ Existen varias formas de obtener todo el código, pipelines y archivos necesario
 La opción más flexible y recomendable es **clonar el repositorio**, lo que permite mantenerlo actualizado fácilmente y gestionar versiones mediante `git pull`.
 
 ```bash
-git clone https://github.com/adrichez/genoscribe.git
-cd genoscribe
+git clone https://github.com/adrichez/GenoScribe.git
+cd GenoScribe
 ```
 
 > 💡 Ventaja: facilita actualizaciones y control de versiones, ideal para usuarios que planean ejecutar el sistema regularmente o integrar nuevas funcionalidades.
@@ -329,7 +329,7 @@ cd genoscribe
 
 Para un uso puntual o en sistemas sin Git, se puede descargar el ZIP directamente:
 
-1. Accede a [https://github.com/adrichez/genoscribe](https://github.com/adrichez/genoscribe).
+1. Accede a [https://github.com/adrichez/GenosSribe](https://github.com/adrichez/GenoScribe).
 2. Pulsa **Code → Download ZIP**.
 3. Descomprime y accede a la carpeta desde la terminal.
 
@@ -635,10 +635,10 @@ Para consultas, sugerencias o reportes de errores relacionados con este proyecto
   </li>
 
   <li style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-    <a href="https://github.com/adrichez/genoscribe" style="text-decoration:none;">
+    <a href="https://github.com/adrichez/GenoScribe" style="text-decoration:none;">
       <span style="background-color:#6cc644;color:white;padding:4px 10px;border-radius:12px;font-weight:bold;">🐙 GitHub</span>
     </a>
-    <span>Repositorio y contribuciones: <a href="https://github.com/adrichez/genoscribe">https://github.com/adrichez/genoscribe</a></span>
+    <span>Repositorio y contribuciones: <a href="https://github.com/adrichez/GenoScribe">https://github.com/adrichez/GenoScribe</a></span>
   </li>
 
   <li style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">

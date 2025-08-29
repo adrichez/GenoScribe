@@ -8,7 +8,7 @@ echo "
 "
 
 # Configuración de variables
-PROYECTO_BASENAME="genoscribe"
+PROYECTO_BASENAME="GenoScribe"
 CONTAINER_NAME="genoscribe_container"
 CONTAINER_TAG="1.0"
 PORT=3838  # para exponer Shiny si se necesitara

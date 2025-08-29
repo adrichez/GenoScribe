@@ -6,8 +6,6 @@
   <h1>Sistema Inteligente y Reproducible de Generación de Informes Bioinformáticos</h1>
   <h2>Guía de Usuario para Análisis Single-Cell RNA-Seq</h2>
 
-  <hr style="border:none; height:0.3px; background-color:#777; width:65%; margin:30px auto 35px auto;">
-
   <p>
     <a href="https://www.r-project.org/"><img src="https://img.shields.io/badge/R-276DC3?style=flat&logo=r&logoColor=white" alt="R"></a>
     <a href="https://rmarkdown.rstudio.com/"><img src="https://img.shields.io/badge/R%20Markdown-3EBB8D?style=flat&logo=r&logoColor=white" alt="R Markdown"></a>
@@ -27,7 +25,7 @@
     <a href="https://apptainer.org/"><img src="https://img.shields.io/badge/Apptainer-429999?style=flat&logo=apptainer&logoColor=white" alt="Apptainer"></a>
     <a href="https://www.markdownguide.org/"><img src="https://img.shields.io/badge/Markdown-000000?style=flat&logo=markdown&logoColor=white" alt="Markdown"></a>
     <a href="https://git-scm.com/"><img src="https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white" alt="Git"></a>
-    <a href="https://github.com/adrichez/genoscribe"><img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub"></a>
+    <a href="https://github.com/adrichez/GenoScribe"><img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="GitHub"></a>
     <a href="https://www.latex-project.org/"><img src="https://img.shields.io/badge/LaTeX-008080?style=flat&logo=latex&logoColor=white" alt="LaTeX"></a>
   </p>
 
@@ -152,7 +150,7 @@ Esta organización permite que cada tipo de análisis (Bulk RNA-Seq, scRNA-Seq, 
 <h3 id="section-2-1">2.1 🏗️ Estructura global del repositorio</h3>
 
 ```plaintext
-genoscribe         # Directorio principal del proyecto
+GenoScribe         # Directorio principal del proyecto
 ├── 1-app          # App Shiny e interfaz web
 ├── 2-pipelines    # Pipelines bioinformáticos (Bulk, scRNA, Metagenómica)
 ├── 3-containers   # Definición de entornos reproducibles (Docker / Apptainer)
@@ -171,7 +169,7 @@ Cada directorio tiene un rol específico y está descrito con mayor detalle en e
 
 <h3 id="section-2-2">2.2 🧬 Carpeta específica de Bulk RNA-Seq</h3>
 
-El pipeline para este tipo de análisis se encuentra en [genoscribe/2-pipelines/1-bulk-rna-seq](../2-pipelines/1-bulk-rna-seq).
+El pipeline para este tipo de análisis se encuentra en [GenoScribe/2-pipelines/1-bulk-rna-seq](../2-pipelines/1-bulk-rna-seq).
 
 Dentro de esta carpeta se incluyen todos los recursos necesarios para ejecutar el análisis y generar informes Quarto:
 
@@ -244,7 +242,7 @@ Más en detalle, tenemos:
 * **(`run_pipeline_shell.sh` y `run_pipeline_shiny.sh`)** → permiten ejecutar el análisis directamente desde la terminal o integrarlo con la app Shiny con un simple comando.
 * **`run_cleaning_dir.sh`** → script para limpiar los directorios de trabajo generados durante el análisis una vez finalizado si estos ya no son necesarios y así liberar espacio en disco.
 
-📌 En paralelo, los resultados generados y un ejemplo completo pueden encontrarse en [genoscribe/5-examples/1-bulk-rna-seq](../5-examples/1-bulk-rna-seq).
+📌 En paralelo, los resultados generados y un ejemplo completo pueden encontrarse en [GenoScribe/5-examples/1-bulk-rna-seq](../5-examples/1-bulk-rna-seq).
 
 Todo informe generado tendría la siguiente estructura:
 
@@ -322,7 +320,7 @@ El **workflow de GenoScribe** describe el recorrido completo desde la preparaci�
 El siguiente **diagrama de flujo esquemático** representa las rutas disponibles para ejecutar GenoScribe (centrándonos en el **pipeline de Bulk RNA-Seq**):
 
 <p align="center">
-  <img src="assets/4-other/workflow/sc_rna_seq_workflow.png" alt="Diagrama del flujo de trabajo de Single-Cell RNA-Seq" width="65%">
+  <img src="assets/4-other/workflow/bulk_rna_seq_workflow.png" alt="Diagrama del flujo de trabajo de Bulk RNA-Seq" width="65%">
 </p>
 
 **Rutas principales del workflow:**
@@ -416,8 +414,8 @@ Para obtener todos los **códigos, pipelines, scripts y archivos necesarios** ex
 **Opción recomendada: clonar con Git**
 
 ```bash
-git clone https://github.com/adrichez/genoscribe.git
-cd genoscribe
+git clone https://github.com/adrichez/GenoScribe.git
+cd GenoScribe
 ```
 
 Clonar el repositorio permite mantener el proyecto **actualizado fácilmente** mediante `git pull`, y ofrece la máxima flexibilidad para usuarios que planeen ejecutar pipelines de forma continua o modificar scripts según sus necesidades. Además, permite gestionar versiones y mantener un historial de cambios controlado.
@@ -426,7 +424,7 @@ Clonar el repositorio permite mantener el proyecto **actualizado fácilmente** m
 
 **Alternativa: descargar ZIP desde GitHub**
 
-1. Accede a [https://github.com/adrichez/genoscribe](https://github.com/adrichez/genoscribe).
+1. Accede a [https://github.com/adrichez/GenoScribe](https://github.com/adrichez/GenoScribe).
 2. Pulsa **Code → Download ZIP**.
 3. Descomprime el archivo y accede a la carpeta del proyecto desde la terminal.
 
@@ -500,7 +498,7 @@ Perfecto, Adrián. Aquí tienes la subsección de **construcción del contenedor
 
 GenoScribe puede ejecutarse dentro de **Docker** o adaptarse a **Apptainer**. Construir el contenedor localmente garantiza que todas las dependencias estén presentes, permite personalizar librerías y versiones, y asegura reproducibilidad total del análisis, tanto en entornos locales como en HPC o nube.
 
-> ⚠️ **Importante:** todos los comandos de construcción de contenedores deben ejecutarse desde la **raíz del proyecto `genoscribe`**.
+> ⚠️ **Importante:** todos los comandos de construcción de contenedores deben ejecutarse desde la **raíz del proyecto `GenoScribe`**.
 
 
 
@@ -511,7 +509,7 @@ GenoScribe puede ejecutarse dentro de **Docker** o adaptarse a **Apptainer**. Co
 Para sistemas donde Docker está disponible (local, servidores con soporte Docker), se recomienda construir la imagen desde el Dockerfile incluido en el proyecto:
 
 ```bash
-# Desde la raíz del proyecto genoscribe
+# Desde la raíz del proyecto GenoScribe
 docker build -f 3-containers/1-docker/Dockerfile -t genoscribe:1.0 .
 
 # Reconstrucción completa sin usar cache
@@ -544,23 +542,23 @@ En entornos HPC o donde Docker no está disponible, existen varias formas de gen
 **a) A partir de la imagen Docker construida localmente:**
 
 ```bash
-# Desde la raíz del proyecto genoscribe
+# Desde la raíz del proyecto GenoScribe
 apptainer build genoscribe.sif docker-daemon://genoscribe:1.0
 ```
 
 **b) Descargando imagen preconstruida desde Docker Hub:**
 
 ```bash
-# Desde la raíz del proyecto genoscribe
+# Desde la raíz del proyecto GenoScribe
 apptainer build genoscribe.sif docker://adrichez/genoscribe:1.0
 ```
 
 **c) (Experimental) Creación desde archivo `.def`:**
 
-Se encuentra en [genoscribe/3-containers/2-apptainer/genoscribe.def](../3-containers/2-apptainer/genoscribe.def). Esta opción permite construir directamente un contenedor Apptainer sin pasar por Docker, aunque todavía está en fase de pruebas:
+Se encuentra en [GenoScribe/3-containers/2-apptainer/genoscribe.def](../3-containers/2-apptainer/genoscribe.def). Esta opción permite construir directamente un contenedor Apptainer sin pasar por Docker, aunque todavía está en fase de pruebas:
 
 ```bash
-# Desde la raíz del proyecto genoscribe
+# Desde la raíz del proyecto GenoScribe
 apptainer build genoscribe.sif 3-containers/2-apptainer/genoscribe.def
 ```
 
@@ -749,7 +747,7 @@ Además, en lugar de borrar completamente ciertas carpetas, **las vacía sin eli
 
 <h4 id="section-5.3.3">5.3.3. ▶️ Ejecución de los scripts</h4>
 
-Todos los comandos deben ejecutarse **desde la raíz del proyecto (`genoscribe/`)**:
+Todos los comandos deben ejecutarse **desde la raíz del proyecto (`GenoScribe/`)**:
 
 - **💻 En local:**  
 
@@ -1132,7 +1130,7 @@ outdir/
 * Durante la ejecución, Nextflow genera resultados intermedios en su carpeta de trabajo temporal **`/work`**, dentro del directorio del pipeline de Bulk-RNA-Seq:
 
   ```bash
-  genoscribe/2-pipelines/1-bulk-rna-seq/work
+  GenoScribe/2-pipelines/1-bulk-rna-seq/work
   ```
 
 * Posteriormente, mediante la directiva **`publishDir`**, los resultados generados se copian automáticamente al directorio de salida especificado en el parámetro **`outdir`** (en este caso, **`resources/2-nextflow-results`**).
@@ -1163,7 +1161,7 @@ project:
 De este modo, la carpeta **`report/`**, ubicada en:
 
 ```bash
-genoscribe/2-pipelines/1-bulk-rna-seq/report/
+GenoScribe/2-pipelines/1-bulk-rna-seq/report/
 ```
 
 actúa como un **sitio web estático** que integra y organiza todos los resultados producidos por el pipeline (análisis de calidad, tablas de expresión, gráficos, etc.), ofreciendo a los investigadores una **vista unificada, interactiva y fácilmente interpretable** de los datos.
@@ -1372,10 +1370,10 @@ Para consultas, sugerencias o reportes de errores relacionados con este proyecto
   </li>
 
   <li style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-    <a href="https://github.com/adrichez/genoscribe" style="text-decoration:none;">
+    <a href="https://github.com/adrichez/GenoScribe" style="text-decoration:none;">
       <span style="background-color:#6cc644;color:white;padding:4px 10px;border-radius:12px;font-weight:bold;">🐙 GitHub</span>
     </a>
-    <span>Repositorio y contribuciones: <a href="https://github.com/adrichez/genoscribe">https://github.com/adrichez/genoscribe</a></span>
+    <span>Repositorio y contribuciones: <a href="https://github.com/adrichez/GenoScribe">https://github.com/adrichez/GenoScribe</a></span>
   </li>
 
   <li style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
