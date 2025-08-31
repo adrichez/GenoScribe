@@ -320,7 +320,7 @@ El **workflow de GenoScribe** describe el recorrido completo desde la preparaci�
 El siguiente **diagrama de flujo esquemático** representa las rutas disponibles para ejecutar GenoScribe (centrándonos en el **pipeline de Bulk RNA-Seq**):
 
 <p align="center">
-  <img src="assets/4-other/workflow/bulk_rna_seq_workflow.png" alt="Diagrama del flujo de trabajo de Bulk RNA-Seq" width="65%">
+  <img src="assets/4-other/workflow/sc_rna_seq_workflow.png" alt="Diagrama del flujo de trabajo de Single-Cell RNA-Seq" width="65%">
 </p>
 
 **Rutas principales del workflow:**

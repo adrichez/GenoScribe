@@ -20,7 +20,7 @@ title: "Metagenomic Report"
 
 <div class="informe-resumen">
 
-<h2>Contexto y pipeline empleado</h2>
+<h2>Contexto y pipelines empleado</h2>
 
 <p>
   La <strong>metagenómica de amplicones</strong> es un enfoque utilizado para estudiar la composición y diversidad de comunidades microbianas sin necesidad de aislar organismos individuales. 
