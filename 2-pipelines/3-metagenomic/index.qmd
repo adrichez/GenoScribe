@@ -14,13 +14,13 @@ title: "Metagenomic Report"
 
 
 <div class="portada-imagen">
-  <img src="resources/1-essential/1-images/1-portada/metagenomic_cover.png" alt="Portada Metagenómica">
+  <img src="resources/1-essential/1-images/Tab1-Inicio/sc_rna_seq_cover.jpg" alt="Portada Metagenómica">
 </div>
 
 
 <div class="informe-resumen">
 
-<h2>Contexto y pipelines empleado</h2>
+<h2>Contexto y pipelines empleados</h2>
 
 <p>
   La <strong>metagenómica de amplicones</strong> es un enfoque utilizado para estudiar la composición y diversidad de comunidades microbianas sin necesidad de aislar organismos individuales. 
@@ -108,7 +108,7 @@ title: "Metagenomic Report"
 
 <!-- Imagen del pipeline completo de miARma-Seq -->
 <div class="box-images">
-  <img src="resources/1-essential/1-images/2-inicio/miARma-Seq-workflow.png" alt="Pipeline completo de miARma-Seq">
+  <img src="resources/1-essential/1-images/Tab1-Inicio/miARma-Seq-workflow.png" alt="Pipeline completo de miARma-Seq">
 </div>
 
 <p>
@@ -142,10 +142,10 @@ title: "Metagenomic Report"
   A continuación se muestra un ejemplo real de un archivo <code>.ini</code> de miARma‑Seq, incluyendo los módulos de control de calidad, alineamiento, cuantificación y análisis diferencial para datos de RNA. En este informe, solo se ejecuta el módulo de <strong>QC</strong>:
 </p>
 
-<iframe src="resources/1-essential/2-archives/miARma_mRNAs_pipeline_STAR.txt" width="100%" height="500px" frameborder="0" style="border: none; display: block;"></iframe>
+<iframe src="resources/1-essential/2-archives/Tab1-Inicio/miARma_mRNAs_pipeline_STAR.txt" width="100%" height="500px" frameborder="0" style="border: none; display: block;"></iframe>
 
 <p style="text-align:center;">
-  <a href="resources/1-essential/2-archives/miARma_mRNAs_pipeline_STAR.txt" target="_blank" class="boton-iframe">
+  <a href="resources/1-essential/2-archives/Tab1-Inicio/miARma_mRNAs_pipeline_STAR.txt" target="_blank" class="boton-iframe">
     🔍 Ver archivo completo en una nueva página
   </a>
 </p>
@@ -166,7 +166,7 @@ title: "Metagenomic Report"
 
 <!-- Imagen del pipeline de QIIME2 -->
 <div class="box-images">
-  <img src="resources/1-essential/1-images/2-inicio/qiime2-workflow.png" alt="Pipeline de QIIME2">
+  <img src="resources/1-essential/1-images/Tab1-Inicio/qiime2-workflow.png" alt="Pipeline de QIIME2">
 </div>
 
 <p>

@@ -245,7 +245,7 @@ h1.title {
   align-items: center;
   padding: 4rem 2rem 0rem 2rem;
   min-height: 280px;
-  background: linear-gradient(135deg, #053197, #06246a);
+  background: linear-gradient(135deg, #0a3fa0, #0d2a75);
   margin: 1.2rem auto -1rem auto;
   border-radius: 10px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
@@ -261,7 +261,7 @@ h1.title {
 .informe-titulo:hover {
   transform: scale(1.01);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-  background: linear-gradient(135deg, #0036b5, #001b5b);
+  background: linear-gradient(135deg, #1150d1, #00205c);
 }
 
 .informe-titulo::before {
@@ -319,7 +319,7 @@ h1.title {
   justify-content: center;
   align-items: center;
   padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, #293c70, #1e2a78);
+  background: linear-gradient(135deg, #1c3a9c, #233974);
   margin: 1.2rem auto -1rem auto;
   border-radius: 7px;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
@@ -335,7 +335,7 @@ h1.title {
 .informe-titulo-tab:hover {
   transform: scale(1.01);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-  background: linear-gradient(135deg, #32478f, #1d2974);
+  background: linear-gradient(135deg, #2a52d1, #1f3e9a);
 }
 
 .informe-titulo-tab::before {
@@ -399,7 +399,7 @@ h1.title {
   justify-content: center;
   align-items: center;
   padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, #3a5299, #1e2a78);
+  background: linear-gradient(135deg, #3458c2, #3b69e0);
   margin: 2rem auto -1rem auto;
   border-radius: 7px;
   box-shadow: none;
@@ -415,7 +415,7 @@ h1.title {
 .informe-titulo-seccion:hover {
   transform: scale(1.01);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(135deg, #4b63b0, #24358a);
+  background: linear-gradient(135deg, #4b7cee, #547fff);
 }
 
 .informe-titulo-seccion::before {
@@ -479,7 +479,7 @@ h1.title {
   justify-content: center;
   align-items: center;
   padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #607ab5, #3c569a);
+  background: linear-gradient(135deg, #678fff, #7aa3ff);
   margin: 2rem auto -1rem auto;
   border-radius: 6px;
   box-shadow: none;
@@ -495,7 +495,7 @@ h1.title {
 .informe-titulo-subseccion:hover {
   transform: scale(1.01);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-  background: linear-gradient(135deg, #748ec3, #475897);
+  background: linear-gradient(135deg, #84b0ff, #9ac6ff);
   cursor: default;
 }
 
@@ -2004,6 +2004,28 @@ details[open] summary.titulo2::before {
   background-color: #fffbe6;
   border-top: 4px solid #665c00;
   color: #665c00;
+}
+
+.metric-card.pink {
+  background-color: #fee6ff;
+  border-top: 4px solid #99008f;
+  color: #99008f;
+}
+
+.metric-card.purple {
+  background-color: #f5ebfe;
+  border-top: 4px solid #660099;
+  color: #660099;
+}
+.metric-card.cyan {
+  background-color: #e6f9ff;
+  border-top: 4px solid #006680;
+  color: #006680;
+}
+.metric-card.gray {
+  background-color: #ebeaea;
+  border-top: 4px solid #525252;
+  color: #5b5b5b;
 }
 
 /* Tipografía armonizada */

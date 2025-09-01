@@ -10,7 +10,7 @@ println " "
 println "--------------------------------------------------------------------------------"
 println "Output dir -> ${params.outdir}"
 println "Ruta carpeta del proyecto -> ${params.ruta_proyecto}"
-println "Nombre del experimento -> ${params.nombre_experimento}"
+println "Tipo de análisis -> ${params.tipo_analisis}"
 println "--------------------------------------------------------------------------------"
 println "\n"
 
@@ -85,13 +85,12 @@ process COPIAR_CARPETA_PROYECTO {
 */
 
 process MULTIQC {
-    tag "multiqc"
+    tag { tipo }
 
-    // Carpeta destino
-    publishDir "${params.outdir}/2-fastqc-report/results-multiqc", mode: 'copy'
+    publishDir "${params.outdir}/2-fastqc-report/results-multiqc-${tipo}", mode: 'copy'
 
     input:
-    path fastqc_dir
+    tuple val(tipo), path(fastqc_dir)
 
     output:
     path "multiqc_report.html"
@@ -110,45 +109,11 @@ process MULTIQC {
 
 
 
+
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     3. Transformar archivo RPKM a CSV usando R
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-process PROCESAR_RPKM {
-    tag "Procesar ${nombre_experimento}_RPKM"
-
-    // Carpeta destino
-    publishDir "${params.outdir}/3-analisis-estadistico", mode: 'copy'
-
-    input:
-    val ruta_proyecto
-    val nombre_experimento
-    path r_script
-
-    output:
-    path "${nombre_experimento}_RPKM.txt"
-
-    script:
-    """
-    Rscript ${r_script} \\
-        "${ruta_proyecto}" \\
-        "${nombre_experimento}" \\
-        "./"
-    """
-}
-
-
-
-
-
-
-
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    4. Transformar archivo RPKM a CSV usando R
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -205,27 +170,30 @@ workflow {
 
 
     // 2. MultiQC
-    fastqc_dir_ch = Channel.value(file("${params.ruta_proyecto}/Analisis/${params.nombre_experimento}/Pre_fastqc_results"))
-    multiqc_out = MULTIQC(fastqc_dir_ch)
+    // Mapa de rutas de FASTQC por tipo
+    def fastqc_paths = [
+        '16S': "${params.ruta_proyecto}/Analisis/miARma_16S/Pre_fastqc_results",
+        '18S': "${params.ruta_proyecto}/Analisis/miARma_18S/Pre_fastqc_results",
+        'ITS': "${params.ruta_proyecto}/Analisis/miARma_ITS/Pre_fastqc_results"
+    ]
 
+    // Determinar qué tipos lanzar según params.tipo_analisis
+    def tipos_a_lanzar = []
+    switch(params.tipo_analisis) {
+        case 1: tipos_a_lanzar = ['16S']; break
+        case 2: tipos_a_lanzar = ['18S']; break
+        case 3: tipos_a_lanzar = ['ITS']; break
+        case 4: tipos_a_lanzar = ['16S','18S']; break
+        case 5: tipos_a_lanzar = ['16S','ITS']; break
+        case 6: tipos_a_lanzar = ['18S','ITS']; break
+        case 7: tipos_a_lanzar = ['16S','18S','ITS']; break
+    }
 
-    // 3. Procesar RPKM
-    nombre_experimento_ch = Channel.value(params.nombre_experimento)
-    r_script_ch = Channel.fromPath("resources/1-essential/3-scripts/1-R/nextflow-code/procesar_rpkm.R")
+    // Crear un canal con tuplas (tipo, ruta) para MultiQC
+    Channel
+        .fromList(tipos_a_lanzar.collect { tipo -> [tipo, file(fastqc_paths[tipo])] })
+        .set { multiqc_inputs_ch }
 
-    procesar_rpkm_out = PROCESAR_RPKM(ruta_proyecto_ch, nombre_experimento_ch, r_script_ch)
-
-
-    // 4. Renderizar Quarto
-    // Barrier: emite UNA SOLA VEZ cuando se han cerrado las tres salidas
-    all_done_ch = copiar_out
-        .mix(multiqc_out)
-        .mix(procesar_rpkm_out)
-        .collect()  // << espera a que terminen y emite una lista única
-        .map { true }  // << la lista no nos importa; solo queremos un token
-
-    // Canal con la ruta del directorio base donde se encuentra main.nf e index.qmd
-    base_dir_ch = Channel.fromPath('.', checkIfExists: true)
-
-    RENDER_QUARTO(base_dir_ch, all_done_ch)
+    // Llamar al proceso MULTIQC usando el canal
+    MULTIQC(multiqc_inputs_ch)
 }

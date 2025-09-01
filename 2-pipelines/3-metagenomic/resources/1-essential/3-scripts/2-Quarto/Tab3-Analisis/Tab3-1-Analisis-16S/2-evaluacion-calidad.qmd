@@ -1,36 +1,38 @@
 ---
-title: "RNA-Seq Report"
+title: "Metagenomic Report"
 
 include-in-header:
   text: |
-    <link rel="shortcut icon" href="../../../1-images/0-icono/favicon.svg"/>
-    <link rel="icon" type="image/x-icon" href="../../../1-images/0-icono/favicon.ico">
+    <link rel="shortcut icon" href="../../../../1-images/icono/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../1-images/icono/favicon.ico">
 
 params:
   ruta_proyecto: ""
-  nombre_experimento: ""
+  tipo_analisis: ""
 ---
 
 
 <!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
-<!--  TAB 3: ANÁLISIS | 2. EVALUACIÓN DE LA CALIDAD DE LAS LECTURAS -->
+<!--  TAB 3: ANÁLISIS 16S | 2. EVALUACIÓN DE LA CALIDAD DE LAS LECTURAS -->
 <!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
 
 ```{r}
+# Cargar librerías
 library(glue)
 library(fs)
 library(stringr)
 library(dplyr)
 
-# Definir rutas clave
+
+# Rutas clave
 ruta_qmd <- getwd()
-
-ruta_rnaseq_pipeline <- sub("(.*?/1-bulk-rna-seq).*", "\\1", ruta_qmd)
-
+ruta_metagenomic_pipeline <- file.path("..", "..", "..", "..", "..", "..")
 nombre_proyecto <- basename(params$ruta_proyecto)
 
-ruta_nextflow_results <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results")
-ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "resources", "2-nextflow-results", "1-project-data", nombre_proyecto)
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path("..", "..", "..", "..", "..", "..", "resources", "2-nextflow-results")
+ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "..", "resources", "2-nextflow-results", "1-project-data", nombre_proyecto)
 
 
 targets_experimento <- paste0("targets_", params$nombre_experimento, ".txt")

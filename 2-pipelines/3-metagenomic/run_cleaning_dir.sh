@@ -57,10 +57,13 @@ echo "🧹 Vaciando carpetas específicas..."
 # Lista de carpetas a vaciar
 FOLDERS_TO_EMPTY=(
   "report"
-  "resources/2-nextflow-results/1-project-data"
-  "resources/2-nextflow-results/2-fastqc-report"
-  "resources/2-nextflow-results/3-analisis-estadistico"
-  "../../1-app/www/reports/$NOMBRE_PIPELINE"
+  #"resources/1-essential/2-archives/Tab3-Analisis16S"
+  #"resources/1-essential/2-archives/Tab3-Analisis18S"
+  #"resources/1-essential/2-archives/Tab3-AnalisisITS"
+  #"resources/2-nextflow-results/1-project-data"
+  #"resources/2-nextflow-results/2-fastqc-report"
+  #"resources/2-nextflow-results/3-analisis-estadistico"
+  #"../../1-app/www/reports/$NOMBRE_PIPELINE"
 )
 
 for folder in "${FOLDERS_TO_EMPTY[@]}"; do
