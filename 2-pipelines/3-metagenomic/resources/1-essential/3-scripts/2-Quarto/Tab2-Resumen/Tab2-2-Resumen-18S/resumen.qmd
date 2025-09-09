@@ -107,7 +107,7 @@ metricas_metadata <- Def_sample_metadata_relativa %>%
 
 <div class="informe-titulo-tab">
   <h1>Pestaña</h1>
-  <h2>Resumen del experimento</h2>
+  <h2>Resumen 16S del experimento</h2>
 </div>
 
 

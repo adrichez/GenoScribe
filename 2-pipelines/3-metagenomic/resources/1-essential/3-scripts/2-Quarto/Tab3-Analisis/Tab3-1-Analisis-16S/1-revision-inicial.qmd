@@ -96,7 +96,7 @@ ruta_reads_16S <- file.path(params$ruta_proyecto, "Analisis", "reads", "16S")
 
 <div class="informe-titulo-tab">
   <h1>Pestaña</h1>
-  <h2>Análisis bioinformático completo</h2>
+  <h2>Análisis 16S bioinformático completo</h2>
 </div>
 
 <div class="informe-titulo-seccion">
@@ -178,6 +178,8 @@ ruta_reads_16S <- file.path(params$ruta_proyecto, "Analisis", "reads", "16S")
 <p>
   Antes de iniciar el análisis técnico y estadístico de los datos de expresión génica, es fundamental realizar una revisión preliminar del entorno de trabajo, los archivos disponibles y la información asociada a cada muestra. Esta sección tiene como objetivo contextualizar el diseño experimental, validar la organización de los datos y asegurar la integridad y consistencia de las muestras. Para ello, se examina tanto la estructura de carpetas del proyecto como el archivo de metadatos, y se identifican los archivos de lectura cruda que servirán como punto de partida para los análisis posteriores.
 </p>
+
+
 
 
 
@@ -306,6 +308,8 @@ cat(glue::glue('
 
 
 
+
+
 <div style="height: 20px; background-color: transparent;"></div>
 
 <div class="titulo2" id="tab3-seccion1.2">
@@ -359,7 +363,7 @@ htmltools::div(
 )
 ```
 
-<div style="height: 20px; background-color: transparent;"></div>
+<div style="height: 15px; background-color: transparent;"></div>
 
 <p>
   Para consultar el archivo completo, puede utilizar el visor incrustado que se presenta a continuación o, si lo prefiere, abrir el documento en una pestaña independiente para una exploración más cómoda:
@@ -374,8 +378,6 @@ cat(glue::glue('
     🔍 Ver metadatos completos en una nueva página
   </a>
 </p>
-
-<div style="height: 15px; background-color: transparent;"></div>
 \n\n'))
 ```
 
@@ -396,6 +398,8 @@ cat(glue::glue('
 <p>
   El archivo de metadatos es una pieza esencial para asegurar la trazabilidad del análisis, ya que documenta de forma estructurada la correspondencia entre las muestras, sus nombres internos y los grupos experimentales. Esta trazabilidad garantiza tanto la reproducibilidad como una interpretación correcta de los resultados obtenidos.
 </p>
+
+
 
 
 

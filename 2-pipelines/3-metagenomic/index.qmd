@@ -14,7 +14,7 @@ title: "Metagenomic Report"
 
 
 <div class="portada-imagen">
-  <img src="resources/1-essential/1-images/Tab1-Inicio/sc_rna_seq_cover.jpg" alt="Portada Metagenómica">
+  <img src="resources/1-essential/1-images/Tab1-Inicio/metagenomic_cover.png" alt="Portada Metagenómica">
 </div>
 
 
@@ -45,10 +45,10 @@ title: "Metagenomic Report"
 <ul>
   <li><strong>Control de calidad inicial</strong>: realizado mediante <strong>miARma‑Seq</strong> (<em>Eduardo Andrés-León et al.</em>), un pipeline modular y completo diseñado para análisis de RNA-Seq que incluye pasos de recorte, alineamiento, cuantificación y análisis diferencial. 
   Dado que miARma‑Seq no está pensado específicamente para metagenómica, en este informe se ha utilizado únicamente para procesar datos de <code>FASTQ</code> y generar informes de <em>FastQC</em> y <em>MultiQC</em> para evaluar la calidad de las lecturas. 
-  Toda la información y documentación de miARma-Seq está disponible en su <a href="https://github.com/eandresleon/miARma-seq" target="_blank">repositorio oficial</a>.</li>
+  Toda la información y documentación de miARma-Seq está disponible en su <a href="https://github.com/eandresleon/miARma-seq" class="normalink" target="_blank">repositorio oficial</a>.</li>
   
   <li><strong>Análisis metagenómico principal</strong>: llevado a cabo con <strong>QIIME2</strong>, que permite denoising de lecturas, construcción de tablas de abundancia, cálculo de métricas de diversidad, análisis funcional y visualización integrada. 
-  QIIME2 es una plataforma reproducible y documentada, diseñada específicamente para metagenómica de amplicones, disponible en <a href="https://qiime2.org/" target="_blank">https://qiime2.org/</a>.</li>
+  QIIME2 es una plataforma reproducible y documentada, diseñada específicamente para metagenómica de amplicones, disponible en <a href="https://qiime2.org/" class="normalink" target="_blank">https://qiime2.org/</a>.</li>
 </ul>
 
 <p>
@@ -126,7 +126,7 @@ title: "Metagenomic Report"
 
 <p>
   Aunque miARma‑Seq ofrece todas estas funcionalidades, en este informe únicamente se ha utilizado el <strong>módulo de control de calidad</strong> para los archivos <code>FASTQ</code> de nuestro análisis metagenómico. Esto garantiza que las lecturas crudas de 16S son de alta calidad antes de ser procesadas con QIIME2.  
-  Toda la documentación y el repositorio de miARma‑Seq están disponibles en <a href="https://github.com/eandresleon/miARma-seq" target="_blank">GitHub</a>.
+  Toda la documentación y el repositorio de miARma‑Seq están disponibles en <a href="https://github.com/eandresleon/miARma-seq" class="normalink" target="_blank">GitHub</a>.
 </p>
 
 <p>
@@ -159,7 +159,7 @@ title: "Metagenomic Report"
 ```
 
 <p>
-  Para más información sobre esta herramienta y su pipeline completo, se puede consultar el repositorio oficial en <a href="https://github.com/eandresleon/miARma-seq" target="_blank" class="normalink">GitHub: miARma‑Seq</a>.  
+  Para más información sobre esta herramienta y su pipeline completo, se puede consultar el repositorio oficial en <a href="https://github.com/eandresleon/miARma-seq" class="normalink" target="_blank" class="normalink">GitHub: miARma‑Seq</a>.  
   En futuras extensiones del análisis metagenómico, se podría aprovechar más módulos del pipeline si se integran otros tipos de datos o se desea automatizar pasos adicionales.
 </p>
 
@@ -210,7 +210,7 @@ title: "Metagenomic Report"
 </ol>
 
 <p>
-  El uso combinado de <strong>QIIME2</strong> y <strong>R</strong> permite un análisis completo y reproducible de los datos de 16S, integrando diversidad, funcionalidad y estadística avanzada. La documentación oficial de QIIME2 está disponible en <a href="https://qiime2.org/" target="_blank">https://qiime2.org/</a>.
+  El uso combinado de <strong>QIIME2</strong> y <strong>R</strong> permite un análisis completo y reproducible de los datos de 16S, integrando diversidad, funcionalidad y estadística avanzada. La documentación oficial de QIIME2 está disponible en <a href="https://qiime2.org/" target="_blank" class="normalink">https://qiime2.org/</a>.
 </p>
 
 <p>

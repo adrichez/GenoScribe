@@ -59,7 +59,7 @@ process COPIAR_CARPETA_PROYECTO {
         if [ -d "\$origen" ]; then
             echo "Copiando carpeta: \$origen"
             mkdir -p "\$destino"
-            find "\$origen" -type f -size -300M -print0 | while IFS= read -r -d '' file; do
+            find "\$origen" -type f -size -100M -print0 | while IFS= read -r -d '' file; do
                 rel_path=\$(dirname "\${file#\$origen/}")
                 mkdir -p "\$destino/\$rel_path"
                 cp "\$file" "\$destino/\$rel_path/"

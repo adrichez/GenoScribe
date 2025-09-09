@@ -41,7 +41,13 @@ main {
 /* ==== PÁRRAFOS CON MÁS AIRE VISUAL ==== */
 p {
   margin-top: 0;
-  margin-bottom: 0.4em;
+  margin-bottom: 0.3em;
+}
+
+ul {
+  margin-top: 0.2em;
+  margin-bottom: 0.3em;
+  padding-left: 1.2em;
 }
 
 /* ==== CABECERAS MEJORADAS SIN CAMBIAR ESTILO ==== */
@@ -735,7 +741,7 @@ h1.title {
 
 /* Segundo nivel de título */
 .titulo2 {
-  font-size: 28px;
+  font-size: 28px; 
   color: #004151;
   margin-top: 45px;
   margin-bottom: 0;
@@ -763,17 +769,33 @@ h1.title {
 
 /* Cuarto nivel de título */
 .titulo4 {
-  font-size: 22px;
+  font-size: 23px;
   color: #004151;
-  margin-top: 38px;
+  margin-top: 37px;
   margin-bottom: 0;
-  letter-spacing: -0.12px;
+  letter-spacing: -0.13px;
   border-bottom: 1px solid #dedede;
   padding-bottom: 1px;
   line-height: 1;
   text-transform: uppercase;
   font-weight: bold;
 }
+
+/* Cuarto nivel de título */
+.titulo5 {
+  font-size: 21px;
+  color: #004151;
+  margin-top: 36px;
+  margin-bottom: 0;
+  letter-spacing: -0.11px;
+  border-bottom: 1px solid #dedede;
+  padding-bottom: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+
 
 
 
@@ -1672,7 +1694,7 @@ iframe {
 }
 
 
-/* botón para mostrar archivos */
+/* botón para mostrar carpeta de archivos */
 .boton-files {
   display: inline-block;
   padding: 10px 22px;
@@ -1721,6 +1743,60 @@ iframe {
 }
 
 .boton-files:hover::before {
+  transform: skewX(-25deg) translateX(200%);
+  transition: transform 0.6s ease;
+}
+
+
+/* botón para mostrar un archivo (de tabla normalmente) en pestaña nueva */
+.boton-file {
+  display: inline-block;
+  padding: 10px 22px;
+  background-color: #01495b;
+  color: #e0f7fa;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  margin: 7px auto 10px auto;
+  position: relative;
+  overflow: hidden;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.4s ease;
+}
+
+.boton-file::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -50%;
+  width: 40%;
+  height: 120%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg) translateX(0);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+  border-radius: 8px;
+  filter: drop-shadow(0 0 5px rgba(224, 247, 250, 0.25));
+  z-index: 1;
+}
+
+.boton-file:hover {
+  background-color: #005e76;       /* Azul oscuro fuerte */
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(1, 56, 70, 0.7);
+  cursor: pointer;
+}
+
+.boton-file:hover::before {
   transform: skewX(-25deg) translateX(200%);
   transition: transform 0.6s ease;
 }
@@ -2045,4 +2121,30 @@ details[open] summary.titulo2::before {
   font-weight: 600;
   letter-spacing: -0.3px;
   line-height: 1.2;
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Estilo para cajas de alerta
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Cuando no se encuentran los datos */
+.alert-box {
+  margin: 20px 0;
+  padding: 15px;
+  border: 2px dashed #d9534f;
+  border-radius: 8px;
+  background-color: #fff5f5;
+  color: #a94442;
+  font-size: 15px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }

@@ -470,7 +470,9 @@ for (id in ids_muestras) {
   i <- 1
 
   cat(glue::glue('
-  <div class="titulo3" id="tab3-seccion2.2.1.{i}">
+  <div style="height: 12px; background-color: transparent;"></div>
+
+  <div class="titulo4" id="tab3-seccion2.2.1.{i}">
     2.2.1.{i}. Muestra: {id}
   </div>
 
@@ -521,7 +523,9 @@ for (id in ids_muestras) {
   i <- 1
 
   cat(glue::glue('
-  <div class="titulo3" id="tab3-seccion2.2.2.{i}">
+  <div style="height: 12px; background-color: transparent;"></div>
+  
+  <div class="titulo4" id="tab3-seccion2.2.2.{i}">
     2.2.2.{i}. Muestra: {id}
   </div>
 

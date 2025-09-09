@@ -1,0 +1,111 @@
+---
+title: "Metagenomic Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../1-images/icono/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../1-images/icono/favicon.ico">
+
+params:
+  ruta_proyecto: ""
+  tipo_analisis: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 3. GENERACIÓN DE ASVs Y TABLA DE ABUNDANCIA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+```{r}
+# Cargar librerías
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_metagenomic_pipeline <- file.path("..", "..", "..", "..", "..", "..")
+nombre_proyecto <- basename(params$ruta_proyecto)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path("..", "..", "..", "..", "..", "..", "resources", "2-nextflow-results")
+ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "..", "resources", "2-nextflow-results", "1-project-data", nombre_proyecto)
+```
+
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis 16S bioinformático completo</h2>
+</div>
+
+<div class="informe-titulo-seccion">
+  <h1>Sección 3</h1>
+  <h2>Generación de ASVs y tabla de abundancia</h2>
+</div>
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    Resumen aquí
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta sección
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion3">
+        3<span>.</span> Generación de ASVs y tabla de abundancia
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion3.1">
+            3.1. Preparación del índice del genoma de referencia
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion3.2">
+            3.2. Alineamiento de lecturas contra el genoma indexado
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- REDACCIÓN -->
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion3">
+  3<span>.</span> Alineamiento de las lecturas contra el genoma de referencia
+</div>

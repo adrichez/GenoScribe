@@ -763,17 +763,33 @@ h1.title {
 
 /* Cuarto nivel de título */
 .titulo4 {
-  font-size: 22px;
+  font-size: 23px;
   color: #004151;
-  margin-top: 38px;
+  margin-top: 37px;
   margin-bottom: 0;
-  letter-spacing: -0.12px;
+  letter-spacing: -0.13px;
   border-bottom: 1px solid #dedede;
   padding-bottom: 1px;
   line-height: 1;
   text-transform: uppercase;
   font-weight: bold;
 }
+
+/* Cuarto nivel de título */
+.titulo5 {
+  font-size: 21px;
+  color: #004151;
+  margin-top: 36px;
+  margin-bottom: 0;
+  letter-spacing: -0.11px;
+  border-bottom: 1px solid #dedede;
+  padding-bottom: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+
 
 
 

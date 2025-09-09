@@ -1,0 +1,151 @@
+---
+title: "Metagenomic Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../1-images/icono/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../1-images/icono/favicon.ico">
+
+params:
+  ruta_proyecto: ""
+  tipo_analisis: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 6. DIVERSIDAD MICROBIANA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+```{r}
+# Cargar librerías
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_metagenomic_pipeline <- file.path("..", "..", "..", "..", "..", "..")
+nombre_proyecto <- basename(params$ruta_proyecto)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path("..", "..", "..", "..", "..", "..", "resources", "2-nextflow-results")
+ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "..", "resources", "2-nextflow-results", "1-project-data", nombre_proyecto)
+
+
+# Rutas de la carpeta 
+ruta_Def <- file.path(params$ruta_proyecto, "Resultados", "Def")
+ruta_Def_relativa <- file.path(ruta_proyecto_relativa, "Resultados", "Def")
+
+
+# Rutas de la carpeta core-metrics-results
+ruta_core_metrics_results <- file.path(ruta_Def, "core-metrics-results")
+ruta_core_metrics_results_relativa <- file.path(ruta_Def_relativa, "core-metrics-results")
+
+
+# Carpeta donde se guardarán los unzip
+directorio_unzip <- file.path(ruta_core_metrics_results_relativa, "unzip")
+if (!dir.exists(directorio_unzip)) dir.create(directorio_unzip, recursive = TRUE)
+
+# Listar todos los archivos .qzv en el directorio
+archivos_qzv <- list.files(ruta_core_metrics_results_relativa, pattern = "\\.qzv$", full.names = TRUE)
+
+# Iterar sobre cada archivo
+for (archivo in archivos_qzv) {
+  
+  # Nombre base sin extensión
+  nombre_base <- tools::file_path_sans_ext(basename(archivo))
+  
+  # Carpeta de salida para este archivo
+  carpeta_salida <- file.path(directorio_unzip, nombre_base)
+  if (!dir.exists(carpeta_salida)) dir.create(carpeta_salida, recursive = TRUE)
+  
+  # Descomprimir
+  system2("unzip", args = c("-o", shQuote(archivo),
+                            "-d", shQuote(carpeta_salida)))
+  
+  # Comprobar que se descomprimió correctamente
+  if (dir.exists(carpeta_salida)) {
+    message("✅ Descomprimido: ", archivo, " → ", carpeta_salida)
+  } else {
+    warning("⚠️ No se pudo descomprimir: ", archivo)
+  }
+}
+```
+
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis 16S bioinformático completo</h2>
+</div>
+
+<div class="informe-titulo-seccion">
+  <h1>Sección 6</h1>
+  <h2>Diversidad microbiana</h2>
+</div>
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    Resumen aquí
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta sección
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion4">
+        6<span>.</span> Diversidad microbiana
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion4.1">
+            6.1. Preparación del índice del genoma de referencia
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion4.2">
+            6.2. Alineamiento de lecturas contra el genoma indexado
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!-- REDACCIÓN -->
+<!-- #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion4">
+  6<span>.</span> Diversidad microbiana
+</div>
