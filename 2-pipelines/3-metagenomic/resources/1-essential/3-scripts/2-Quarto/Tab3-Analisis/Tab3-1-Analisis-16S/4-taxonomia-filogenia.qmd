@@ -13,6 +13,27 @@ params:
 
 
 <!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  CHATBOT
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
 <!--  TAB 3: ANÁLISIS | 4. ASIGNACIÓN TAXONÓMICA Y FILOGENIA -->
 <!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
 
@@ -55,6 +76,11 @@ ruta_exported_relativa <- file.path(ruta_Def_relativa, "exported")
   <h1>Sección 3</h1>
   <h2>Asignación taxonómica y filogenia</h2>
 </div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
 
 <div class="informe-resumen">
   <h2>Resumen</h2>
@@ -463,7 +489,7 @@ if (file.exists(ruta_index_html)) {
 
   <p style="text-align:center;">
     <a href="{ruta_index_html}" target="_blank" class="boton-iframe">
-      🔍 Ver matriz normalizada en una nueva página
+      📊 Abrir informe en nueva pestaña
     </a>
   </p>
 
@@ -764,6 +790,7 @@ if (file.exists(ruta_feature_table_l5_export_tsv)) {
   cat(glue::glue('
 <code>{ruta_feature_table_l5_export_tsv}</code>
 \n\n'))
+
 } else {
   cat(glue::glue('
   <div class="alert-box">
@@ -779,6 +806,7 @@ if (file.exists(ruta_feature_table_l6_export_tsv)) {
   cat(glue::glue('
 <code>{ruta_feature_table_l6_export_tsv}</code>
 \n\n'))
+
 } else {
   cat(glue::glue('
   <div class="alert-box">
@@ -794,6 +822,7 @@ if (file.exists(ruta_feature_table_l7_export_tsv)) {
   cat(glue::glue('
 <code>{ruta_feature_table_l7_export_tsv}</code>
 \n\n'))
+
 } else {
   cat(glue::glue('
   <div class="alert-box">
@@ -1349,7 +1378,7 @@ if (file.exists(ruta_unzip_unrooted_tree)) {
 
   <p style="text-align:center;">
     <a href="{ruta_unrooted_index_html}" target="_blank" class="boton-iframe">
-      🔍 Ver matriz normalizada en una nueva página
+      📊 Abrir informe en nueva pestaña
     </a>
   </p>
 
@@ -1405,7 +1434,7 @@ if (file.exists(ruta_unzip_rooted_tree)) {
 
   <p style="text-align:center;">
     <a href="{ruta_rooted_index_html}" target="_blank" class="boton-iframe">
-      🔍 Ver matriz normalizada en una nueva página
+      📊 Abrir informe en nueva pestaña
     </a>
   </p>
 

@@ -13,7 +13,28 @@ params:
 
 
 <!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
-<!--  TAB 3: ANÁLISIS | 3. GENERACIÓN DE ASVs Y TABLA DE ABUNDANCIA -->
+<!--  CHATBOT
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 7. PREDICCIÓN FUNCIONAL (PICRUSt2 / Pycrust) -->
 <!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
 
 ```{r}
@@ -42,9 +63,14 @@ ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "..", "resourc
 </div>
 
 <div class="informe-titulo-seccion">
-  <h1>Sección 3</h1>
-  <h2>Generación de ASVs y tabla de abundancia</h2>
+  <h1>Sección 7</h1>
+  <h2>Predicción funcional (PICRUSt2 / Pycrust)</h2>
 </div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
 
 <div class="informe-resumen">
   <h2>Resumen</h2>
@@ -72,18 +98,18 @@ ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "..", "resourc
 <div class="toc">
   <ul>
     <li>
-      <a href="#tab3-seccion3">
-        3<span>.</span> Generación de ASVs y tabla de abundancia
+      <a href="#tab3-seccion7">
+        7<span>.</span> Generación de ASVs y tabla de abundancia
       </a>
       <ul>
         <li>
-          <a href="#tab3-seccion3.1">
-            3.1. Preparación del índice del genoma de referencia
+          <a href="#tab3-seccion7.1">
+            7.1. Preparación del índice del genoma de referencia
           </a>
         </li>
         <li>
-          <a href="#tab3-seccion3.2">
-            3.2. Alineamiento de lecturas contra el genoma indexado
+          <a href="#tab3-seccion7.2">
+            7.2. Alineamiento de lecturas contra el genoma indexado
           </a>
         </li>
       </ul>
@@ -107,5 +133,5 @@ ruta_proyecto_relativa <- file.path("..", "..", "..", "..", "..", "..", "resourc
 <div style="height: 25px; background-color: transparent;"></div>
 
 <div class="titulo1" id="tab3-seccion3">
-  3<span>.</span> Alineamiento de las lecturas contra el genoma de referencia
+  7<span>.</span> Predicción funcional (PICRUSt2 / Pycrust)
 </div>

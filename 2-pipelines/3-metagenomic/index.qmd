@@ -3,6 +3,28 @@ title: "Metagenomic Report"
 ---
 
 
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  CHATBOT
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+```{=html}
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
 <!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
 <!--  TAB 1: INICIO -->
 <!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
@@ -12,9 +34,8 @@ title: "Metagenomic Report"
   <p>Generado con Nextflow + Quarto · IPBLN-CSIC · Granada</p>
 </div>
 
-
 <div class="portada-imagen">
-  <img src="resources/1-essential/1-images/Tab1-Inicio/metagenomic_cover.png" alt="Portada Metagenómica">
+  <img src="resources/1-essential/1-images/Tab1-Inicio/metagenomic_cover.jpg" alt="Portada Metagenómica">
 </div>
 
 
@@ -106,13 +127,19 @@ title: "Metagenomic Report"
   A continuación se presentan los flujos de trabajo de las dos herramientas principales utilizadas en este análisis de metagenómica: <strong>miARma‑Seq</strong> para control de calidad y <strong>QIIME2</strong> para el análisis de datos de 16S. Cada diagrama ilustra la modularidad y reproducibilidad del pipeline.
 </p>
 
-<!-- Imagen del pipeline completo de miARma-Seq -->
-<div class="box-images">
-  <img src="resources/1-essential/1-images/Tab1-Inicio/miARma-Seq-workflow.png" alt="Pipeline completo de miARma-Seq">
+
+
+
+
+
+<div style="height: 13px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Flujo de trabajo con miARma-Seq
 </div>
 
 <p>
-  <strong>Pipeline completo de miARma‑Seq:</strong> miARma‑Seq es un pipeline integral diseñado para análisis de RNA‑Seq (mRNA, miRNA y circRNA), desarrollado por <em>Eduardo Andrés‑León et al.</em>. Incluye múltiples módulos que permiten procesar datos crudos de manera modular y reproducible:
+  <strong>miARma‑Seq</strong> es un pipeline integral diseñado para análisis de RNA‑Seq (mRNA, miRNA y circRNA), desarrollado por <em>Eduardo Andrés‑León et al.</em>. Incluye múltiples módulos que permiten procesar datos crudos de manera modular y reproducible:
 </p>
 
 <ol>
@@ -125,13 +152,15 @@ title: "Metagenomic Report"
 </ol>
 
 <p>
-  Aunque miARma‑Seq ofrece todas estas funcionalidades, en este informe únicamente se ha utilizado el <strong>módulo de control de calidad</strong> para los archivos <code>FASTQ</code> de nuestro análisis metagenómico. Esto garantiza que las lecturas crudas de 16S son de alta calidad antes de ser procesadas con QIIME2.  
-  Toda la documentación y el repositorio de miARma‑Seq están disponibles en <a href="https://github.com/eandresleon/miARma-seq" class="normalink" target="_blank">GitHub</a>.
+  Aunque miARma‑Seq ofrece todas estas funcionalidades, en este informe únicamente se ha utilizado el <strong>módulo de control de calidad</strong> para los archivos <code>FASTQ</code> de nuestro análisis metagenómico. Esto garantiza que las lecturas crudas de 16S sean de alta calidad antes de ser procesadas con QIIME2. Toda la documentación y el repositorio de miARma‑Seq están disponibles en su repoditorio de <a href="https://github.com/eandresleon/miARma-seq" class="normalink" target="_blank">GitHub</a>. Podemos ver el workflow completo de esta herramienta a continuación:
 </p>
 
+<div class="box-images">
+  <img src="resources/1-essential/1-images/Tab1-Inicio/miARma-Seq-workflow.png" alt="Pipeline completo de miARma-Seq">
+</div>
+
 <p>
-  Para garantizar la <strong>reproducibilidad</strong> y <strong>modularidad</strong> del pipeline, <code>miARma‑Seq</code> utiliza un archivo de configuración con extensión <code>.ini</code>. Este archivo permite especificar todos los parámetros necesarios para ejecutar el pipeline completo de RNA-Seq, sin necesidad de escribir comandos complejos en la línea de comandos.  
-  En el contexto de este informe de metagenómica, se ha utilizado únicamente el módulo de control de calidad de lecturas (<code>FASTQ</code>), aunque el archivo <code>.ini</code> podría activar otros pasos del pipeline si se deseara.
+  Para garantizar la <strong>reproducibilidad</strong> y <strong>modularidad</strong> del pipeline, <code>miARma‑Seq</code> utiliza un archivo de configuración con extensión <code>.ini</code>. Este archivo permite especificar todos los parámetros necesarios para ejecutar el pipeline completo de RNA-Seq, sin necesidad de escribir comandos complejos en la línea de comandos. En el contexto de este informe de metagenómica, se ha utilizado únicamente el módulo de control de calidad de lecturas (<code>FASTQ</code>), aunque el archivo <code>.ini</code> podría activar otros pasos del pipeline si se deseara.
 </p>
 
 <p>
@@ -164,13 +193,20 @@ title: "Metagenomic Report"
 </p>
 
 
-<!-- Imagen del pipeline de QIIME2 -->
-<div class="box-images">
-  <img src="resources/1-essential/1-images/Tab1-Inicio/qiime2-workflow.png" alt="Pipeline de QIIME2">
+
+
+
+
+
+
+<div style="height: 13px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Flujo de trabajo con QIIME2
 </div>
 
 <p>
-  <strong>Pipeline de QIIME2:</strong> QIIME2 es una plataforma especializada para análisis de metagenómica de amplicones, especialmente del marcador 16S, con un enfoque modular, reproducible y documentado. Su flujo de trabajo incluye múltiples etapas que permiten procesar, filtrar y analizar las secuencias de manera rigurosa, integrando herramientas estadísticas y visualización avanzada.
+  <strong>QIIME2</strong> es una plataforma especializada para análisis de metagenómica de amplicones, especialmente del marcador 16S, con un enfoque modular, reproducible y documentado. Su flujo de trabajo incluye múltiples etapas que permiten procesar, filtrar y analizar las secuencias de manera rigurosa, integrando herramientas estadísticas y visualización avanzada.
 </p>
 
 <ol>
@@ -210,6 +246,14 @@ title: "Metagenomic Report"
 </ol>
 
 <p>
+  Mediante la siguiente imagen podemos observar de forma más visual el workflow completo descrito anteriormente y seguido con esta herramienta:
+</p>
+
+<div class="box-images">
+  <img src="resources/1-essential/1-images/Tab1-Inicio/qiime2-workflow.png" alt="Pipeline de QIIME2">
+</div>
+
+<p>
   El uso combinado de <strong>QIIME2</strong> y <strong>R</strong> permite un análisis completo y reproducible de los datos de 16S, integrando diversidad, funcionalidad y estadística avanzada. La documentación oficial de QIIME2 está disponible en <a href="https://qiime2.org/" target="_blank" class="normalink">https://qiime2.org/</a>.
 </p>
 
@@ -218,9 +262,15 @@ title: "Metagenomic Report"
 </p>
 
 
-<div style="height: 18px; background-color: transparent;"></div>
 
----
+
+
+
+<div style="height: 13px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Reflexiones finales
+</div>
 
 <p>
   Con los datos procesados mediante <strong>miARma‑Seq</strong> para control de calidad y <strong>QIIME2</strong> para el análisis metagenómico, se ha generado el correspondiente informe automatizado de metagenómica mediante un pipeline reproducible desarrollado en <strong>Nextflow</strong>. 

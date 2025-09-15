@@ -78,89 +78,155 @@ strong {
 */
 
 /* Barra de navegación: más delgada, fondo oscuro elegante */
-/* Barra de navegación */
 .navbar {
   padding: 0.5rem 1.5rem;
-  height: 48px;
-  background-color: #0f1a24;
+  height: 85px;
+  background: linear-gradient(135deg, #102235, #0c2435);
   border-bottom: 2px solid #1f2f5b;
-  font-size: 0.75rem;
-  font-weight: 400;  /* menos grueso */
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: "Nunito", "Quicksand", "Segoe UI Rounded", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
   display: flex;
   align-items: center;
   position: relative;
   z-index: 1000;
-  letter-spacing: 0.02em; /* un poquito de espacio entre letras */
-  height: 60px;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  text-transform: none;
 }
 
 /* Ítems del menú */
 .navbar .nav-link {
-  padding: 0.4rem 1.2rem; /* más espacio a los lados */
-  color: #cfd8dc !important;
-  font-weight: 500; /* intermedio */
-  border-radius: 5px;
+  padding: 0.45rem 0.8rem;      /* reduce espacio lateral */
+  color: #94c0ec !important;
+  font-weight: 600;
+  font-size: 0.92rem;
+  border-radius: 10px;
   transition:
-    background-color 0.25s ease,
-    color 0.25s ease,
-    box-shadow 0.25s ease;
+    background-color 0.3s ease,
+    color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 1px;
+  position: relative;
 }
 
-/* Hover y foco: cambio sutil, grisáceo y menos saturado */
+/* Hover elegante */
 .navbar .nav-link:hover,
 .navbar .nav-link:focus {
-  color: #e0e6ea !important; /* gris muy claro */
-  background-color: #253447 !important; /* azul grisáceo oscuro */
-  box-shadow: none;
-  cursor: pointer;
-  outline: none;
-}
-
-/* Menús desplegables */
-.dropdown-menu {
-  background-color: #0f1a24;
-  border: 1.5px solid #2a3f52;
-  border-radius: 5px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-  padding: 0.4rem 0;
-  min-width: 160px;
-  transition: opacity 0.3s ease;
-}
-
-/* Ítems dentro del menú desplegable */
-.dropdown-item {
-  color: #cfd8dc;
-  font-size: 0.8rem;
-  padding: 0.4rem 1.2rem;
-  border-radius: 5px;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Hover en ítems desplegables: gris azulado suave */
-.dropdown-item:hover,
-.dropdown-item:focus {
-  background-color: #253447;
-  color: #e0e6ea;
-  box-shadow: none;
+  background: linear-gradient(135deg, rgba(63,169,213,0.12), rgba(95,195,235,0.18));
+  color: #e1f7ff !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  transform: translateY(-1px);
   cursor: pointer;
   outline: none;
 }
 
 /* Ítem activo */
 .navbar .nav-link.active {
-  background-color: #2a3f52;
-  color: #e0f7fa !important;
-  box-shadow: none;
+  background: linear-gradient(135deg, #26384e, #324968);
+  color: #e0faff !important;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.4);
+  border-radius: 10px;
+}
+
+/* Menús desplegables */
+.dropdown-menu {
+  background-color: #16232f;
+  border: 1.5px solid #2a3f52;
+  border-radius: 10px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.45);
+  padding: 2rem 0.2rem;   /* menos espacio lateral, algo de aire arriba y abajo */
+  margin-top: 0.7rem;     /* separación del botón */
+  min-width: 180px;       /* ligeramente más ancho que el contenido */
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  transform-origin: top;
+}
+
+/* Ítems dentro del menú desplegable */
+.dropdown-item {
+  color: #94c0ec;          
+  font-size: 0.83rem;      
+  font-weight: 580;        
+  font-family: "Nunito", "Quicksand", "Segoe UI Rounded", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.02em;  
+  padding: 2rem 0.8rem;  /* menos espacio arriba/abajo y lateral casi inexistente */
+  border-radius: 10px;     
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;               
+}
+
+/* Hover en ítems desplegables */
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: #24394f;
+  color: #e1f7ff;
+  transform: translateX(3px);
+  cursor: pointer;
+  outline: none;
+}
+
+/* Hover en ítems desplegables */
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: #24394f;
+  color: #e1f7ff;
+  transform: translateX(3px);
+  cursor: pointer;
+  outline: none;
+}
+
+/* Contenedor logo + texto */
+.navbar .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0px;               /* separación logo-texto */
+  padding: 0;             
+  overflow: visible;      /* importante para que el zoom del logo no se corte */
+}
+
+/* Logo */
+.navbar .brand-logo {
+  height: 43px;           /* un poco más pequeño */
+  width: auto;
+  border-radius: 6px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+}
+
+/* Hover del logo */
+.navbar .brand-logo:hover {
+  transform: scale(1.15);       /* sutil zoom mayor */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+/* Texto tipo logo */
+.navbar .brand-text {
+  font-weight: 800;
+  font-size: 1.75rem;             /* más grande que el resto de pestañas */
+  background: linear-gradient(135deg, #4fc3f7, #0288d1); /* gradiente azul profesional */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.05em;
+  font-family: "Montserrat", "Nunito", "Quicksand", sans-serif; /* tipografía elegante */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease;
+  display: inline-block;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+/* Hover del texto */
+.navbar .brand-text:hover {
+  transform: translateY(-2px) scale(1.05);
 }
 
 
@@ -186,12 +252,15 @@ h1.title {
 
 /* Estilos para la imagen de portada */
 .portada-imagen {
-  width: 100%;
+  width: calc(100vw - 2rem); /* ancho completo menos 2rem a cada lado */
+  margin-left: calc(-1 * (100vw - 100%) / 2 + 1rem);
+  margin-right: calc(-1 * (100vw - 100%) / 2 + 1rem);
+  margin-top: 1.85rem;
+  margin-bottom: 2rem;
   overflow: hidden;
   position: relative;
-  border-radius: 8px;
-  margin: 1.8rem 0 2rem 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   cursor: pointer;
   transition: box-shadow 0.4s ease, transform 0.4s ease;
   aspect-ratio: 7952 / 1500;
@@ -253,9 +322,11 @@ h1.title {
   min-height: 280px;
   background: linear-gradient(135deg, #0a3fa0, #0d2a75);
   margin: 1.2rem auto -1rem auto;
-  border-radius: 10px;
+  border-radius: 0px;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
-  width: 100%;
+  width: 100vw; /* toda la ventana */
+  margin-left: calc(-1 * (100vw - 100%) / 2); /* corrige el scroll horizontal */
+  margin-top: -1.9rem; /* ajusta la posición superior */
   color: #e6e9f0;
   text-align: center;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -326,10 +397,11 @@ h1.title {
   align-items: center;
   padding: 1.5rem 2rem;
   background: linear-gradient(135deg, #1c3a9c, #233974);
-  margin: 1.2rem auto -1rem auto;
-  border-radius: 7px;
+  border-radius: 0;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
-  width: 99.5%;
+  width: 100vw; /* toda la ventana */
+  margin-left: calc(-1 * (100vw - 100%) / 2); /* corrige el scroll horizontal */
+  margin-top: -1.85rem; /* ajusta la posición superior */
   color: #e6e9f0;
   text-align: center;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -406,10 +478,13 @@ h1.title {
   align-items: center;
   padding: 1.5rem 2rem;
   background: linear-gradient(135deg, #3458c2, #3b69e0);
-  margin: 2rem auto -1rem auto;
-  border-radius: 7px;
+  border-radius: 0;
   box-shadow: none;
-  width: 99%;
+  margin-top: 0;
+  margin-bottom: 0rem;
+  width: calc(100vw - 0rem);
+  margin-left: calc(-1 * (100vw - 100%) / 2 + 0rem);
+  margin-right: calc(-1 * (100vw - 100%) / 2 + 0rem);
   color: #e6e9f0;
   text-align: center;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -486,10 +561,13 @@ h1.title {
   align-items: center;
   padding: 1rem 1.5rem;
   background: linear-gradient(135deg, #678fff, #7aa3ff);
-  margin: 2rem auto -1rem auto;
-  border-radius: 6px;
+  border-radius: 0px;
   box-shadow: none;
-  width: 98.5%;
+  margin-top: 0rem;
+  margin-bottom: 0rem;
+  width: calc(100vw - 0rem);
+  margin-left: calc(-1 * (100vw - 100%) / 2 + 0rem);
+  margin-right: calc(-1 * (100vw - 100%) / 2 + 0rem);
   color: #edf2ff;
   text-align: center;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -574,13 +652,16 @@ h1.title {
 /* Caja resumen: fondo claro, bordes azules, padding y sombra suave */
 .informe-resumen {
   background: #f5f9fc;
-  border-radius: 10px;
+  border-radius: 12px;
   border-top: 4px solid #2e648e;
   padding: 1.5rem 2rem;
-  margin: 2.5rem auto 2rem auto;
-  width: 98%;
+  width: calc(100vw - 4rem); 
+  margin-left: calc(-1 * (100vw - 100%) / 2 + 2rem);
+  margin-right: calc(-1 * (100vw - 100%) / 2 + 2rem);
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  font-size: 0.90rem;
+  font-size: 0.95rem;
   color: #2b3c5a;
   line-height: 1.7;
   font-style: italic;
@@ -665,6 +746,30 @@ h1.title {
 }
 
 
+/* Flecha hacia abajo */
+.flecha-abajo {
+  text-align: center;
+  font-size: 2rem;    /* tamaño de la flecha */
+  color: #2e648e;     /* color base */
+  margin: 0rem 0;   /* espacio entre bloques */
+  animation: bounce 1.5s infinite; /* animación sutil */
+  transition: transform 0.3s ease, color 0.3s ease;
+  cursor: pointer;    /* indica que es interactiva */
+}
+
+/* Animación sutil */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+/* Hover más atractivo */
+.flecha-abajo:hover {
+  color: #00a3c7;          /* cambio de color */
+  transform: scale(1.2);   /* aumenta tamaño */
+}
+
+
 
 
 
@@ -677,25 +782,76 @@ h1.title {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
-/* Imagen centrada con sombra, borde redondeado y color de borde específico */
-.box-images img {
-  width: 65% !important;
-  display: block;
-  margin: 0.1rem auto;
-  border-radius: 10px;
-  border: 5px solid #004d61;
-  box-shadow: 0 6px 12px rgba(0, 77, 97, 0.18);
-  filter: brightness(1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
-  cursor: pointer;
+/* Contenedor centrado y responsivo */
+.box-images {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 25px 0;
 }
 
-.box-images img:hover {
-  transform: scale(1.005);
-  box-shadow: 0 10px 15px rgba(1, 40, 50, 0.4);
-  filter: brightness(1.05); 
-  border-color: #0088aa;    
+/* Imagen elegante con borde profesional */
+.box-images img {
+  max-width: 85%;
+  width: 750px;
+  height: auto;
+  border-radius: 18px; 
+  border: 2px solid #2b6ca3;
+  box-shadow: 0 4px 10px rgba(13, 42, 117, 0.3); /* azul oscuro elegante */
+  transition: transform 0.4s ease, 
+              box-shadow 0.4s ease, 
+              filter 0.4s ease, 
+              border-color 0.4s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
+
+/* Efecto reflejo */
+.box-images img::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    rgba(208, 231, 240, 0.0) 0%,
+    rgba(208, 231, 240, 0.6) 50%,
+    rgba(208, 231, 240, 0.0) 100%
+  );
+  transform: rotate(25deg);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+/* Hover más sutil y brillante */
+.box-images img:hover {
+  transform: scale(1.02); /* ligero zoom */
+  box-shadow: 0 8px 18px rgba(42, 108, 163, 0.45); /* azul medio */
+  filter: brightness(1.05) contrast(1.03);
+  border-color: #0a3fa0; /* azul más vivo */
+}
+
+/* Activar reflejo */
+.box-images img:hover::after {
+  opacity: 1;
+  animation: shine 1.2s forwards;
+}
+
+/* Animación del reflejo */
+@keyframes shine {
+  from {
+    transform: translateX(-100%) rotate(25deg);
+  }
+  to {
+    transform: translateX(100%) rotate(25deg);
+  }
+}
+
+
+
 
 
 
@@ -988,15 +1144,16 @@ pre.sourceCode:hover {
   background-color: #1a2e47;
 }
 
-/* ==== CÓDIGO EN LÍNEA CON FONDO OSCURO ==== */
+
+/* Código en línea dentro de párrafos, listas, tablas, informes, strong y em */
 p code,
 li code,
 td code,
 .informe-resumen code,
 strong code,
 em code {
-  background-color: #f1f0f6 !important;
-  color: #18186e !important;
+  background-color: #e7f1f4 !important;  /* mismo color que el fondo principal */
+  color: #024057 !important;             /* un azul oscuro más armonioso */
   font-family: 'Fira Code', 'Courier New', monospace;
   font-size: 0.92em;
   padding: 3px 6px !important;
@@ -1004,8 +1161,21 @@ em code {
   font-weight: 400;
   font-style: normal;
   white-space: nowrap;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+  transition: background-color 2s ease, box-shadow 5s ease, color 5s ease;
   cursor: default;
+}
+
+/* Animación de brillo */
+@keyframes brillo {
+  0% {
+    box-shadow: 0 0 2px 1px rgba(165, 210, 225, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 4px 2px rgba(130, 190, 205, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 2px 1px rgba(165, 210, 225, 0.4);
+  }
 }
 
 p code:hover,
@@ -1014,10 +1184,24 @@ td code:hover,
 .informe-resumen code:hover,
 strong code:hover,
 em code:hover {
-  background-color: #e0e0ff !important;
-  color: #1a1a7a !important;
-  box-shadow: 0 0 4px 1px rgba(60, 60, 184, 0.494);
+  background-color: #d0e7f0 !important; /* un azul más suave que armoniza con el fondo */
+  color: #012831 !important;             /* azul oscuro para buen contraste */
+  border-radius: 5px !important;
+  
+  /* Animación de brillo */
+  animation: brillo 1.5s infinite alternate;
+  
+  /* Suave efecto de luz en el fondo */
+  background-image: linear-gradient(
+    120deg,
+    #d0e7f0,
+    #c7e0ea 50%,
+    #d7edf5
+  );
+  background-size: 200% 200%;
+  transition: background-position 5s ease, color 5s ease;
 }
+
 
 /* ==== SALIDA DE CÓDIGO ==== */
 div.cell-output,
@@ -1886,6 +2070,7 @@ table.dataTable td {
   padding: 8px;
   border-bottom: 1px solid #e0e0e0;
   text-align: left;
+  white-space: nowrap;
 }
 
 /* Cabecera de la tabla */
@@ -2147,4 +2332,126 @@ details[open] summary.titulo2::before {
   font-size: 15px;
   text-align: center;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+
+
+
+
+
+
+
+/* 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Chatbox
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+*/
+
+/* Contenedor del chatbot */
+#chat-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+/* Botón flotante con icono de fondo */
+#chat-toggle {
+  width: 60px;
+  height: 60px;
+  background-color: #0d69b4;    
+  border-radius: 50%;            
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+
+  /* Imagen del icono */
+  background-image: url('../../1-images/icono/bot_blue.png');
+  background-size: 50%;      
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Hover elegante del botón */
+#chat-toggle:hover {
+  transform: scale(1.15) rotate(-10deg);
+  background-color: #1a48a6;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+}
+
+/* Ventana de chat flotante con animación */
+#chat-box {
+  display: flex;               /* usamos flex siempre, ocultamos con transform */
+  flex-direction: column;
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 400px;
+  max-height: 400px;
+  background: #102235;
+  border: 2px solid #2a4152;
+  border-radius: 14px;
+  padding: 12px;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+
+  /* Animación inicial: oculto */
+  transform: translateY(30px) scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.35s ease;
+}
+
+/* Estado visible del chat */
+#chat-box.active {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Log de mensajes */
+#chat-log {
+  flex: 1;
+  overflow-y: auto;
+  color: #e1f7ff;
+  font-family: "Nunito", "Quicksand", sans-serif;
+  font-size: 0.9rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Input de usuario */
+#chat-input {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  background: #2a4152;
+  color: #e1f7ff;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+}
+
+/* Placeholder */
+#chat-input::placeholder {
+  color: #94c0ec;
+  opacity: 0.8;
+  transition: opacity 0.25s ease;
+}
+
+/* Hover */
+#chat-input:hover {
+  background-color: #344a5c;
+  box-shadow: 0 0 6px rgba(2,136,209,0.5);
+  transform: translateY(-1px);
+}
+
+/* Focus (cuando el usuario hace clic) */
+#chat-input:focus {
+  outline: none;
+  background-color: #1f3245;
+  box-shadow: 0 0 10px rgba(2,136,209,0.7);
+  transform: translateY(-1px);
 }
