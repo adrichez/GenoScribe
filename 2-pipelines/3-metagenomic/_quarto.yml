@@ -29,10 +29,6 @@ include-in-header:
     <link rel="shortcut icon" href="resources/1-essential/1-images/icono/favicon.svg"/>
     <link rel="icon" type="image/x-icon" href="resources/1-essential/1-images/icono/favicon.ico">
 
-include-after-body:
-  text: |-
-    <script src="resources/1-essential/3-scripts/4-JS/chatbot.js"></script>
-
 execute:
   echo: false
   warning: false
@@ -76,3 +72,5 @@ website:
             href: "resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/Tab3-1-Analisis-16S/7-prediccion-funcional.qmd"
           - text: 8. Conclusiones y perspectivas
             href: "resources/1-essential/3-scripts/2-Quarto/Tab3-Analisis/Tab3-1-Analisis-16S/8-conclusiones.qmd"
+
+clean: false

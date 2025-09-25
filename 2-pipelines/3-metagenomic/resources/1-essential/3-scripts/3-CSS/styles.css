@@ -1,6 +1,6 @@
 /* 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Reset y estilos base y contenedor principal
+# Estilos Chatbot
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
@@ -214,6 +214,7 @@ strong {
   font-size: 1.75rem;             /* más grande que el resto de pestañas */
   background: linear-gradient(135deg, #4fc3f7, #0288d1); /* gradiente azul profesional */
   -webkit-background-clip: text;
+  background-clip: text; /* Standard property for compatibility */
   -webkit-text-fill-color: transparent;
   letter-spacing: 0.05em;
   font-family: "Montserrat", "Nunito", "Quicksand", sans-serif; /* tipografía elegante */
@@ -2341,11 +2342,22 @@ details[open] summary.titulo2::before {
 
 
 
+
+
 /* 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Chatbox
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
+
+/* Reset box-sizing para consistencia */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 /* Contenedor del chatbot */
 #chat-container {
@@ -2353,6 +2365,7 @@ details[open] summary.titulo2::before {
   bottom: 20px;
   right: 20px;
   z-index: 1000;
+  font-family: "Inter", sans-serif;
 }
 
 /* Botón flotante con icono de fondo */
@@ -2368,12 +2381,11 @@ details[open] summary.titulo2::before {
   align-items: center;
   justify-content: center;
   transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
-
-  /* Imagen del icono */
   background-image: url('../../1-images/icono/bot_blue.png');
   background-size: 50%;      
   background-repeat: no-repeat;
   background-position: center;
+  font-family: "Inter", sans-serif;
 }
 
 /* Hover elegante del botón */
@@ -2383,27 +2395,40 @@ details[open] summary.titulo2::before {
   box-shadow: 0 8px 20px rgba(0,0,0,0.45);
 }
 
-/* Ventana de chat flotante con animación */
+/* Contenedor del chat: mantener altura máxima pero con flex vertical */
 #chat-box {
-  display: flex;               /* usamos flex siempre, ocultamos con transform */
+  display: flex;
   flex-direction: column;
   position: fixed;
   bottom: 90px;
   right: 20px;
-  width: 400px;
-  max-height: 400px;
+  width: 500px;
+  max-height: 700px; /* altura máxima total */
   background: #102235;
   border: 2px solid #2a4152;
   border-radius: 14px;
   padding: 12px;
   z-index: 1000;
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-
-  /* Animación inicial: oculto */
   transform: translateY(30px) scale(0.95);
   opacity: 0;
   pointer-events: none;
   transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.35s ease;
+  font-family: "Inter", sans-serif;
+  height: auto; /* para que se adapte al contenido */
+  overflow: hidden; /* evitar que el contenido sobresalga */
+}
+
+/* Ajustar log de mensajes para ocupar espacio disponible */
+#chat-log {
+  flex: 1 1 auto;   /* crecer hasta llenar espacio disponible */
+  overflow-y: auto;
+  padding-right: 4px;
+  color: #e1f7ff;
+  font-family: "Inter", sans-serif;
+  font-size: 13.6px;
+  line-height: 17.68px;
+  margin-bottom: 6px;
 }
 
 /* Estado visible del chat */
@@ -2413,25 +2438,127 @@ details[open] summary.titulo2::before {
   pointer-events: auto;
 }
 
+/* Info inicial del chat */
+.chat-info {
+  flex: 0 0 auto; /* no crece ni colapsa */
+  background-color: #1a2a3a;
+  color: #bcdfff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  font-family: "Nunito", "Times", "Times New Roman", serif;
+  font-weight: 450 !important;
+  font-size: 13.6px !important;
+  line-height: 17.68px !important;
+  letter-spacing: 0px !important;
+  font-style: normal !important;
+  text-align: left !important;
+  display: block !important;
+  transition: opacity 0.3s ease !important;
+}
+
+/* Oculto tras fade */
+.chat-info.hidden {
+  display: none !important;
+}
+
+/* Encabezados dentro de chat-info */
+.chat-info h1 {
+  background-color: #1a2a3a;
+  color: #94c0ec;
+  margin-top: 8px;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  font-family: "Monaco", "Serif", "Nunito", "Times", "Times New Roman", serif !important;
+  font-weight: bolder !important;
+  font-size: 22px !important;
+  line-height: 17.68px !important;
+  letter-spacing: -0.05px !important;
+  font-style: normal !important;
+  text-transform: none !important;
+  text-align: center !important;
+  display: block !important;
+  transition: opacity 0.3s ease !important;
+  word-spacing: -0.5px !important;
+}
+
+/* Hover elegante y moderno */
+.chat-info h1:hover {
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(148, 192, 236, 0.6);
+  transform: translateY(-3px);
+  background: linear-gradient(90deg, #94c0ec, #a3d2f9);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Párrafos dentro de chat-info */
+.chat-info p {
+  margin-top: 18px;
+  color: #bcdfff;
+  font-family: "Nunito", "Times", "Times New Roman", serif;
+  font-weight: 550 !important;
+  font-size: 13.6px !important;
+  line-height: 17.68px !important;
+  letter-spacing: -0.05px !important;
+  font-style: normal !important;
+  text-align: justify !important;
+  text-justify: inter-word !important;
+  hyphens: auto !important;
+  display: block !important;
+}
+
 /* Log de mensajes */
 #chat-log {
-  flex: 1;
+  flex: 1 1 auto; /* ocupa el resto del espacio */
+  min-height: 0;  /* crucial para que scroll funcione en flex */
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
+  padding-right: 4px;
   color: #e1f7ff;
-  font-family: "Nunito", "Quicksand", sans-serif;
-  font-size: 0.9rem;
+  font-family: "Inter", sans-serif;
+  font-size: 13.6px;
+  line-height: 17.68px;
   margin-bottom: 0.6rem;
+  scrollbar-width: thin;
+  scrollbar-color: #2a4152 #102235;
+}
+
+/* Scroll personalizado */
+#chat-log::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chat-log::-webkit-scrollbar-thumb {
+  background-color: #2a4152;
+  border-radius: 3px;
+}
+
+#chat-log::-webkit-scrollbar-track {
+  background-color: #102235;
 }
 
 /* Input de usuario */
 #chat-input {
-  width: 100%;
-  padding: 6px 8px;
-  border-radius: 6px;
+  width: 89%;
+  padding: 7px 8px;
+  margin-bottom: 7px;
+  margin-top: 5px;
+  border-radius: 10px;
   border: none;
   background: #2a4152;
-  color: #e1f7ff;
+  color: #d1e7fcce;
+  font-family: "Inter", sans-serif;
+  font-weight: 450 !important;
+  font-size: 13px !important;
+  line-height: 17.68px !important;
+  letter-spacing: 0px !important;
+  font-style: normal !important;
   transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+  padding-left: 12px;
 }
 
 /* Placeholder */
@@ -2439,6 +2566,7 @@ details[open] summary.titulo2::before {
   color: #94c0ec;
   opacity: 0.8;
   transition: opacity 0.25s ease;
+  padding-left: 3px;
 }
 
 /* Hover */
@@ -2448,10 +2576,151 @@ details[open] summary.titulo2::before {
   transform: translateY(-1px);
 }
 
-/* Focus (cuando el usuario hace clic) */
+/* Focus */
 #chat-input:focus {
   outline: none;
   background-color: #1f3245;
   box-shadow: 0 0 10px rgba(2,136,209,0.7);
   transform: translateY(-1px);
+}
+
+/* Botón de enviar siempre visible a la derecha y al fondo */
+#chat-send {
+  position: absolute;
+  bottom: 16px;   /* alineado al fondo del input */
+  right: 16px;
+  background-color: #0d69b4;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.25s ease;
+  padding: 0; 
+  z-index: 10;
+}
+
+/* Hover sobre el botón */
+#chat-send:hover {
+  background-color: #1a85d1;
+  transform: scale(1.1);
+}
+
+/* SVG dentro del botón */
+#chat-send svg {
+  width: 18px;
+  height: 18px;
+  fill: white;
+  pointer-events: none;
+}
+
+/* Mensajes tipo chat */
+.message {
+  display: inline-block;
+  padding: 8px 12px;
+  margin: 4px 0;
+  max-width: 85%;
+  border-radius: 16px;
+  line-height: 17.68px;
+  word-wrap: break-word;
+  font-size: 13.6px;
+  font-family: "Inter", sans-serif !important;
+  transition: background 0.3s ease, transform 0.2s ease;
+  text-align: left;
+}
+
+/* Mensajes del usuario */
+.message.user {
+  background-color: #0d69b4;
+  color: #ffffff;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+  font-family: "Inter", sans-serif !important;
+}
+
+/* Mensajes del bot */
+.message.bot {
+  background-color: #1f3245;
+  color: #bcdfff;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+  font-family: "Inter", sans-serif !important;
+}
+
+/* Animación ligera al aparecer */
+.message.user,
+.message.bot {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: slideIn 0.25s forwards;
+  font-family: "Inter", sans-serif !important;
+}
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message mark {
+  background-color: #1a4e8c;
+  color: #e1f7ff;
+  font-weight: 600;
+  border-radius: 3px;
+  padding: 0 1px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: "Inter", sans-serif;
+}
+
+.message mark:hover {
+  background-color: #2a6fb0;
+  color: #ffffff;
+}
+
+.typing-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #0d69b4 0deg,
+    #1a85d1 90deg,
+    #0d69b4 180deg,
+    #1a85d1 270deg,
+    #0d69b4 360deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent 75%, black 76%) center/100% 100% no-repeat;
+  mask: radial-gradient(farthest-side, transparent 75%, black 76%) center/100% 100% no-repeat;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.typing-text {
+  display: inline-block;
+  margin-left: 8px;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 13.6px;
+  background: linear-gradient(90deg, #1b90fe, #b4d4ff, #0b89ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 100%;
+  animation: gradientMove 3s linear infinite;
+}
+
+@keyframes gradientMove {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

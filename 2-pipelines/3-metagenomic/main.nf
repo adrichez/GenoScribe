@@ -59,10 +59,18 @@ process COPIAR_CARPETA_PROYECTO {
         if [ -d "\$origen" ]; then
             echo "Copiando carpeta: \$origen"
             mkdir -p "\$destino"
-            find "\$origen" -type f -size -100M -print0 | while IFS= read -r -d '' file; do
-                rel_path=\$(dirname "\${file#\$origen/}")
-                mkdir -p "\$destino/\$rel_path"
-                cp "\$file" "\$destino/\$rel_path/"
+            find "\$origen" -type f -size -100M \\
+                -not -name "*.fastq" \\
+                -not -name "*.fq" \\
+                -not -name "*.fastq.gz" \\
+                -not -name "*.bam" \\
+                -not -name "*.sam" \\
+                -not -name "*.cram" \\
+                -not -name "*.vcf.gz" \\
+                -print0 | while IFS= read -r -d '' file; do
+                    rel_path=\$(dirname "\${file#\$origen/}")
+                    mkdir -p "\$destino/\$rel_path"
+                    cp "\$file" "\$destino/\$rel_path/"
             done
         else
             echo "⚠ Carpeta no encontrada: \$origen"
@@ -70,6 +78,7 @@ process COPIAR_CARPETA_PROYECTO {
     done
     """
 }
+
 
 
 

@@ -17,6 +17,7 @@ echo "Directorio a limpiar: $RUTA_PIPELINE"
 echo ""
 echo "🚿 Limpiando directorios y archivos generados..."
 
+
 # -------------------------------------------------
 # 1️⃣ Eliminación de archivos y carpetas por patrón
 # -------------------------------------------------
@@ -37,14 +38,9 @@ PATTERNS_TO_DELETE=(
 
 for pattern in "${PATTERNS_TO_DELETE[@]}"; do
   echo "   - Buscando y eliminando: $pattern..."
-  
-  # Eliminar archivos que coincidan con el patrón
-  find . -type f -name "$pattern" -delete 2>/dev/null
-  
-  # Eliminar directorios que coincidan con el patrón
-  find . -type d -name "$pattern" -exec rm -rf {} + 2>/dev/null
+  # Eliminar archivos o directorios que coincidan con el patrón
+  find . -depth -name "$pattern" -exec rm -rf {} + 2>/dev/null
 done
-
 
 
 # -------------------------------------------------
@@ -57,21 +53,20 @@ echo "🧹 Vaciando carpetas específicas..."
 # Lista de carpetas a vaciar
 FOLDERS_TO_EMPTY=(
   "report"
-  "resources/1-essential/2-archives/Tab3-Analisis16S"
-  "resources/1-essential/2-archives/Tab3-Analisis18S"
-  "resources/1-essential/2-archives/Tab3-AnalisisITS"
-  "resources/2-nextflow-results/1-project-data"
-  "resources/2-nextflow-results/2-fastqc-report"
-  "resources/2-nextflow-results/3-analisis-estadistico"
-  "../../1-app/www/reports/$NOMBRE_PIPELINE"
+  #"resources/1-essential/2-archives/Tab3-Analisis16S"
+  #"resources/1-essential/2-archives/Tab3-Analisis18S"
+  #"resources/1-essential/2-archives/Tab3-AnalisisITS"
+  #"resources/2-nextflow-results/1-project-data"
+  #"resources/2-nextflow-results/2-fastqc-report"
+  #"resources/2-nextflow-results/3-analisis-estadistico"
+  #"../../1-app/www/reports/$NOMBRE_PIPELINE"
 )
 
 for folder in "${FOLDERS_TO_EMPTY[@]}"; do
   if [ -d "$folder" ]; then
     echo "   - Vaciando carpeta $folder..."
-    
-    # Eliminar todos los archivos normales excepto .gitkeep
-    find "$folder" -mindepth 1 ! -name ".gitkeep" -exec rm -rf {} + 2>/dev/null
+    # Eliminar todo (archivos y subcarpetas) excepto .gitkeep, en orden de profundidad
+    find "$folder" -mindepth 1 -depth ! -name ".gitkeep" -exec rm -rf {} + 2>/dev/null
   fi
 done
 
