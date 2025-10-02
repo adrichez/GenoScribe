@@ -53,7 +53,7 @@
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-1">1. 🚀 Descripción del proyecto</h2>
 
@@ -80,7 +80,7 @@ Diseñado para ser **flexible y escalable**, GenoScribe puede ejecutarse en **lo
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-2">2. ⭐ Características principales</h2>
 
@@ -104,7 +104,7 @@ Diseñado para ser **flexible y escalable**, GenoScribe puede ejecutarse en **lo
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-3">3. 📂 Estructura del proyecto</h2>
 
@@ -141,7 +141,7 @@ A continuación se detalla la función de cada directorio:
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-4">4. ⚙️ Requisitos</h2>
 
@@ -184,7 +184,7 @@ Antes de utilizar el sistema, asegúrese de contar con los siguientes elementos 
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-5">5. 🎯 Flujo de trabajo</h2>
 
@@ -195,7 +195,7 @@ Este apartado describe cómo un usuario interactúa con el sistema para generar 
 
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.1">5.1. 📝 Diagrama general</h3>
 
@@ -249,7 +249,7 @@ Cada análisis requiere configurar parámetros específicos y ejecutar el **pipe
 
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.2">5.2. 📐 Pasos resumidos</h3>
 
@@ -275,7 +275,7 @@ Este esquema permite **visualizar rápidamente** la secuencia completa de pasos,
 
 <br>
 <br>
-<img src="6-info/assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.3">5.3. 🎬 Demostración visual</h3>
 
@@ -295,7 +295,7 @@ El siguiente **GIF** ofrece una visión dinámica del flujo principal: inicio de
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-6">6. 🚀 Guía rápida de uso (Quickstart)</h2>
 
@@ -308,7 +308,7 @@ Esta sección explica cómo poner en marcha **GenoScribe** de forma rápida, rep
 
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.1">6.1. 📦 Descarga del proyecto</h3>
 
@@ -348,7 +348,7 @@ Para un uso puntual o en sistemas sin Git, se puede descargar el ZIP directament
 
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.2">6.2. 🛠️ Modos de uso</h3>
 
@@ -414,7 +414,7 @@ Cada enfoque ofrece **dos modos de ejecución**:
 
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.3">6.3. 🐳 Construcción del contenedor</h3>
 
@@ -466,7 +466,7 @@ apptainer build genoscribe.sif docker://adrichez/genoscribe:1.0
 
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.4">6.4. 🔄 Lanzar la app o ejecutar pipelines</h3>
 
@@ -533,7 +533,7 @@ apptainer exec genoscribe.sif ./4-launch/3-apptainer-hpc/run_app_shell.sh
 
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.5">6.5. 🧹 Scripts útiles</h3>
 
@@ -550,7 +550,7 @@ apptainer exec genoscribe.sif ./4-launch/3-apptainer-hpc/run_app_shell.sh
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-7">7. 📚 Documentación detallada</h2>
 
@@ -581,7 +581,7 @@ Guías específicas por tipo de análisis:
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-8">8. 🛠 Tecnologías principales</h2>
 
@@ -607,7 +607,7 @@ El uso de **R y Python** permite ejecutar análisis bioinformáticos complejos y
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-9">9. 🎯 Objetivos y casos de uso</h2>
 
@@ -636,7 +636,7 @@ En resumen, este sistema está dirigido a **investigadores, bioinformáticos y e
 <br>
 <br>
 
-<img src="6-info/assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="6-info/assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-10">10. 📬 Contacto</h2>
 

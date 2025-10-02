@@ -53,7 +53,7 @@
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-1">1. 📖 Introducción y contexto</h2>
 
@@ -67,7 +67,7 @@ A diferencia de otras guías técnicas, el objetivo aquí no es solo indicar qu�
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-1-1">1.1. 🧬 ¿Qué es Bulk RNA-Seq?</h3>  
 
@@ -85,7 +85,7 @@ En lugar de analizar célula por célula (como ocurre en *single-cell RNA-Seq*),
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-1-2">1.2. ❓ Ejemplo de pregunta biológica</h3>  
 
@@ -103,7 +103,7 @@ Con Bulk RNA-Seq es posible obtener la respuesta mediante:
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-1-3">1.3. 🎯 Objetivo de esta guía</h3>  
 
@@ -119,7 +119,7 @@ El propósito de esta guía no es únicamente mostrar cómo ejecutar el pipeline
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-1-4">1.4. ✨ Valor añadido de GenoScribe</h3>  
 
@@ -140,7 +140,7 @@ Uno de los principales retos de los análisis bioinformáticos es que los result
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-2">2. 📂 Proyecto en GitHub y requisitos</h2>
 
@@ -158,7 +158,7 @@ Esta organización permite que cada tipo de análisis (Bulk RNA-Seq, scRNA-Seq, 
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-2-1">2.1. 🏗️ Estructura global del repositorio</h3>
 
@@ -180,7 +180,7 @@ Cada directorio tiene un rol específico y está descrito con mayor detalle en e
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-2-2">2.2. 🧬 Carpeta específica de Bulk RNA-Seq</h3>
 
@@ -281,7 +281,7 @@ Aquí se incluye un informe final (`index.html`) junto con los recursos asociado
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-2-3">2.3. ⚙️ Requisitos básicos</h3>
 
@@ -324,7 +324,7 @@ Antes de utilizar el sistema y ejecutar el pipeline de **Bulk RNA-Seq** asegúre
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-3">3. 🔄 Workflow del análisis</h2>
 
@@ -374,7 +374,7 @@ Cada análisis activa su **pipeline específico**, que culmina en la generación
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-3.2">3.2. 📐 Pasos resumidos</h3>
 
@@ -400,7 +400,7 @@ El siguiente esquema muestra de manera simplificada la **ejecución típica** us
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-3.3">3.3. 🎬 Demostración visual</h3>
 
@@ -418,7 +418,7 @@ El siguiente **GIF** ofrece una visión dinámica del flujo principal: inicio de
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-4">4. ⬇️ Descarga y preparación del entorno</h2>
 
@@ -431,7 +431,7 @@ El objetivo es que cualquier usuario pueda iniciar GenoScribe de manera rápida 
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-4.1">4.1. 🌐 Clonar o descargar el proyecto</h3>
 
@@ -461,7 +461,7 @@ Clonar el repositorio permite mantener el proyecto **actualizado fácilmente** m
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-4.2">4.2. 🛠️ Instalación de dependencias</h3>
 
@@ -522,7 +522,7 @@ Perfecto, Adrián. Aquí tienes la subsección de **construcción del contenedor
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-4.3">4.3. 📦 Construcción del contenedor</h3>
 
@@ -635,7 +635,7 @@ El flujo completo, desde la **construcción de la imagen hasta la generación de
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-5">5. 🚀 Métodos de uso</h2>
 
@@ -650,7 +650,7 @@ Se incluyen recomendaciones, diferencias entre GUI y CLI, y consideraciones de r
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.1">5.1. 🖼️ Ejecución de la app (modo interactivo)</h3>
 
@@ -687,7 +687,7 @@ El modo interactivo permite iniciar GenoScribe con una **interfaz visual Shiny**
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.2">5.2. ⌨️ Ejecución desde la terminal (CLI)</h3>
 
@@ -729,7 +729,7 @@ La ejecución por línea de comandos permite un **control total sobre los pipeli
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.3">5.3. 🧹 Scripts auxiliares de limpieza y depuración</h3>
 
@@ -828,7 +828,7 @@ Esto es útil para inspeccionar manualmente outputs, depurar fallos o lanzar com
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.4">5.4. 🌍 Ejecución en Local vs HPC/Nube</h3>
 
@@ -847,7 +847,7 @@ GenoScribe se puede ejecutar en distintos entornos, y la elección depende de **
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.5">5.5. 🎬 Flujo de ejecución resumido (GIF)</h3>
 
@@ -863,7 +863,7 @@ Para visualizar el **proceso completo de ejecución**, desde la construcción de
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-6">6. ⚙️ Parámetros específicos</h2>
 
@@ -879,7 +879,7 @@ Existen dos formas de introducir estos parámetros:
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.1">6.1. 📑 Parámetros requeridos</h3>
 
@@ -931,7 +931,7 @@ Además, si se usan contenedores, se debe proporcionar también una **ruta local
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.2">6.2. 🌟 Procedencia de los datos: miARma-seq</h3>
 
@@ -965,7 +965,7 @@ En el caso de Bulk RNA-Seq, según el protocolo definido, se deben aportar los s
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.3">6.3. 🌳 Ejemplo de estructura de proyecto</h3>
 
@@ -1008,7 +1008,7 @@ La siguiente estructura ejemplifica cómo deben organizarse los resultados de un
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.4">6.4. ✅ Resumen práctico</h3>
 
@@ -1029,7 +1029,7 @@ La siguiente estructura ejemplifica cómo deben organizarse los resultados de un
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-7">7. 🔬 Etapas del pipeline</h2>
 
@@ -1042,7 +1042,7 @@ Estas etapas no reemplazan al análisis primario (realizado con **miARma-seq**),
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.1">7.1. 📂 Copia del proyecto</h3>
 
@@ -1070,7 +1070,7 @@ Esto asegura que los siguientes procesos del pipeline siempre accedan a la **mis
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.2">7.2. 📊 Generación de reporte QC integrado</h3>
 
@@ -1100,7 +1100,7 @@ El informe `multiqc_report.html` resume métricas clave como **calidad de secuen
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.3">7.3. 📑 Procesamiento de matrices de expresión</h3>
 
@@ -1129,7 +1129,7 @@ Este archivo intermedio es crucial: funciona como **punto de entrada estadístic
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.4">7.4. 📝 Renderizado de informe en Quarto</h3>
 
@@ -1162,7 +1162,7 @@ El informe integra:
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.5">7.5. 🔄 Ejemplo de flujo de outputs</h3>
 
@@ -1237,7 +1237,7 @@ De esta manera, todo el flujo de outputs queda **automatizado, organizado y acce
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.6">7.6. ✅ Resumen conceptual</h3>
 
@@ -1258,7 +1258,7 @@ De esta manera, **GenoScribe** pone el foco en la **fase de integración y comun
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-8">8. 📊 Resultados e informe</h2>
 
@@ -1275,7 +1275,7 @@ Mediante el siguiente GIF se puede apreciar de forma visual la estructura y func
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-8.1">8.1. 🏠 Pestaña “Inicio”</h3>
 
@@ -1293,7 +1293,7 @@ Sirve como punto de partida para comprender el alcance del proyecto y la lógica
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-8.2">8.2. 📑 Pestaña “Resumen”</h3>
 
@@ -1311,7 +1311,7 @@ Esta pestaña establece las bases para evaluar la representatividad y calidad de
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-8.3">8.3. 🔬 Pestaña “Análisis”</h3>
 
@@ -1349,7 +1349,7 @@ Esta organización **modular** permite que el lector explore el informe de maner
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-8.4">8.4. 📂 Organización de archivos y recursos</h3>
 
@@ -1374,7 +1374,7 @@ Esta estructura asegura que el informe puede **visualizarse, compartirse y naveg
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-9">9. 💬 Comentarios finales</h2>
 
@@ -1389,7 +1389,7 @@ El módulo de **Bulk RNA-Seq** dentro del proyecto **GenoScribe** tiene como pro
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-9.1">9.1. 🎯 Objetivos alcanzados</h3>
 
@@ -1405,7 +1405,7 @@ Con este módulo se ha logrado:
 
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-9.2">9.2. 🛠️ Limitaciones y futuras mejoras</h3>
 
@@ -1427,7 +1427,7 @@ En conjunto, este módulo representa un **paso fundamental en la consolidación 
 <br>
 <br>
 
-<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
+<img src="assets/4-other/decoration/linea_divisoria_1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-10">10. 📬 Contacto</h2>
 
