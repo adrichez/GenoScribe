@@ -47,10 +47,11 @@
 
 
 
+
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-1">1. 📖 Introducción y contexto</h2>
 
@@ -62,9 +63,11 @@ A diferencia de otras guías técnicas, el objetivo aquí no es solo indicar qu�
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
 
-<h3 id="section-1-1">1.1 🧬 ¿Qué es Bulk RNA-Seq?</h3>  
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+
+<h3 id="section-1-1">1.1. 🧬 ¿Qué es Bulk RNA-Seq?</h3>  
 
 El **Bulk RNA-Seq** es una técnica de secuenciación masiva de ARN que permite medir la **expresión génica global** en una muestra biológica.  
 En lugar de analizar célula por célula (como ocurre en *single-cell RNA-Seq*), este método obtiene un **perfil promedio** de todas las células presentes en la muestra.  
@@ -78,9 +81,11 @@ En lugar de analizar célula por célula (como ocurre en *single-cell RNA-Seq*),
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
 
-<h3 id="section-1-2">1.2 ❓ Ejemplo de pregunta biológica</h3>  
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+
+<h3 id="section-1-2">1.2. ❓ Ejemplo de pregunta biológica</h3>  
 
 Un investigador puede plantear cuestiones como:  
 
@@ -94,9 +99,11 @@ Con Bulk RNA-Seq es posible obtener la respuesta mediante:
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
 
-<h3 id="section-1-3">1.3 🎯 Objetivo de esta guía</h3>  
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+
+<h3 id="section-1-3">1.3. 🎯 Objetivo de esta guía</h3>  
 
 El propósito de esta guía no es únicamente mostrar cómo ejecutar el pipeline, sino sobre todo:  
 
@@ -108,9 +115,11 @@ El propósito de esta guía no es únicamente mostrar cómo ejecutar el pipeline
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
 
-<h3 id="section-1-4">1.4 ✨ Valor añadido de GenoScribe</h3>  
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+
+<h3 id="section-1-4">1.4. ✨ Valor añadido de GenoScribe</h3>  
 
 Uno de los principales retos de los análisis bioinformáticos es que los resultados suelen presentarse en **archivos dispersos, de difícil lectura** o poco intuitivos para investigadores no especializados en programación.  
 
@@ -129,7 +138,7 @@ Uno de los principales retos de los análisis bioinformáticos es que los result
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-2">2. 📂 Proyecto en GitHub y requisitos</h2>
 
@@ -145,9 +154,11 @@ Esta organización permite que cada tipo de análisis (Bulk RNA-Seq, scRNA-Seq, 
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
 
-<h3 id="section-2-1">2.1 🏗️ Estructura global del repositorio</h3>
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+
+<h3 id="section-2-1">2.1. 🏗️ Estructura global del repositorio</h3>
 
 ```plaintext
 GenoScribe         # Directorio principal del proyecto
@@ -165,9 +176,11 @@ Cada directorio tiene un rol específico y está descrito con mayor detalle en e
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
 
-<h3 id="section-2-2">2.2 🧬 Carpeta específica de Bulk RNA-Seq</h3>
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+
+<h3 id="section-2-2">2.2. 🧬 Carpeta específica de Bulk RNA-Seq</h3>
 
 El pipeline para este tipo de análisis se encuentra en [GenoScribe/2-pipelines/1-bulk-rna-seq](../2-pipelines/1-bulk-rna-seq).
 
@@ -264,9 +277,11 @@ Aquí se incluye un informe final (`index.html`) junto con los recursos asociado
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
 
-<h3 id="section-2-3">2.3 ⚙️ Requisitos básicos</h3>
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
+
+<h3 id="section-2-3">2.3. ⚙️ Requisitos básicos</h3>
 
 Antes de utilizar el sistema y ejecutar el pipeline de **Bulk RNA-Seq** asegúrese de contar con los siguientes elementos para garantizar un funcionamiento correcto y reproducible:
 
@@ -307,7 +322,7 @@ Antes de utilizar el sistema y ejecutar el pipeline de **Bulk RNA-Seq** asegúre
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-3">3. 🔄 Workflow del análisis</h2>
 
@@ -320,7 +335,7 @@ El **workflow de GenoScribe** describe el recorrido completo desde la preparaci�
 El siguiente **diagrama de flujo esquemático** representa las rutas disponibles para ejecutar GenoScribe (centrándonos en el **pipeline de Bulk RNA-Seq**):
 
 <p align="center">
-  <img src="assets/4-other/workflow/sc_rna_seq_workflow.png" alt="Diagrama del flujo de trabajo de Single-Cell RNA-Seq" width="65%">
+  <img src="assets/4-other/workflow/bulk_rna_seq_workflow.png" alt="Diagrama del flujo de trabajo de Bulk RNA-Seq" width="65%">
 </p>
 
 **Rutas principales del workflow:**
@@ -352,7 +367,12 @@ Luego selecciona el **tipo de análisis**:
 
 Cada análisis activa su **pipeline específico**, que culmina en la generación de un **informe HTML interactivo** con resultados listos para explorar, descargar y compartir.
 
----
+
+
+
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-3.2">3.2. 📐 Pasos resumidos</h3>
 
@@ -376,7 +396,9 @@ El siguiente esquema muestra de manera simplificada la **ejecución típica** us
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-3.3">3.3. 🎬 Demostración visual</h3>
 
@@ -394,7 +416,7 @@ El siguiente **GIF** ofrece una visión dinámica del flujo principal: inicio de
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-4">4. ⬇️ Descarga y preparación del entorno</h2>
 
@@ -405,7 +427,9 @@ El objetivo es que cualquier usuario pueda iniciar GenoScribe de manera rápida 
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-4.1">4.1. 🌐 Clonar o descargar el proyecto</h3>
 
@@ -433,7 +457,9 @@ Clonar el repositorio permite mantener el proyecto **actualizado fácilmente** m
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-4.2">4.2. 🛠️ Instalación de dependencias</h3>
 
@@ -441,7 +467,7 @@ GenoScribe requiere diversas herramientas y librerías para ejecutar correctamen
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-4.2.1">4.2.1. 📦 Dentro de contenedor (Docker / Apptainer)</h4>
 
@@ -458,7 +484,7 @@ Si se ejecuta GenoScribe dentro de un contenedor, **todas las dependencias ya es
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-4.2.2">4.2.2. 💻 Sin contenedor (local)</h4>
 
@@ -475,7 +501,7 @@ Ejecutar GenoScribe directamente en el sistema local requiere instalar manualmen
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-4.2.3">4.2.3. 📝 Resumen y recomendaciones</h4>
 
@@ -492,7 +518,9 @@ Perfecto, Adrián. Aquí tienes la subsección de **construcción del contenedor
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-4.3">4.3. 📦 Construcción del contenedor</h3>
 
@@ -502,7 +530,7 @@ GenoScribe puede ejecutarse dentro de **Docker** o adaptarse a **Apptainer**. Co
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-4.3.1">4.3.1. 🐳 Construcción de Docker</h4>
 
@@ -533,7 +561,7 @@ docker build --no-cache -f 3-containers/1-docker/Dockerfile -t genoscribe:1.0 .
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-4.3.2">4.3.2. 🧪 Construcción de Apptainer</h4>
 
@@ -570,7 +598,7 @@ apptainer build genoscribe.sif 3-containers/2-apptainer/genoscribe.def
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-4.3.3">4.3.3. 🚀 Uso de imágenes preconstruidas (opción rápida)</h4>
 
@@ -587,7 +615,7 @@ apptainer build genoscribe.sif docker://adrichez/genoscribe:1.0
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-4.3.4">4.3.4. 🎬 Visualización del proceso (GIF)</h4>
 
@@ -605,7 +633,7 @@ El flujo completo, desde la **construcción de la imagen hasta la generación de
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-5">5. 🚀 Métodos de uso</h2>
 
@@ -618,7 +646,9 @@ Se incluyen recomendaciones, diferencias entre GUI y CLI, y consideraciones de r
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.1">5.1. 🖼️ Ejecución de la app (modo interactivo)</h3>
 
@@ -653,7 +683,9 @@ El modo interactivo permite iniciar GenoScribe con una **interfaz visual Shiny**
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.2">5.2. ⌨️ Ejecución desde la terminal (CLI)</h3>
 
@@ -693,7 +725,9 @@ La ejecución por línea de comandos permite un **control total sobre los pipeli
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.3">5.3. 🧹 Scripts auxiliares de limpieza y depuración</h3>
 
@@ -702,7 +736,7 @@ Son especialmente útiles tras ejecutar varios pipelines o al realizar pruebas r
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-5.3.1">5.3.1. 🚿 ¿Qué limpian estos scripts?</h4>
 
@@ -720,7 +754,7 @@ Además, en lugar de borrar completamente ciertas carpetas, **las vacía sin eli
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-5.3.2">5.3.2. 📂 Estructura de los scripts</h4>
 
@@ -743,7 +777,7 @@ Además, en lugar de borrar completamente ciertas carpetas, **las vacía sin eli
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-5.3.3">5.3.3. ▶️ Ejecución de los scripts</h4>
 
@@ -769,7 +803,7 @@ Todos los comandos deben ejecutarse **desde la raíz del proyecto (`GenoScribe/`
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-5.3.4">5.3.4. ⌨️ Acceso interactivo al contenedor</h4>
 
@@ -790,7 +824,9 @@ Esto es útil para inspeccionar manualmente outputs, depurar fallos o lanzar com
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.4">5.4. 🌍 Ejecución en Local vs HPC/Nube</h3>
 
@@ -807,7 +843,9 @@ GenoScribe se puede ejecutar en distintos entornos, y la elección depende de **
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-5.5">5.5. 🎬 Flujo de ejecución resumido (GIF)</h3>
 
@@ -823,7 +861,7 @@ Para visualizar el **proceso completo de ejecución**, desde la construcción de
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-6">6. ⚙️ Parámetros específicos</h2>
 
@@ -837,7 +875,9 @@ Existen dos formas de introducir estos parámetros:
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.1">6.1. 📑 Parámetros requeridos</h3>
 
@@ -849,7 +889,7 @@ En el caso concreto de **Bulk RNA-Seq**, se necesitan **dos parámetros obligato
     - Ejemplo en un ordenador local:  
 
       ```bash
-      /Users/adrian/Documents/4 Workspace/Prototipo-resultados/02-EXT-25-Sc-RNA-Seq
+      /Users/adrian/Documents/4 Workspace/Prototipo-resultados/01-EXT-25-Bulk-RNA-Seq
       ```
 
 2. **Nombre del experimento (`nombre_experimento`)**  
@@ -864,7 +904,7 @@ En el caso concreto de **Bulk RNA-Seq**, se necesitan **dos parámetros obligato
 Ejemplo de parámetros combinados:
 
 ```yaml
-ruta_proyecto: "/Users/adrian/Documents/4 Workspace/Prototipo-resultados/02-EXT-25-Sc-RNA-Seq"
+ruta_proyecto: "/Users/adrian/Documents/4 Workspace/Prototipo-resultados/01-EXT-25-Bulk-RNA-Seq"
 nombre_experimento: "exp1"
 ```
 
@@ -873,7 +913,7 @@ nombre_experimento: "exp1"
 Si la ejecución se hace desde **Shiny dentro del contenedor**, la ruta local se monta como volumen. En ese caso, en el formulario Shiny se debe indicar una ruta relativa del tipo:
 
 ```bash
-data/02-EXT-25-Sc-RNA-Seq
+data/01-EXT-25-Bulk-RNA-Seq
 ```
 
 En lugar de la ruta completa de tu sistema.
@@ -887,7 +927,9 @@ Además, si se usan contenedores, se debe proporcionar también una **ruta local
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.2">6.2. 🌟 Procedencia de los datos: miARma-seq</h3>
 
@@ -919,14 +961,16 @@ En el caso de Bulk RNA-Seq, según el protocolo definido, se deben aportar los s
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.3">6.3. 🌳 Ejemplo de estructura de proyecto</h3>
 
 La siguiente estructura ejemplifica cómo deben organizarse los resultados de un análisis típico de **miARma-seq** para ser utilizados en GenoScribe.
 
 ```plaintext
-02-EXT-25-Sc-RNA-Seq
+01-EXT-25-Bulk-RNA-Seq
 ├── Analisis
 │   ├── exp1
 │   │   ├── hisat2_index/              # Índices de referencia HISAT2
@@ -960,7 +1004,9 @@ La siguiente estructura ejemplifica cómo deben organizarse los resultados de un
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-6.4">6.4. ✅ Resumen práctico</h3>
 
@@ -971,7 +1017,7 @@ La siguiente estructura ejemplifica cómo deben organizarse los resultados de un
 
 * Los resultados deben provenir de **miARma-seq**, que garantiza una estructura reproducible.  
 * La carpeta del proyecto debe contener todos los outputs necesarios (FastQC, BAM, conteos, normalizaciones, DEG, enriquecimientos).  
-* Si se ejecuta desde contenedor, usar rutas relativas (`data/02-EXT-25-Sc-RNA-Seq`) en la interfaz Shiny y definir un volumen local para almacenar los informes generados.  
+* Si se ejecuta desde contenedor, usar rutas relativas (`data/01-EXT-25-Bulk-RNA-Seq`) en la interfaz Shiny y definir un volumen local para almacenar los informes generados.  
 
 
 
@@ -981,7 +1027,7 @@ La siguiente estructura ejemplifica cómo deben organizarse los resultados de un
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-7">7. 🔬 Etapas del pipeline</h2>
 
@@ -992,7 +1038,9 @@ Estas etapas no reemplazan al análisis primario (realizado con **miARma-seq**),
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.1">7.1. 📂 Copia del proyecto</h3>
 
@@ -1018,7 +1066,9 @@ Esto asegura que los siguientes procesos del pipeline siempre accedan a la **mis
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.2">7.2. 📊 Generación de reporte QC integrado</h3>
 
@@ -1046,7 +1096,9 @@ El informe `multiqc_report.html` resume métricas clave como **calidad de secuen
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.3">7.3. 📑 Procesamiento de matrices de expresión</h3>
 
@@ -1073,7 +1125,9 @@ Este archivo intermedio es crucial: funciona como **punto de entrada estadístic
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.4">7.4. 📝 Renderizado de informe en Quarto</h3>
 
@@ -1104,7 +1158,9 @@ El informe integra:
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.5">7.5. 🔄 Ejemplo de flujo de outputs</h3>
 
@@ -1177,7 +1233,9 @@ De esta manera, todo el flujo de outputs queda **automatizado, organizado y acce
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-7.6">7.6. ✅ Resumen conceptual</h3>
 
@@ -1198,7 +1256,7 @@ De esta manera, **GenoScribe** pone el foco en la **fase de integración y comun
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-8">8. 📊 Resultados e informe</h2>
 
@@ -1213,7 +1271,9 @@ Mediante el siguiente GIF se puede apreciar de forma visual la estructura y func
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-8.1">8.1. 🏠 Pestaña “Inicio”</h3>
 
@@ -1229,7 +1289,9 @@ Sirve como punto de partida para comprender el alcance del proyecto y la lógica
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-8.2">8.2. 📑 Pestaña “Resumen”</h3>
 
@@ -1245,7 +1307,9 @@ Esta pestaña establece las bases para evaluar la representatividad y calidad de
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-8.3">8.3. 🔬 Pestaña “Análisis”</h3>
 
@@ -1253,7 +1317,7 @@ Incluye todos los archivos `.qmd` dentro de `Tab3-Analisis` y tiene como objetiv
 
 
 
-<hr style="border:none; height:1.2px; background-color:#555; width:65%; margin:35px 0 20px 0;">
+<hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
 <h4 id="section-8.3.1">8.3.1. 📖 Contenido principal de esta pestaña:</h4>
 
@@ -1281,7 +1345,9 @@ Esta organización **modular** permite que el lector explore el informe de maner
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-8.4">8.4. 📂 Organización de archivos y recursos</h3>
 
@@ -1306,7 +1372,7 @@ Esta estructura asegura que el informe puede **visualizarse, compartirse y naveg
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-9">9. 💬 Comentarios finales</h2>
 
@@ -1319,7 +1385,9 @@ El módulo de **Bulk RNA-Seq** dentro del proyecto **GenoScribe** tiene como pro
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-9.1">9.1. 🎯 Objetivos alcanzados</h3>
 
@@ -1333,7 +1401,9 @@ Con este módulo se ha logrado:
 
 
 
-<hr style="border:none; height:1px; background-color:#666; width:85%; margin:60px 0 30px 0;">
+<br>
+
+<img src="assets/4-other/decoration/linea-divisora-2.png" width="100%" style="border-radius: 10px;">
 
 <h3 id="section-9.2">9.2. 🛠️ Limitaciones y futuras mejoras</h3>
 
@@ -1355,7 +1425,7 @@ En conjunto, este módulo representa un **paso fundamental en la consolidación 
 <br>
 <br>
 
----
+<img src="assets/4-other/decoration/linea-divisora-1.png" width="100%" style="border-radius: 10px;">
 
 <h2 id="section-10">10. 📬 Contacto</h2>
 

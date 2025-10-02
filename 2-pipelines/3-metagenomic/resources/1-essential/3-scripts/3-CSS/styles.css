@@ -81,12 +81,12 @@ strong {
 .navbar {
   padding: 0.5rem 1.5rem;
   height: 85px;
-  background: linear-gradient(135deg, #102235, #0c2435);
+  background: linear-gradient(135deg, rgba(16,34,53,0.95), rgba(12,36,53,0.95));
   border-bottom: 2px solid #1f2f5b;
   font-size: 0.88rem;
   font-weight: 600;
-  font-family: "Nunito", "Quicksand", "Segoe UI Rounded", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  font-family: "Nunito", "Quicksand", "Segoe UI Rounded", sans-serif;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
   display: flex;
   align-items: center;
   position: relative;
@@ -94,141 +94,182 @@ strong {
   letter-spacing: 0.02em;
   line-height: 1.4;
   text-transform: none;
+  backdrop-filter: blur(8px); /* efecto glassmorphism */
 }
 
-/* Ítems del menú */
+/* Contenedor de los items de la navbar */
+.navbar-nav {
+  display: flex;
+  gap: 15px;              /* separación entre pestañas */
+  padding-right: 30px;     /* espacio al borde derecho */
+  margin-left: auto;       /* alinea a la derecha */
+}
+
+/* Cada item de la navbar */
+.navbar-nav .nav-item {
+  margin: 0;
+  padding: 0;
+}
+
+/* Ítems del menú con recuadro leve y efecto moderno */
 .navbar .nav-link {
-  padding: 0.45rem 0.8rem;      /* reduce espacio lateral */
+  padding: 0.5rem 0.9rem;
   color: #94c0ec !important;
   font-weight: 600;
   font-size: 0.92rem;
-  border-radius: 10px;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.2s ease;
+  border-radius: 12px;
+  background-color: rgba(255,255,255,0.02); /* recuadro leve */
+  border: 1px solid rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
-  gap: 1px;
+  gap: 1px; /* espacio entre icono y texto */
   position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-/* Hover elegante */
+/* Hover moderno con elevación y gradiente */
 .navbar .nav-link:hover,
 .navbar .nav-link:focus {
-  background: linear-gradient(135deg, rgba(63,169,213,0.12), rgba(95,195,235,0.18));
+  background: linear-gradient(135deg, rgba(79,195,247,0.15), rgba(2,136,209,0.18));
   color: #e1f7ff !important;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-  transform: translateY(-1px);
-  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  transform: translateY(-2px);
+  border-color: rgba(79,195,247,0.3);
   outline: none;
 }
 
-/* Ítem activo */
+/* Ítem activo con recuadro marcado y efecto de profundidad */
 .navbar .nav-link.active {
-  background: linear-gradient(135deg, #26384e, #324968);
-  color: #e0faff !important;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.4);
-  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(30,45,62,0.95), rgba(46,66,93,0.95));
+  color: #b1d5f9 !important;
+  border: 1px solid #5a8eef;
+  box-shadow: inset 0 0 6px rgba(79,195,247,0.35);
+  transform: translateY(0);
 }
 
-/* Menús desplegables */
+/* Icono separado del texto y animado */
+.navbar .nav-link i {
+  margin-right: 6px;
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.navbar .nav-link:hover i {
+  transform: translateY(-1px);
+}
+
+/* Menús desplegables estilo moderno similar a nav-link */
 .dropdown-menu {
-  background-color: #16232f;
-  border: 1.5px solid #2a3f52;
-  border-radius: 10px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.45);
-  padding: 2rem 0.2rem;   /* menos espacio lateral, algo de aire arriba y abajo */
-  margin-top: 0.7rem;     /* separación del botón */
-  min-width: 180px;       /* ligeramente más ancho que el contenido */
-  transition: opacity 0.3s ease, transform 0.2s ease;
+  background-color: rgba(22,35,47,0.95); /* fondo semi-transparente */
+  border: 1px solid rgba(255,255,255,0.08); /* borde sutil */
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25); /* sombra */
+  padding: 0.5rem 0; /* menos alto pero consistente */
+  margin-top: 0.7rem;
+  min-width: 200px;
+  transition: all 0.3s ease;
   transform-origin: top;
+  backdrop-filter: blur(8px);
 }
 
 /* Ítems dentro del menú desplegable */
 .dropdown-item {
-  color: #94c0ec;          
-  font-size: 0.83rem;      
-  font-weight: 580;        
-  font-family: "Nunito", "Quicksand", "Segoe UI Rounded", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  letter-spacing: 0.02em;  
-  padding: 2rem 0.8rem;  /* menos espacio arriba/abajo y lateral casi inexistente */
-  border-radius: 10px;     
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.15s ease;
+  color: #94c0ec;
+  font-size: 0.92rem;  /* más parecido a nav-link */
+  font-weight: 600;
+  font-family: "Nunito", "Quicksand", "Segoe UI Rounded", sans-serif;
+  letter-spacing: 0.02em;
+  padding: 0.5rem 1rem;  /* padding similar a nav-link */
+  border-radius: 12px;   /* bordes más suaves como nav-link */
   display: flex;
   align-items: center;
-  gap: 10px;               
+  gap: 6px;              /* icono + texto */
+  background-color: rgba(255,255,255,0.02); /* recuadro leve */
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
 }
 
-/* Hover en ítems desplegables */
+/* Hover en subitems parecido a nav-link */
 .dropdown-item:hover,
 .dropdown-item:focus {
-  background-color: #24394f;
+  background: linear-gradient(135deg, rgba(79,195,247,0.15), rgba(2,136,209,0.18));
   color: #e1f7ff;
-  transform: translateX(3px);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   cursor: pointer;
   outline: none;
 }
 
-/* Hover en ítems desplegables */
-.dropdown-item:hover,
-.dropdown-item:focus {
-  background-color: #24394f;
-  color: #e1f7ff;
-  transform: translateX(3px);
-  cursor: pointer;
-  outline: none;
+/* Iconos en subitems */
+.dropdown-item i {
+  margin-right: 6px;
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-item:hover i {
+  transform: translateY(-1px);
 }
 
 /* Contenedor logo + texto */
 .navbar .navbar-brand {
   display: inline-flex;
   align-items: center;
-  gap: 0px;               /* separación logo-texto */
-  padding: 0;             
-  overflow: visible;      /* importante para que el zoom del logo no se corte */
+  gap: 0px;
+  padding: 0;
+  overflow: visible;
 }
 
-/* Logo */
+/* Logo con animación hover */
 .navbar .brand-logo {
-  height: 43px;           /* un poco más pequeño */
+  height: 43px;
   width: auto;
   border-radius: 6px;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   box-shadow: 0 2px 5px rgba(0,0,0,0.25);
 }
 
-/* Hover del logo */
 .navbar .brand-logo:hover {
-  transform: scale(1.15);       /* sutil zoom mayor */
+  transform: scale(1.15);
   box-shadow: 0 4px 12px rgba(0,0,0,0.35);
 }
 
-/* Texto tipo logo */
+/* Texto tipo logo con gradiente y animación */
 .navbar .brand-text {
   font-weight: 800;
-  font-size: 1.75rem;             /* más grande que el resto de pestañas */
-  background: linear-gradient(135deg, #4fc3f7, #0288d1); /* gradiente azul profesional */
+  font-size: 1.75rem;
+  background: linear-gradient(135deg, #4fc3f7, #0288d1);
   -webkit-background-clip: text;
-  background-clip: text; /* Standard property for compatibility */
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: 0.05em;
-  font-family: "Montserrat", "Nunito", "Quicksand", sans-serif; /* tipografía elegante */
+  font-family: "Montserrat", "Nunito", "Quicksand", sans-serif;
   text-shadow: 0 1px 2px rgba(0,0,0,0.25);
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease, filter 0.25s ease;
   display: inline-block;
   vertical-align: middle;
   text-decoration: none;
 }
 
-/* Hover del texto */
 .navbar .brand-text:hover {
   transform: translateY(-2px) scale(1.05);
+  filter: brightness(1.1);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2381,7 +2422,7 @@ details[open] summary.titulo2::before {
   align-items: center;
   justify-content: center;
   transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
-  background-image: url('../../1-images/icono/bot_blue.png');
+  background-image: url('../../1-images/icons/bot_blue.png');
   background-size: 50%;      
   background-repeat: no-repeat;
   background-position: center;

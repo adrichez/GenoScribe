@@ -1,0 +1,338 @@
+---
+title: "Metagenomic Report"
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  CHATBOT
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Este chat permite consultar de manera interactiva la información contenida en un informe específico. 
+        Para ello, se ha alimentado el sistema con el contenido del propio informe, junto con documentos externos en formato PDF y HTML, así como sesiones de preguntas y respuestas (QA). 
+        Al formular una pregunta, el chat busca los fragmentos más relevantes de todos estos documentos mediante técnicas de procesamiento de lenguaje natural ligero y comparaciones basadas en similitud de vectores (medida de coseno). 
+        A partir de los fragmentos seleccionados, se genera un resumen que intenta ofrecer una respuesta coherente y compacta a la consulta realizada.
+      </p>
+
+      <p>
+        Se debe tener en cuenta que este entorno es de prueba. No se utilizan grandes modelos de lenguaje, por lo que las respuestas pueden ser aproximadas y no siempre completamente precisas. 
+        El objetivo principal es proporcionar una visualización rápida y útil de la información contenida en los documentos, facilitando la exploración del contenido del informe de manera interactiva.
+      </p>
+      
+      <p>
+        Actualmente, los resultados no son muy precisos debido al uso de modelos muy básicos, seleccionados para que la aplicación sea rápida y ejecutable en todo tipo de dispositivos sin necesidad de servidores externos. 
+        Sin embargo, la base del sistema permite mejorar notablemente los resultados en el futuro mediante el uso de modelos más potentes o la integración con APIs externas, ofreciendo así un rendimiento y precisión significativamente superiores.
+        Para iniciar, basta con escribir su pregunta en el campo de texto inferior.
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 1: INICIO -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+<div class="informe-titulo">
+  <h1>Informe Automatizado de Metagenómica</h1>
+  <p>Generado con Nextflow + Quarto · IPBLN-CSIC · Granada</p>
+</div>
+
+<div class="portada-imagen">
+  <img src="resources/1-essential/1-images/tab0-inicio/metagenomic_cover.jpg" alt="Portada Metagenómica">
+</div>
+
+
+<div class="informe-resumen">
+
+<h2>Contexto y pipelines empleados</h2>
+
+<p>
+  La <strong>metagenómica de amplicones</strong> es un enfoque utilizado para estudiar la composición y diversidad de comunidades microbianas sin necesidad de aislar organismos individuales. 
+  Se basa en la secuenciación de regiones conservadas de genes marcador, que permiten identificar taxones presentes en una muestra ambiental, clínica o experimental. 
+    Los marcadores más habituales son:
+</p>
+
+<ul>
+  <li><strong>16S rRNA</strong>: utilizado para identificar bacterias y arqueas. Es el enfoque principal de este informe.</li>
+  <li><strong>18S rRNA</strong>: utilizado para caracterizar eucariotas (protozoos, hongos y otros microeucariotas), planeado para futuras extensiones del estudio.</li>
+  <li><strong>ITS (Internal Transcribed Spacer)</strong>: utilizado principalmente para identificación de hongos a nivel de especie, también considerado para futuras ampliaciones.</li>
+</ul>
+
+<p>
+  Este informe se centra en el análisis de <strong>16S</strong>, mientras que los datos de <strong>18S e ITS</strong> quedan comentados y mencionados para posibles ampliaciones en nuevas pestañas del informe, permitiendo una extensión del estudio de forma modular y reproducible.
+</p>
+
+<p>
+    Los datos utilizados en este informe provienen de:
+</p>
+
+<ul>
+  <li><strong>Control de calidad inicial</strong>: realizado mediante <strong>miARma‑Seq</strong> (<em>Eduardo Andrés-León et al.</em>), un pipeline modular y completo diseñado para análisis de RNA-Seq que incluye pasos de recorte, alineamiento, cuantificación y análisis diferencial. 
+  Dado que miARma‑Seq no está pensado específicamente para metagenómica, en este informe se ha utilizado únicamente para procesar datos de <code>FASTQ</code> y generar informes de <em>FastQC</em> y <em>MultiQC</em> para evaluar la calidad de las lecturas. 
+  Toda la información y documentación de miARma-Seq está disponible en su <a href="https://github.com/eandresleon/miARma-seq" class="normalink" target="_blank">repositorio oficial</a>.</li>
+  
+  <li><strong>Análisis metagenómico principal</strong>: llevado a cabo con <strong>QIIME2</strong>, que permite denoising de lecturas, construcción de tablas de abundancia, cálculo de métricas de diversidad, análisis funcional y visualización integrada. 
+  QIIME2 es una plataforma reproducible y documentada, diseñada específicamente para metagenómica de amplicones, disponible en <a href="https://qiime2.org/" class="normalink" target="_blank">https://qiime2.org/</a>.</li>
+</ul>
+
+<p>
+  Para ambas herramientas, más adelante se comentará el pipeline completo de manera detallada, incluyendo todos los pasos posibles y su integración en el flujo de trabajo automatizado de este informe.
+</p>
+
+<p>
+  El flujo de trabajo completo combina estas herramientas de la siguiente manera:
+</p>
+
+<ol>
+  <li><strong>Control de calidad inicial</strong>: evaluación de lecturas crudas mediante <em>FastQC</em> y resúmenes globales con <em>MultiQC</em> generados por <strong>miARma‑Seq</strong>.</li>
+  <li><strong>Procesamiento metagenómico</strong>: análisis exclusivo de <strong>16S</strong> con <em>QIIME2</em>, incluyendo filtrado, denoising con <em>DADA2</em>, generación de tablas de abundancia y visualizaciones preliminares.</li>
+  <li><strong>Análisis de diversidad y funcionalidad</strong>: cálculo de métricas α y β de diversidad, visualizaciones con PCoA, predicción funcional de metagenomas mediante <em>PICRUSt2</em> y análisis estadístico con <em>R</em> usando paquetes como <em>MetagenomeSeq</em> o <em>ALDEx2</em>.</li>
+  <li><strong>Informe automatizado</strong>: integración de todos los resultados en un reporte reproducible en <strong>HTML</strong> mediante <strong>Quarto</strong>, incluyendo gráficos, tablas y resúmenes de cada etapa.</li>
+</ol>
+
+<p>
+    Como ya se ha mencionado, por el momento, los análisis de <strong>18S e ITS</strong> se encuentran comentados y mencionados únicamente como referencia. Estas secciones podrán incorporarse en futuras pestañas del informe, manteniendo la misma estructura modular y reproducible que caracteriza el pipeline.
+</p>
+
+<table style="width:100%; border-collapse: collapse; margin-top: 1.5em;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+        <th style="border: 1px solid #ddd; padding: 8px;">Característica</th>
+        <th style="border: 1px solid #ddd; padding: 8px;">Beneficio</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Automatización</strong></td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Permite generar informes reproducibles sin intervención manual en cada paso.</td>
+        </tr>
+        <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Modularidad</strong></td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Cada etapa del flujo (QC, denoising, diversidad, funcionalidad) puede ejecutarse de forma independiente o completa.</td>
+        </tr>
+        <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Integración QIIME2 + R</strong></td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Permite combinar análisis bioinformático y estadístico con visualización reproducible.</td>
+        </tr>
+        <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Flexibilidad</strong></td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Se puede ampliar el estudio a otros marcadores (18S, ITS) en el futuro, creando nuevas pestañas en el informe.</td>
+        </tr>
+    </tbody>
+</table>
+
+</div>
+
+
+<div style="height: 5px; background-color: transparent;"></div>
+
+<p>
+  A continuación se presentan los flujos de trabajo de las dos herramientas principales utilizadas en este análisis de metagenómica: <strong>miARma‑Seq</strong> para control de calidad y <strong>QIIME2</strong> para el análisis de datos de 16S. Cada diagrama ilustra la modularidad y reproducibilidad del pipeline.
+</p>
+
+
+
+
+
+
+<div style="height: 13px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Flujo de trabajo con miARma-Seq
+</div>
+
+<p>
+  <strong>miARma‑Seq</strong> es un pipeline integral diseñado para análisis de RNA‑Seq (mRNA, miRNA y circRNA), desarrollado por <em>Eduardo Andrés‑León et al.</em>. Incluye múltiples módulos que permiten procesar datos crudos de manera modular y reproducible:
+</p>
+
+<ol>
+  <li><strong>Control de calidad inicial:</strong> Evaluación de archivos <code>FASTQ</code> mediante <em>FastQC</em>, con generación de reportes individuales y resúmenes globales usando <em>MultiQC</em>, permitiendo detectar adaptadores, sesgos de composición y problemas de calidad por posición.</li>
+  <li><strong>Recorte de lecturas:</strong> Eliminación de adaptadores y bases de baja calidad mediante <em>Cutadapt</em> o <em>Reaper</em>, optimizando los datos antes de alineamiento.</li>
+  <li><strong>Alineamiento:</strong> Mapeo contra genomas de referencia usando alineadores como <em>HISAT2</em>, <em>STAR</em>, <em>Bowtie</em> o <em>BWA</em>, dependiendo del tipo de RNA.</li>
+  <li><strong>Cuantificación:</strong> Conteo de genes o isoformas con <em>featureCounts</em>, detección de circRNAs con <em>CIRI</em> y cuantificación de miRNAs con <em>miRDeep2</em>.</li>
+  <li><strong>Análisis diferencial:</strong> Identificación de genes o miRNAs diferencialmente expresados mediante <em>edgeR</em> o <em>NOISeq</em>, según el diseño experimental.</li>
+  <li><strong>Análisis funcional:</strong> Predicción de interacciones miRNA‑mRNA, correlaciones inversas de expresión y análisis de enriquecimiento funcional (GO, KEGG).</li>
+</ol>
+
+<p>
+  Aunque miARma‑Seq ofrece todas estas funcionalidades, en este informe únicamente se ha utilizado el <strong>módulo de control de calidad</strong> para los archivos <code>FASTQ</code> de nuestro análisis metagenómico. Esto garantiza que las lecturas crudas de 16S sean de alta calidad antes de ser procesadas con QIIME2. Toda la documentación y el repositorio de miARma‑Seq están disponibles en su repoditorio de <a href="https://github.com/eandresleon/miARma-seq" class="normalink" target="_blank">GitHub</a>. Podemos ver el workflow completo de esta herramienta a continuación:
+</p>
+
+<div class="box-images">
+  <img src="resources/1-essential/1-images/tab0-inicio/miARma-Seq-workflow.png" alt="Pipeline completo de miARma-Seq">
+</div>
+
+<p>
+  Para garantizar la <strong>reproducibilidad</strong> y <strong>modularidad</strong> del pipeline, <code>miARma‑Seq</code> utiliza un archivo de configuración con extensión <code>.ini</code>. Este archivo permite especificar todos los parámetros necesarios para ejecutar el pipeline completo de RNA-Seq, sin necesidad de escribir comandos complejos en la línea de comandos. En el contexto de este informe de metagenómica, se ha utilizado únicamente el módulo de control de calidad de lecturas (<code>FASTQ</code>), aunque el archivo <code>.ini</code> podría activar otros pasos del pipeline si se deseara.
+</p>
+
+<p>
+  El archivo <code>.ini</code> se organiza en secciones bien definidas (por ejemplo, <code>[General]</code>, <code>[QC]</code>, <code>[Aligner]</code>, <code>[ReadCount]</code>…), cada una dedicada a un módulo específico del pipeline de miARma‑Seq. En cada sección se indican rutas de entrada y salida, tipo de datos, número de hilos, herramientas a utilizar y criterios estadísticos.
+</p>
+
+<p>
+  A continuación se muestra un ejemplo real de un archivo <code>.ini</code> de miARma‑Seq, incluyendo los módulos de control de calidad, alineamiento, cuantificación y análisis diferencial para datos de RNA. En este informe, solo se ejecuta el módulo de <strong>QC</strong>:
+</p>
+
+<iframe src="resources/1-essential/2-archives/tab0-inicio/miARma_mRNAs_pipeline_STAR.txt" width="100%" height="500px" frameborder="0" style="border: none; display: block;"></iframe>
+
+<p style="text-align:center;">
+  <a href="resources/1-essential/2-archives/tab0-inicio/miARma_mRNAs_pipeline_STAR.txt" target="_blank" class="boton-iframe">
+    🔍 Ver archivo completo en una nueva página
+  </a>
+</p>
+
+<p>
+  Este archivo se ejecuta mediante el siguiente comando, una vez realizada la instalación y configuración de <code>miARma‑Seq</code>:
+</p>
+
+```bash
+./miARma miarma_config_example.ini check
+```
+
+<p>
+  Para más información sobre esta herramienta y su pipeline completo, se puede consultar el repositorio oficial en <a href="https://github.com/eandresleon/miARma-seq" class="normalink" target="_blank" class="normalink">GitHub: miARma‑Seq</a>.  
+  En futuras extensiones del análisis metagenómico, se podría aprovechar más módulos del pipeline si se integran otros tipos de datos o se desea automatizar pasos adicionales.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 13px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Flujo de trabajo con QIIME2
+</div>
+
+<p>
+  <strong>QIIME2</strong> es una plataforma especializada para análisis de metagenómica de amplicones, especialmente del marcador 16S, con un enfoque modular, reproducible y documentado. Su flujo de trabajo incluye múltiples etapas que permiten procesar, filtrar y analizar las secuencias de manera rigurosa, integrando herramientas estadísticas y visualización avanzada.
+</p>
+
+<ol>
+  <li>
+    <strong>Secuencias crudas (.fastq)</strong>: Se importan los archivos de secuenciación sin procesar, que contienen todas las lecturas de ADN de las muestras.
+  </li>
+  <li>
+    <strong>Validación del archivo de metadatos</strong>: Se comprueba que la información de cada muestra (por ejemplo, grupos experimentales) esté correctamente formateada y consistente con los datos de secuenciación.
+  </li>
+  <li>
+    <strong>Importación de secuencias</strong>: Conversión de los archivos <code>.fastq</code> al formato nativo de QIIME2, que permite la ejecución de los siguientes pasos del pipeline.
+  </li>
+  <li>
+    <strong>Demultiplexing</strong>: Separación de lecturas por muestra utilizando los índices o códigos de barras, asignando cada secuencia a su muestra de origen.
+  </li>
+  <li>
+    <strong>Filtrado de calidad, eliminación de quimeras y desreplicación</strong>: Se eliminan secuencias de baja calidad y quiméricas (artefactos de PCR), y se generan secuencias únicas (ASVs, Amplicon Sequence Variants) que representan las variantes biológicas reales.
+  </li>
+  <li>
+    <strong>Asignación taxonómica</strong>: Cada ASV se clasifica en niveles taxonómicos (especie, género, familia, etc.) usando bases de referencia.
+  </li>
+  <li>
+    <strong>Entrenamiento de la base de datos</strong>: Se entrena un clasificador de aprendizaje automático con bases de referencia (como SILVA o Greengenes) para mejorar la precisión de la asignación taxonómica.
+  </li>
+  <li>
+    <strong>Visualización de la taxonomía</strong>: Se generan gráficos que muestran la composición microbiana de cada muestra y del conjunto de datos.
+  </li>
+  <li>
+    <strong>Creación de árbol filogenético</strong>: Se construye un árbol filogenético que representa las relaciones evolutivas entre los ASVs, esencial para análisis de diversidad basados en distancia filogenética.
+  </li>
+  <li>
+    <strong>Análisis de diversidad alfa y beta</strong>: Cálculo de métricas de diversidad alfa (dentro de cada muestra) y beta (entre muestras) para comparar la riqueza, uniformidad y composición de las comunidades microbianas.
+  </li>
+  <li>
+    <strong>Exportación de resultados</strong>: Las tablas de ASVs, la asignación taxonómica y las métricas de diversidad se exportan a formatos compatibles con R u otros programas, facilitando análisis estadísticos, visualizaciones avanzadas y predicciones funcionales.
+  </li>
+</ol>
+
+<p>
+  Mediante la siguiente imagen podemos observar de forma más visual el workflow completo descrito anteriormente y seguido con esta herramienta:
+</p>
+
+<div class="box-images">
+  <img src="resources/1-essential/1-images/tab0-inicio/qiime2-workflow.png" alt="Pipeline de QIIME2">
+</div>
+
+<p>
+  El uso combinado de <strong>QIIME2</strong> y <strong>R</strong> permite un análisis completo y reproducible de los datos de 16S, integrando diversidad, funcionalidad y estadística avanzada. La documentación oficial de QIIME2 está disponible en <a href="https://qiime2.org/" target="_blank" class="normalink">https://qiime2.org/</a>.
+</p>
+
+<p>
+  En conjunto, ambos pipelines —miARma‑Seq para control de calidad y QIIME2 para análisis metagenómico— se integran mediante <strong>Nextflow</strong> para generar un informe reproducible en <strong>Quarto</strong>. Esto asegura trazabilidad, modularidad y claridad en la interpretación de los resultados.
+</p>
+
+
+
+
+
+
+<div style="height: 13px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Reflexiones finales
+</div>
+
+<p>
+  Con los datos procesados mediante <strong>miARma‑Seq</strong> para control de calidad y <strong>QIIME2</strong> para el análisis metagenómico, se ha generado el correspondiente informe automatizado de metagenómica mediante un pipeline reproducible desarrollado en <strong>Nextflow</strong>. 
+</p>
+
+<p>
+  Este informe se organiza en tres pestañas principales para facilitar la navegación y la interpretación de resultados:
+</p>
+
+<ol>
+  <li><strong>Inicio</strong>: Esta pestaña, donde se describe el contexto, las herramientas empleadas, los pipelines y la filosofía de reproducibilidad del análisis.</li>
+  <li><strong>Resumen</strong>: Contiene las métricas principales de calidad y análisis, la fecha de creación del documento y un resumen de los resultados más relevantes.</li>
+  <li><strong>Análisis</strong>: Aquí se presenta todo el proceso de metagenómica, incluyendo gráficos, tablas de abundancia, métricas de diversidad y análisis estadísticos.  
+    En realidad, esta sección está dividida en tres pestañas específicas: <strong>Análisis 16S</strong>, <strong>Análisis 18S</strong> y <strong>Análisis ITS</strong>, pero en el presente informe nos centraremos principalmente en el análisis de 16S.
+  </li>
+</ol>
+
+<p>
+  El usuario puede navegar entre estas pestañas de manera interactiva mediante la barra de menú superior del informe, accediendo a la información general, los resúmenes principales y los análisis detallados de cada marcador según convenga.
+</p>
+
+
+
+
+
+
+
+
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  CARGAR JAVASCRIPT PARA CHATBOT
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+<!-- Script exclusivo del chat -->
+<script type="module" src="resources/1-essential/3-scripts/4-javascript/chatbot.js"></script>
