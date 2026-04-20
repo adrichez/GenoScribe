@@ -1,0 +1,544 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 0: INICIO -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Insertar aquí en el caso de que fuera necesario -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo">
+  <h1>Bioinformatics Report</h1>
+  <h2>Transcriptomic Analysis using Single-Cell RNA-Seq</h2>
+  <p>Bioinformatics Unit - IPBLN-CSIC - Granada</p>
+</div>
+
+<div class="portada-imagen">
+  <img src="resources/01-essential/01-images/tab0-inicio/transcriptomics_sc_rna_seq_cover_report.png" alt="Transcriptomics Single-Cell RNA-Seq Report Cover">
+</div>
+
+<!-- 
+<div class="portada-video">
+  <video autoplay loop muted playsinline>
+    <source src="resources/01-essential/01-images/tab0-inicio/transcriptomics_sc_rna_seq_cover_report.mp4" type="video/mp4">
+    Transcriptomics Single-Cell RNA-Seq Report Cover
+  </video>
+</div>
+-->
+
+<div class="flecha-abajo" style="margin: -20px auto -15px auto">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Introduction</h2>
+
+  <p>
+    Transcriptomic analysis using <strong>Single-Cell RNA-Seq (scRNA-Seq)</strong> is a high-throughput sequencing technique that enables the study of gene expression at <strong>single-cell resolution</strong>, providing a detailed characterization of cellular heterogeneity present in tissues, organs, and complex biological systems.
+    This approach allows for the identification of cell populations, transcriptional states, and differentiation trajectories, offering a deep view of cellular organization and dynamics.
+  </p>
+
+  <p>
+    In Single-Cell RNA-Seq studies, the main <strong>elements analyzed</strong> include:
+  </p>
+
+  <ul>
+    <li><strong>Individual cells</strong> &rArr; enable characterization of cellular heterogeneity and detection of specific subpopulations.</li>
+    <li><strong>Gene expression profiles</strong> &rArr; quantification of transcripts at the single-cell level to identify marker genes and functional patterns.</li>
+    <li><strong>Cellular states</strong> &rArr; identification of activated, differentiated, or transitional states within a cell population.</li>
+  </ul>
+
+  <p>
+    This report focuses on the transcriptomic analysis of <strong>Single-Cell RNA-Seq</strong> data, aiming to explore transcriptomic heterogeneity, identify cell types and states, and study functional relationships and biological dynamics at the cellular level.
+    The results enable the generation of biological hypotheses, the discovery of relevant cell populations, and the clear and visual summarization of information.
+  </p>
+
+  <p>
+    This document has been designed by the <strong>Bioinformatics Unit at the Instituto de Parasitología y Biomedicina López-Neyra (IPBLN-CSIC, Granada)</strong>, with the aim of providing a <em>standardized, structured, and automated</em> format for the presentation of single-cell transcriptomic results.
+    Thanks to the integration of tools such as <strong>R</strong>, <strong>Nextflow</strong>, and <strong>Quarto</strong>, the report ensures <strong>reproducibility</strong>, <strong>traceability</strong>, and <strong>ease of sharing</strong> results with the scientific community.
+  </p>
+
+  <p>
+    Ultimately, this report aims to serve as a clear and visual platform for interpreting Single-Cell RNA-Seq data, facilitating both the exploration of cellular heterogeneity by researchers and scientific communication in collaborative projects.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 0px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this tab
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab0-seccion1">Report navigation</a>
+    </li>
+    <li>
+      <a href="#tab0-seccion2">User guide and chatbot usage</a>
+      <ul>
+        <li><a href="#tab0-seccion2.1">Intelligent assistant (chatbot)</a></li>
+        <li><a href="#tab0-seccion2.2">Proper opening and usage of the report</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#tab0-seccion3">Information and contact</a>
+    </li>
+  </ul>
+</div>
+
+
+<p>
+  Following this general introduction, the <strong>Home</strong> tab continues with several complementary sections that help the user navigate the report, understand how it works, and access additional information about the analysis.
+</p>
+
+<ul>
+  <li>
+    <strong>Report navigation &rArr;</strong> provides a structured overview of the different available sections, displaying interactive cards with direct access to each of them. This block serves as a starting point for navigating the report content in a visual and intuitive way.
+  </li>
+
+  <li>
+    <strong>User guide and chatbot usage &rArr;</strong> explains in a simple way how the report is organized and the purpose of each main tab (<em>Home, Summary and Analysis</em>). In addition, it describes the functionality of the <strong>integrated chatbot</strong> located in the bottom right corner, which allows quick queries about the results and the report content.
+  </li>
+
+  <li>
+    <strong>Information and contact &rArr;</strong> provides details about the team responsible for development and analysis, as well as links to useful resources, technical documentation, and the official portal of the <strong>CSIC Bioinformatics Unit</strong>. This section closes the <em>Home</em> tab by offering the reader the available communication and support channels.
+  </li>
+</ul>
+
+<p>
+  Altogether, these sections turn the <strong>Home</strong> tab into an introductory space that not only presents the scientific context of the analysis, but also guides the user in exploring the report and making the most of its interactive features.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab0-seccion1">
+  ➤ Report navigation
+</div>
+
+```{r, results="asis"}
+library(glue)
+
+# Leer parámetros de Quarto
+report_version <- params$report_version
+
+# Inicializamos lista de tarjetas
+cards <- list()
+
+# Siempre Inicio
+cards <- append(cards, list(
+  list(icon = "fa-house", color = "blue", label = "Inicio",
+        link = "#",
+        desc = paste0(
+          "Tab for <strong>entry to the report</strong> and starting point for the researcher. ",
+          "Includes the <em>project cover</em> and a <strong>contextual introduction</strong> to the <strong>Single-Cell RNA-Seq</strong> experiment, detailing the scientific background and biological objectives. ",
+          "Additionally, it provides an <strong>interactive navigation guide</strong> explaining the structure of the report itself, usage instructions (including the virtual assistant or chatbot), and contact information, ensuring intuitive exploration from the first click."
+        ))
+))
+
+# Metodología solo en versión full
+if (report_version == 1) {
+  cards <- append(cards, list(
+    list(icon = "fa-gears", color = "orange", label = "Metodología",
+          link = "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab1-metodologia/metodologia.html#",
+          desc = paste0(
+            "Section dedicated to the <strong>reproducibility and computational architecture</strong> of the project. ",
+            "The data workflow is thoroughly documented: from primary processing with <strong>Cell Ranger</strong> to downstream analysis with <strong>R (Seurat)</strong>, detailing key versions and parameters. ",
+            "Additionally, computational automation using <strong>Nextflow</strong> (<code>main.nf</code>) and orchestration of the interactive report with <strong>Quarto</strong> (<code>_quarto.yml</code> and <code>params.yml</code>) are explained. ",
+            "This is the definitive technical guide to understanding script modularity and reproducing the analysis in a standardized and efficient manner."
+          ))
+  ))
+}
+
+# Añadir Resumen y Análisis
+add_analysis_cards <- function() {
+  base_path <- if (report_version == 1) {
+    "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version"
+  } else {
+    "resources/01-essential/03-scripts/02-quarto/02-english-language/02-compact-version"
+  }
+
+  resumen_link  <- paste0(base_path, "/tab2-resumen/resumen.html#")
+  analisis_link <- paste0(base_path, "/tab3-analisis/00-contexto.html#")
+
+  cards <<- append(cards, list(
+    list(icon = "fa-chart-line", color = "green", label = "Resumen",
+          link = resumen_link,
+          desc = paste0(
+            "Comprehensive and executive overview of the experiment. ",
+            "Includes a <strong>rapid contextualization of the experimental design</strong> through archives as <em>sample sheet</em> or sample metadata. ",
+            "Additionally, it presents the <strong>primary quality metrics</strong> generated by the <strong>Cell Ranger</strong> pipeline (such as the estimated number of recovered cells, reads per cell, and median detected genes). ",
+            "Allows the researcher to quickly obtain a global perspective of sample status and viability before exploring single-cell heterogeneity in depth."
+          ))
+  ))
+
+  cards <<- append(cards, list(
+    list(icon = "fa-dna", color = "purple", label = "Análisis",
+        link = analisis_link,
+        desc = paste0(
+          "This tab provides a <strong>detailed and structured view</strong> of the Single-Cell RNA-Seq analysis, following the industry-standard workflow with tools such as <strong>Seurat</strong>. ",
+          "The workflow begins with cell-level quality assessment (<strong>QC and filtering</strong>), followed by <strong>dimensionality reduction</strong> (PCA or UMAP) and <strong>unsupervised mathematical clustering</strong>. ",
+          "Subsequently, marker identification and the critical phase of <strong>cell annotation</strong> are addressed (contrasting automated databases with expert manual curation). ",
+          "The workflow culminates in the <strong>grouping of biological populations</strong> to maximize statistical robustness and the execution of <strong>differential expression analysis (WT vs KO)</strong> within each anatomical cell subtype, ensuring clear, biologically relevant, and reproducible results."
+        ))
+  ))
+}
+
+add_analysis_cards()
+
+# Construir HTML de tarjetas (el enlace queda SOLO en la etiqueta <a> dentro del <p>)
+card_htmls <- paste0(sapply(cards, function(card) {
+  glue::glue(
+    '<div class="navigation-card {card$color}">
+      <i class="fa-solid {card$icon} fa-3x" aria-hidden="true"></i>
+      <p><a href="{card$link}" class="nav-label-link" aria-label="{card$label}">{card$label}</a></p>
+    </div>'
+  )
+}), collapse = '\n')
+
+# Construir la lista de descripciones
+details_html <- paste0(sapply(cards, function(card) {
+  glue::glue('<li style="margin-bottom: 15px;"><strong>{card$label}</strong> <strong>&rArr;</strong> {card$desc}</li>')
+}), collapse = '\n')
+
+# Imprimir todo (results = "asis" asegurado en el chunk)
+cat(glue::glue('
+<p>
+  In this section, users can easily navigate through the different parts of the report using the buttons below. Each button links to a specific tab containing detailed information or summaries of the Single-Cell RNA-Seq transcriptomic analysis.
+</p>
+
+<div class="navigation-cards">
+{card_htmls}
+</div>
+
+<p>More specifically, each tab will address the following concepts:</p>
+
+<ul>
+{details_html}
+</ul>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab0-seccion2">
+  ➤ User guide and chatbot usage
+</div>
+
+<p>
+  This report has been designed to facilitate consultation and interpretation of the analysis results in a <strong>clear, visual, and intuitive</strong> way, allowing exploration without the need for technical knowledge or direct access to the files generated by the analysis pipeline.
+</p>
+
+<p>
+  All information presented in the report is generated automatically from the actual analysis results, ensuring that the displayed content is <strong>consistent, up-to-date, and faithful to the obtained data</strong>, thereby guaranteeing the consistency and traceability of the results.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 10px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab0-seccion2.1">
+  ❯ Interactive assistant (chatbot)
+</div>
+
+<p>
+  The report incorporates an <strong>interactive chatbot</strong>, accessible from the bottom right corner, aimed at providing support during the exploration of results and facilitating access to relevant information contained within the report itself.
+</p>
+
+<p>
+  This assistant allows quick searches within the available content, helping to locate sections, figures, or results of interest, and contributing to a faster understanding of the analysis without manually navigating through all tabs.
+</p>
+
+<p>
+  In the current version, the chatbot is in an <strong>early development stage</strong>, so its responses are simple and based on the existing report content. Nevertheless, its integration lays the foundation for future improvements aimed at providing more advanced and personalized interaction.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 10px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab0-seccion2.2">
+  ❯ Proper opening and usage of the report
+</div>
+
+<p>
+  To ensure the correct functioning of the chatbot and other interactive elements, the report must be opened via a <strong>local server</strong>. Directly opening the <code>index.html</code> file from the file system may limit the availability of these functionalities.
+</p>
+
+<p>
+  To simplify this process, the project includes a script that automates the opening of the report:
+</p>
+
+<p>
+  <code>resources/01-essential/03-scripts/06-bash/run_report_server.sh</code>
+</p>
+
+<p>
+  Running this script starts a local server and automatically opens the report in the browser, activating all interactive functions, including the chatbot.
+</p>
+
+<p>
+  Once opened in this way, the report can be explored normally, allowing the user to access results and use all available functionalities without restrictions.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab0-seccion3">
+  ➤ Information and contact
+</div>
+
+<p>
+  This report has been generated in a <strong>automated</strong> manner through the integration of <em>Quarto</em>, <em>R</em>, and reproducible pipelines, specifically designed for Single-Cell RNA-Seq analysis. Thanks to this approach, the presented results are <strong>consistent, traceable, and easy to share</strong>, ensuring that any user can explore the data with full confidence in its integrity.
+</p>
+
+<p>
+  The <strong>Information and contact</strong> tab provides users with quick access to key resources related to the report. Here, users can find communication channels to resolve technical questions, report issues, access the project source code, and consult additional documentation that facilitates understanding and leveraging the results.
+</p>
+
+<p>
+  For any inquiries regarding the report or support related to the analyses, you can contact the <strong>CSIC Bioinformatics team</strong> through the channels listed below. Each card provides direct access to the most relevant information in a visual and intuitive way.
+</p>
+
+<div class='contact-cards'>
+<div class='contact-card blue'>
+  <i class='fa-solid fa-globe fa-2x'></i>
+  <p><strong>Official website and contact</strong></p>
+  <a href='https://www.ipb.csic.es/servicios/Bioinformatica/index.html' target='_blank'>CSIC Bioinformatics Unit</a>
+</div>
+<div class='contact-card green'>
+  <i class='fa-solid fa-envelope fa-2x'></i>
+  <p><strong>Support email</strong></p>
+  <a href='mailto:bioinformatica@ipb.csic.es'>bioinformatica@ipb.csic.es</a>
+</div>
+<div class='contact-card purple'>
+  <i class='fa-brands fa-github fa-2x'></i>
+  <p><strong>Code repository</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe' target='_blank'>Project GitHub</a>
+</div>
+<div class='contact-card orange'>
+  <i class='fa-solid fa-book fa-2x'></i>
+  <p><strong>Documentation</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe/blob/main/06-info/0102_TRANSCRIPTOMICS_SC_RNA_SEQ_GUIDE.md' target='_blank'>User manual</a>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="resources/01-essential/03-scripts/04-javascript/chatbot.js"></script>
+<script type="module" src="resources/01-essential/03-scripts/04-javascript/script.js"></script>

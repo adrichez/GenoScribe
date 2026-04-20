@@ -1,0 +1,581 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 9. ANÁLISIS PERSONALIZADOS Y AD HOC -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+# (Lo renombramos a 09-extra para mantener coherencia con la carpeta)
+ruta_archives_tmp_extra <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "09-extra")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_extra, recursive = TRUE, showWarnings = FALSE)
+
+
+
+
+
+
+
+
+#===================================================================================================================================================
+# DIRECTORIO "ANALYSIS"
+#===================================================================================================================================================
+
+# Rutas de la carpeta "analysis" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "analysis")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "analysis")
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "EXTRA" EN "ANALYSIS"
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas al directorio "09_extra" dentro de "analysis"
+ruta_extra <- file.path(ruta_analysis, "09_extra")
+ruta_extra_relativa <- file.path(ruta_analysis_relativa, "09_extra")
+
+# Dataframe para almacenar las carpetas principales y lista para sus archivos
+extra_root_dirs_df <- NULL
+extra_files_list <- list() # Aquí guardaremos los archivos de cada carpeta
+
+if (dir.exists(ruta_extra)) {
+  subdirs_root <- list.dirs(ruta_extra, recursive = FALSE, full.names = FALSE)
+  subdirs_root <- subdirs_root[subdirs_root != ""] # <--- FIX: Evitar el directorio fantasma
+
+  if (length(subdirs_root) > 0) {
+    # Ordenar alfabéticamente
+    subdirs_root <- sort(subdirs_root)
+
+    # Crear dataframe con las carpetas
+    extra_root_dirs_df <- data.frame(
+      folder_name = subdirs_root,
+      ruta_absoluta = file.path(ruta_extra, subdirs_root),
+      ruta_relativa = file.path(ruta_extra_relativa, subdirs_root),
+      stringsAsFactors = FALSE
+    )
+    
+    # BUCLE PARA EXPLORAR QUÉ ARCHIVOS HAY DENTRO DE CADA SUBCARPETA
+    for (i in 1:nrow(extra_root_dirs_df)) {
+      carpeta <- extra_root_dirs_df$folder_name[i]
+      ruta_abs_carpeta <- extra_root_dirs_df$ruta_absoluta[i]
+      ruta_rel_carpeta <- extra_root_dirs_df$ruta_relativa[i]
+      
+      # Listar archivos de esta carpeta
+      archivos_dentro <- list.files(ruta_abs_carpeta, full.names = FALSE)
+      
+      if (length(archivos_dentro) > 0) {
+        extra_files_list[[carpeta]] <- data.frame(
+          file_name = archivos_dentro,
+          ruta_absoluta = file.path(ruta_abs_carpeta, archivos_dentro),
+          ruta_relativa = file.path(ruta_rel_carpeta, archivos_dentro),
+          stringsAsFactors = FALSE
+        )
+      } else {
+        # Si la carpeta está creada pero vacía, almacenamos un df vacío para que no falle
+        extra_files_list[[carpeta]] <- data.frame()
+      }
+    }
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 9</h1>
+  <h2>Custom and Ad Hoc Analyses</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    Single cell transcriptomic analysis (<em>scRNA-seq</em>) generates a data ecosystem of overwhelming magnitude. Throughout the previous sections, we have deployed a standardized computational workflow that acts as a global cartographic map: from strict quality control and lineage identification to the discovery of differential signatures and their functional interpretation.
+  </p>
+
+  <p>
+    However, cutting edge biological research is rarely exhausted by global approaches. Very often, the research team needs to shift focus from the general landscape to zoom in on highly specific molecular coordinates, validating concrete hypotheses or exploring particular therapeutic targets.
+  </p>
+
+  <p>
+    This ninth module has been specifically designed for that purpose. Conceived as a dynamic, flexible, and modular repository, it is intended to host all <strong>custom analyses and <em>ad hoc</em> requests</strong> that fall outside the automated workflow. In this way, we ensure that any complementary exploration requested by the laboratory is documented, structured, and fully accessible within the same comprehensive report.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents of this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion9">9<span>.</span> Custom and Ad Hoc Analyses</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion9.1">9.1. Nature of Additional Requests</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion9.2">9.2. Targeted Exploration Repository</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion9">
+  9<span>.</span> Custom and Ad Hoc Analyses
+</div>
+
+<p>
+  Algorithmic standardization and the application of universal statistical thresholds are the pillars that ensure the reproducibility, objectivity, and rigor of any bioinformatic study. However, we recognize that the true translational value of single cell transcriptomics lies in its flexibility to adapt and respond to the specific hypotheses and questions of each researcher.
+</p>
+
+<p>
+  Unlike the eight preceding analytical modules —whose content, format, and sequencing are rigidly defined by the computational architecture of the central <em>pipeline</em>—, the present section has been conceived as an open, high level analytical ecosystem. Its structure is intrinsically dynamic: it does not start from a predefined design, but will evolve and be populated with directories exclusively in response to the exploratory demands that the research team requests after the preliminary evaluation of the general results.
+</p>
+
+<p>
+  This space centralizes all those technical approaches that go beyond the automated workflow, acting as a direct bridge between large scale data mining and laboratory bench validations. To ensure intuitive and organized navigation through this inherently heterogeneous material, the closing of this report is structured into two conceptual blocks:
+</p>
+
+<ul>
+  <li>
+    <strong>9.1. Nature of Additional Requests &rArr;</strong> Provides essential methodological context to correctly interpret the variety of hosted results. It details the most frequent use cases that justify the creation of these subfolders, ranging from high granularity graphical resolutions to atypical tabular export formats.
+  </li>
+  <li>
+    <strong>9.2. Targeted Exploration Repository &rArr;</strong> Constitutes the final interactive core of the study. Through a custom programmed dynamic rendering engine, this subsection will scan, structure, and present in a fully automated and indexed manner any subdirectory of extra material generated by the bioinformatics team, facilitating its immediate review.
+  </li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion9.1">
+  9.1. Nature of Additional Requests
+</div>
+
+<p>
+  As an essential complement to the rigor of standardized analysis, this repository is reserved to host results of heterogeneous and highly specific nature. To ensure correct interpretation of the material displayed in the subsequent directories, it is useful to frame these files within their most frequent analytical use cases.
+</p>
+
+<p>
+  Typically, this space will host the <strong>targeted visual exploration of therapeutic targets</strong>, represented in individual graphical projections (such as <em>FeaturePlots</em> or <em>Violin Plots</em>) of genes of particular interest to the laboratory. Likewise, it is the designated place to store <strong>non standard tabular exports</strong>, such as expression matrices broken down at the single cell level, customized spreadsheets, or raw counts adapted for integration with external databases. Finally, this repository will also accommodate <strong>cellular reclassifications or isolation of specific lineages</strong> (such as deep <em>subclustering</em> of specific immune populations) that have been explicitly requested to isolate variables or address secondary hypotheses unique to the project.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion9.2">
+  9.2. Targeted Exploration Repository
+</div>
+
+<p>
+  Below, the main structure of the <code>09_extra</code> directory is displayed, which serves as the master container for all <em>ad hoc</em> analytical requests. From the following interactive panel, you can access the root of the repository and obtain an overview of the generated folders:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+if (!is.null(extra_root_dirs_df) && nrow(extra_root_dirs_df) > 0) {
+  
+  # 1. SHOW THE PARENT DIRECTORY (09_extra)
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(extra_root_dirs_df)) {
+    folder <- extra_root_dirs_df$folder_name[i]
+    # Clean path and enforce trailing slash to open as directory
+    ruta_html <- utils::URLencode(gsub("\\\\", "/", paste0(extra_root_dirs_df$ruta_relativa[i], "/")))
+    cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', ruta_html, folder))
+  }
+  cat('</ul>\n</div>\n')
+  
+  # Button to explore the root
+  ruta_extra_html <- utils::URLencode(gsub("\\\\", "/", ruta_extra_relativa))
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_extra_html}/" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore ad hoc analysis root directory
+    </a>
+  </p>
+  '), sep = "\n")
+  
+  
+  # 2. DYNAMIC CONTEXTUALIZATION (Count and list folders)
+  num_carpetas <- nrow(extra_root_dirs_df)
+  texto_conteo <- ifelse(num_carpetas == 1, 
+                          "<strong>1 subdirectory</strong> of custom exploration", 
+                          paste0("<strong>", num_carpetas, " subdirectories</strong> of custom exploration"))
+  
+  lista_nombres <- paste0("<em>", extra_root_dirs_df$folder_name, "</em>", collapse = ", ")
+  
+  cat(glue::glue('
+  <p>
+    In the current version of this project, the system has detected and processed {texto_conteo} ({lista_nombres}). Next, we will break down the content of each of these individual sections, directly displaying the graphical and/or tabular reports ready for inspection.
+  </p>
+  '), sep = "\n")
+  
+
+  # 3. BUCLE DETALLADO PARA CADA SUBCARPETA
+  for (i in 1:nrow(extra_root_dirs_df)) {
+    
+    carpeta_cruda <- extra_root_dirs_df$folder_name[i]
+    ruta_carpeta_rel <- extra_root_dirs_df$ruta_relativa[i]
+    
+    # GENERAR EL TÍTULO DINÁMICO (Eliminar prefijo numérico, limpiar guiones y capitalizar)
+    # 1. Quitamos los números iniciales y su guion bajo (ej: "01_" -> "")
+    carpeta_sin_numeros <- sub("^\\d+_+", "", carpeta_cruda)
+    
+    # 2. Cambiamos los guiones bajos restantes por espacios y capitalizamos
+    titulo_limpio <- stringr::str_to_title(gsub("_", " ", carpeta_sin_numeros))
+    
+    # Añadimos la numeración secuencial 9.2.i. al título
+    cat(sprintf('<div class="titulo3" style="margin-top: 50px; margin-bottom: 30px; padding-bottom: 8px; line-height: 1.2;">9.2.%d. %s</div>\n', i, titulo_limpio))
+    
+    # EXTRAER LOS ARCHIVOS DE ESA CARPETA
+    files_df <- extra_files_list[[carpeta_cruda]]
+    
+    if (!is.null(files_df) && nrow(files_df) > 0) {
+      
+      files_df <- files_df[order(files_df$file_name), ]
+      cat('<div class="box-files">\n<ul>\n')
+      
+      for (j in 1:nrow(files_df)) {
+        f <- files_df$file_name[j]
+        ruta_f <- files_df$ruta_relativa[j]
+        ruta_f_html <- utils::URLencode(gsub("\\\\", "/", ruta_f))
+        
+        # Asignar icono dinámicamente según la extensión
+        clase <- if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+          "file-pdf"
+        } else if (grepl("\\.csv$|\\.tsv$|\\.xlsx?$", f, ignore.case = TRUE)) {
+          "file-csv"
+        } else {
+          "file-default"
+        }
+        
+        cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta_f_html, f))
+      }
+      
+      cat('</ul>\n</div>\n')
+      
+    } else {
+      cat('<p style="color: #666; font-style: italic;"><i class="fa-solid fa-folder-open"></i> The directory has been created, but the corresponding files have not been uploaded yet.</p>\n')
+    }
+    
+    # BUTTON TO EXPLORE THAT SUBFOLDER
+    ruta_carpeta_html <- utils::URLencode(gsub("\\\\", "/", ruta_carpeta_rel))
+    
+    cat(glue::glue('
+    <p class="text-center">
+      <a href="{ruta_carpeta_html}/" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explore directory "{carpeta_cruda}"
+      </a>
+    </p>
+    '), sep = "\n")
+  }
+  
+} else {
+  # SCENARIO B: NO AD HOC REQUESTS (NO FOLDERS)
+  cat(glue::glue('
+  <div class="alert-info alert-box" style="margin-top: 25px; margin-bottom: 20px;">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Passive repository</b><br>
+    Currently there are no custom analyses or additional requests submitted for this project.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  With the structuring of this custom interactive repository, we conclude the technical and analytical deployment of the project. Across the successive modules, we have progressed from raw data preprocessing and quality filtering, through lineage identification and transcriptional signature extraction, to functional exploration and the specific requests of this final block.
+</p>
+
+<p>
+  Now that all the pieces of the bioinformatic puzzle are calculated, structured, and made available to the research team, it is time to consolidate the findings. For this purpose, the report culminates in a final section dedicated to summarizing the biological impact of the study and outlining the next steps in the research.
+</p>
+
+<p>
+  You are invited to proceed to the last section of the report: <strong><a href="10-conclusiones.html" class="normalink">10. Conclusions and Perspectives</a></strong>.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

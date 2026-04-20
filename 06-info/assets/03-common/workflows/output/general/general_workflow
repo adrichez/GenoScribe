@@ -1,0 +1,140 @@
+digraph Pipeline {
+	bgcolor="#e1e4eb" fontsize=45 nodesep=5 pad=2 rankdir=TB ranksep=2.3 splines=true
+	node [fillcolor="#A8DADC" fontcolor="#FFFFFF" fontname="Helvetica-Bold" fontsize=40 margin="1,0.6" penwidth=4 shape=oval style=filled]
+	edge [arrowhead=normal color="#1D3557" fontcolor="#1D3557" fontsize=15 penwidth=8]
+	USUARIO [label="🧑  Usuario" fillcolor="#a23f5d" fontsize=55 margin="1.8,1" shape=box style=filled]
+	USUARIO_N [label="📁  Datos de entrada con los que elaborar el informe" fillcolor="#dadada" fontcolor="#000000" fontsize=42 margin="1.2,0.6" shape=note style=filled]
+	D1 [label="¿Dónde desea ejecutar GenoScribe?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	PC [label="💻  PC" fillcolor="#438eac" shape=ellipse style=filled]
+	HPC [label="🖥️  HPC / ☁️  Cloud (cluster)" fillcolor="#438eac" shape=ellipse style=filled]
+	D2 [label="¿Dispone de todas las dependencias necesarias?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	SI [label="✅  Sí" fillcolor="#438eac" shape=ellipse style=filled]
+	NO [label="❌  No" fillcolor="#438eac" shape=ellipse style=filled]
+	LOCAL [label="💻  Local" fillcolor="#438eac" shape=ellipse style=filled]
+	FOLDER_LAUNCH_LOCAL [label="📁  GenoScribe/4-launch/1-local/" fillcolor="#704F94" shape=tab style=filled]
+	CONTENEDOR [label="📦  Contenedor" fillcolor="#438eac" shape=ellipse style=filled]
+	CONTENEDOR_N [label="✏️  Siempre se recomienda usar contenedores para garantizar la reproducibilidad" fillcolor="#dadada" fontcolor="#000000" fontsize=42 margin="1.2,0.6" shape=note style=filled]
+	D_CONTENEDOR_1 [label="¿Qué contenedor desea emplear?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	DOCKER [label="🐳  Docker" fillcolor="#438eac" shape=ellipse style=filled]
+	APPTAINER [label="🛡️  Apptainer" fillcolor="#438eac" shape=ellipse style=filled]
+	APPTAINER_N [label="✏️  Recomendable para HPC" fillcolor="#dadada" fontcolor="#000000" fontsize=42 margin="1.2,0.6" shape=note style=filled]
+	FOLDER_LAUNCH_DOCKER [label="📁  GenoScribe/4-launch/2-docker/" fillcolor="#704F94" shape=tab style=filled]
+	FOLDER_LAUNCH_APPTAINER [label="📁  GenoScribe/4-launch/3-apptainer/" fillcolor="#704F94" shape=tab style=filled]
+	D3 [label="¿Cómo desea interactuar con el programa?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	SHINY [label="🖼️  Interfaz gráfica (Shiny)" fillcolor="#438eac" shape=ellipse style=filled]
+	CLI [label="⌨️  Terminal (Shell)" fillcolor="#438eac" shape=ellipse style=filled]
+	SHINY_FORM [label="📥  Formulario Visual (GUI)" fillcolor="#438eac" shape=ellipse style=filled]
+	CLI_FORM [label="📥  Formulario en Shell (CLI)" fillcolor="#438eac" shape=ellipse style=filled]
+	RUN_APP_SHINY [label="📄  run_app_shiny.sh" fillcolor="#704F94" shape=tab style=filled]
+	RUN_APP_CLI [label="📄  run_app_shell.sh" fillcolor="#704F94" shape=tab style=filled]
+	SHINY_N [label="✏️  Más visual, pero algo más lento" fillcolor="#dadada" fontcolor="#000000" fontsize=42 margin="1.2,0.6" shape=note style=filled]
+	CLI_N [label="✏️  Más rudimentario, pero más rápido" fillcolor="#dadada" fontcolor="#000000" fontsize=42 margin="1.2,0.6" shape=note style=filled]
+	D4 [label="¿De qué categoría ómica desea generar el informe?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	C1 [label="🧬  Transcriptómica" fillcolor="#438eac" shape=ellipse style=filled]
+	C2 [label="🦠  Metagenómica" fillcolor="#438eac" shape=ellipse style=filled]
+	C3 [label="🔬  Metatranscriptómica" fillcolor="#438eac" shape=ellipse style=filled]
+	D5C1 [label="¿Qué análisis específico?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	D5C1 [label="¿Qué análisis específico?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	D5C2 [label="¿Qué análisis específico?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	D5C3 [label="¿Qué análisis específico?" fillcolor="#2c4b7b" shape=diamond style=filled]
+	A1 [label="📊  Bulk RNA-Seq" fillcolor="#438eac" shape=ellipse style=filled]
+	A2 [label="🧫  Single-Cell RNA-Seq" fillcolor="#438eac" shape=ellipse style=filled]
+	A3 [label="📍  Transcriptómica Espacial" fillcolor="#438eac" shape=ellipse style=filled]
+	A4 [label="🧩  Metagenómica Shotgun" fillcolor="#438eac" shape=ellipse style=filled]
+	A5 [label="🏷️  Metagenómica de Amplicones" fillcolor="#438eac" shape=ellipse style=filled]
+	A6 [label="🧪  Metatranscriptómica Shotgun" fillcolor="#438eac" shape=ellipse style=filled]
+	PARAMS_A1 [label="⚙️  Configurar parámetros específicos" fillcolor="#297c71" margin="0.2,0.3" shape=parallelogram style=filled]
+	PARAMS_A2 [label="⚙️  Configurar parámetros específicos" fillcolor="#297c71" margin="0.2,0.3" shape=parallelogram style=filled]
+	PARAMS_A3 [label="⚙️  Configurar parámetros específicos" fillcolor="#297c71" margin="0.2,0.3" shape=parallelogram style=filled]
+	PARAMS_A4 [label="⚙️  Configurar parámetros específicos" fillcolor="#297c71" margin="0.2,0.3" shape=parallelogram style=filled]
+	PARAMS_A5 [label="⚙️  Configurar parámetros específicos" fillcolor="#297c71" margin="0.2,0.3" shape=parallelogram style=filled]
+	PARAMS_A6 [label="⚙️  Configurar parámetros específicos" fillcolor="#297c71" margin="0.2,0.3" shape=parallelogram style=filled]
+	PIPELINE_A1 [label="🚀  Ejecutar pipeline" fillcolor="#438eac" shape=ellipse style=filled]
+	PIPELINE_A2 [label="🚀  Ejecutar pipeline" fillcolor="#438eac" shape=ellipse style=filled]
+	PIPELINE_A3 [label="🚀  Ejecutar pipeline" fillcolor="#438eac" shape=ellipse style=filled]
+	PIPELINE_A4 [label="🚀  Ejecutar pipeline" fillcolor="#438eac" shape=ellipse style=filled]
+	PIPELINE_A5 [label="🚀  Ejecutar pipeline" fillcolor="#438eac" shape=ellipse style=filled]
+	PIPELINE_A6 [label="🚀  Ejecutar pipeline" fillcolor="#438eac" shape=ellipse style=filled]
+	RUN_PIPELINE_A1 [label="📄  run_pipeline_(shiny/shell).sh" fillcolor="#704F94" shape=tab style=filled]
+	RUN_PIPELINE_A2 [label="📄  run_pipeline_(shiny/shell).sh" fillcolor="#704F94" shape=tab style=filled]
+	RUN_PIPELINE_A3 [label="📄  run_pipeline_(shiny/shell).sh" fillcolor="#704F94" shape=tab style=filled]
+	RUN_PIPELINE_A4 [label="📄  run_pipeline_(shiny/shell).sh" fillcolor="#704F94" shape=tab style=filled]
+	RUN_PIPELINE_A5 [label="📄  run_pipeline_(shiny/shell).sh" fillcolor="#704F94" shape=tab style=filled]
+	RUN_PIPELINE_A6 [label="📄  run_pipeline_(shiny/shell).sh" fillcolor="#704F94" shape=tab style=filled]
+	REPORT_A1 [label="📊  Informe interactivo" fillcolor="#e5cb3f" fontcolor="#000000" fontsize=50 margin="1.8,1" shape=box style=filled]
+	REPORT_A2 [label="📊  Informe interactivo" fillcolor="#e5cb3f" fontcolor="#000000" fontsize=50 margin="1.8,1" shape=box style=filled]
+	REPORT_A3 [label="📊  Informe interactivo" fillcolor="#e5cb3f" fontcolor="#000000" fontsize=50 margin="1.8,1" shape=box style=filled]
+	REPORT_A4 [label="📊  Informe interactivo" fillcolor="#e5cb3f" fontcolor="#000000" fontsize=50 margin="1.8,1" shape=box style=filled]
+	REPORT_A5 [label="📊  Informe interactivo" fillcolor="#e5cb3f" fontcolor="#000000" fontsize=50 margin="1.8,1" shape=box style=filled]
+	REPORT_A6 [label="📊  Informe interactivo" fillcolor="#e5cb3f" fontcolor="#000000" fontsize=50 margin="1.8,1" shape=box style=filled]
+	USUARIO -> D1
+	USUARIO_N -> USUARIO [style=dotted]
+	D1 -> PC
+	D1 -> HPC
+	PC -> D2
+	HPC -> D2
+	D2 -> SI
+	D2 -> NO
+	SI -> LOCAL
+	LOCAL -> FOLDER_LAUNCH_LOCAL
+	FOLDER_LAUNCH_LOCAL -> D3
+	NO -> CONTENEDOR
+	CONTENEDOR -> D_CONTENEDOR_1
+	CONTENEDOR_N -> CONTENEDOR [style=dotted]
+	D_CONTENEDOR_1 -> DOCKER
+	D_CONTENEDOR_1 -> APPTAINER
+	APPTAINER_N -> APPTAINER [style=dotted]
+	DOCKER -> FOLDER_LAUNCH_DOCKER
+	APPTAINER -> FOLDER_LAUNCH_APPTAINER
+	FOLDER_LAUNCH_DOCKER -> D3
+	FOLDER_LAUNCH_APPTAINER -> D3
+	D3 -> SHINY
+	D3 -> CLI
+	SHINY -> SHINY_FORM
+	CLI -> CLI_FORM
+	SHINY_FORM -> RUN_APP_SHINY
+	CLI_FORM -> RUN_APP_CLI
+	RUN_APP_SHINY -> SHINY_N [style=dotted]
+	RUN_APP_CLI -> CLI_N [style=dotted]
+	RUN_APP_SHINY -> D4
+	RUN_APP_CLI -> D4
+	D4 -> C1
+	D4 -> C2
+	D4 -> C3
+	C1 -> D5C1
+	C2 -> D5C2
+	C3 -> D5C3
+	D5C1 -> A1
+	D5C1 -> A2
+	D5C1 -> A3
+	D5C2 -> A4
+	D5C2 -> A5
+	D5C3 -> A6
+	A1 -> PARAMS_A1
+	A2 -> PARAMS_A2
+	A3 -> PARAMS_A3
+	A4 -> PARAMS_A4
+	A5 -> PARAMS_A5
+	A6 -> PARAMS_A6
+	PARAMS_A1 -> PIPELINE_A1
+	PARAMS_A2 -> PIPELINE_A2
+	PARAMS_A3 -> PIPELINE_A3
+	PARAMS_A4 -> PIPELINE_A4
+	PARAMS_A5 -> PIPELINE_A5
+	PARAMS_A6 -> PIPELINE_A6
+	PIPELINE_A1 -> RUN_PIPELINE_A1
+	PIPELINE_A2 -> RUN_PIPELINE_A2
+	PIPELINE_A3 -> RUN_PIPELINE_A3
+	PIPELINE_A4 -> RUN_PIPELINE_A4
+	PIPELINE_A5 -> RUN_PIPELINE_A5
+	PIPELINE_A6 -> RUN_PIPELINE_A6
+	RUN_PIPELINE_A1 -> REPORT_A1
+	RUN_PIPELINE_A2 -> REPORT_A2
+	RUN_PIPELINE_A3 -> REPORT_A3
+	RUN_PIPELINE_A4 -> REPORT_A4
+	RUN_PIPELINE_A5 -> REPORT_A5
+	RUN_PIPELINE_A6 -> REPORT_A6
+	size="11,11"
+	ratio=compress
+	dpi=800
+}

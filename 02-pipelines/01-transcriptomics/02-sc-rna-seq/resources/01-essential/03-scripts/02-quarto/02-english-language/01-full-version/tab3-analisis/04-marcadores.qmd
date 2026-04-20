@@ -1,0 +1,1237 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 4. IDENTIFICACIÓN DE MARCADORES (CLUSTERS CIEGOS) -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+ruta_archives_tmp_marcadores <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "04-marcadores")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_marcadores)
+
+
+
+
+
+
+#===================================================================================================================================================
+# DIRECTORIO "ANALYSIS"
+#===================================================================================================================================================
+
+# Rutas de la carpeta "analysis" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "analysis")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "analysis")
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "MARKERS" EN "ANALYSIS"
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "04_markers" dentro de "analysis"
+ruta_markers <- file.path(ruta_analysis, "04_markers")
+ruta_markers_relativa <- file.path(ruta_analysis_relativa, "04_markers")
+
+
+
+#------------------------------------------------------------------------
+# DIRECTORIO "MERGED" EN "MARKERS"
+#------------------------------------------------------------------------
+
+# Rutas base Merged
+ruta_markers_merged <- file.path(ruta_markers, "01_markers_seurat_merged_clusters")
+ruta_markers_merged_relativa <- file.path(ruta_markers_relativa, "01_markers_seurat_merged_clusters")
+
+
+# Listar archivos dentro del directorio
+markers_merged_df <- NULL
+
+if (dir.exists(ruta_markers_merged)) {
+  markers_merged_list <- list.files(ruta_markers_merged, recursive = FALSE, full.names = FALSE)
+  
+  if (length(markers_merged_list) > 0) {
+    markers_merged_df <- data.frame(
+      file_name = markers_merged_list,
+      ruta_absoluta = file.path(ruta_markers_merged, markers_merged_list),
+      ruta_relativa = file.path(ruta_markers_merged_relativa, markers_merged_list),
+      stringsAsFactors = FALSE
+    )
+    markers_merged_df <- markers_merged_df[order(markers_merged_df$file_name), ]
+  }
+}
+
+
+
+#------------------------------------------------------------------------
+# DIRECTORIO "INTEGRATED" EN "MARKERS"
+#------------------------------------------------------------------------
+
+# Rutas base Integrated
+ruta_markers_integrated <- file.path(ruta_markers, "02_markers_seurat_integrated_clusters")
+ruta_markers_integrated_relativa <- file.path(ruta_markers_relativa, "02_markers_seurat_integrated_clusters")
+
+
+# Listar archivos dentro del directorio
+markers_integrated_df <- NULL
+
+if (dir.exists(ruta_markers_integrated)) {
+  markers_integrated_list <- list.files(ruta_markers_integrated, recursive = FALSE, full.names = FALSE)
+  
+  if (length(markers_integrated_list) > 0) {
+    markers_integrated_df <- data.frame(
+      file_name = markers_integrated_list,
+      ruta_absoluta = file.path(ruta_markers_integrated, markers_integrated_list),
+      ruta_relativa = file.path(ruta_markers_integrated_relativa, markers_integrated_list),
+      stringsAsFactors = FALSE
+    )
+    markers_integrated_df <- markers_integrated_df[order(markers_integrated_df$file_name), ]
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 4</h1>
+  <h2>Marker Identification (Blind Clusters)</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This tab documents the <strong>Marker Identification</strong> phase for the primary clusters (unsupervised). After mathematically structuring the cell set during the <em>clustering</em> stage, the bioinformatics objective of this section is to interrogate the transcriptome of these numerical groupings to discover which genes define their unique molecular identity.
+  </p>
+
+  <p>
+    To lay the foundation for this blind discovery, the initial section (<strong>4.1. Fundamentals of Differential Expression Analysis</strong>) details the algorithmic and statistical logic employed. The main approach is based on a <em>"Cluster X versus the rest" (Cluster vs All)</em> strategy, which compares the expression profile of each individual cluster against all other cells in the sample simultaneously, extracting a <strong>gene signature</strong> weighted by its magnitude of change (<em>Log2 Fold Change</em>) and significance (adjusted <em>p-value</em>).
+  </p>
+
+  <p>
+    As in the previous topological stage, the results are presented under the two main clustering strategies (subject to project availability): <strong>baseline clustering (<em>Merged</em>)</strong> and <strong>aligned clustering (<em>Integrated</em>)</strong>. The analysis of each of these approaches has been structured into a two-level workflow:
+  </p>
+
+  <ul>
+    <li><strong>Global marker visualization &rArr;</strong> Initially, direct access to the results directory is provided, and, if available, a consolidated PDF document is presented. This file is a practical compilation that groups all individual graphical reports into a single multipage format, making it ideal for an overview review and facilitating the sharing of preliminary results.</li>
+    <li><strong>Cluster-wise statistical scrutiny &rArr;</strong> Next, the analytical core of the section is displayed through an individualized breakdown. For each primary cluster, its specific graphical report (spatial and expression projections of its <em>top</em> genes) is paired with its complete statistical table (files <code>.tsv</code> converted into a dynamic and interactive format), allowing the researcher to navigate the raw data in isolation and independently.</li>
+  </ul>
+
+  <p>
+    The methodical exploration of these gene signatures is the empirical and definitive step that will, in the next major module of the study, translate the mathematics into biology by naming each cluster with its true cellular lineage.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion4">4<span>.</span> Marker Identification (Blind Clusters)</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion4.1">4.1. Fundamentals of Differential Expression Analysis</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion4.2">4.2. Gene Signatures in Baseline Clustering (Merged)</a>
+          <ul>
+            <li><a href="#tab3-seccion4.2.1">4.2.1. Global Marker Visualization</a></li>
+            <li><a href="#tab3-seccion4.2.2">4.2.2. Cluster-wise Statistical Scrutiny (Cluster vs All)</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab3-seccion4.3">4.3. Gene Signatures in Aligned Clustering (Integrated)</a>
+          <ul>
+            <li><a href="#tab3-seccion4.3.1">4.3.1. Global Marker Visualization</a></li>
+            <li><a href="#tab3-seccion4.3.2">4.3.2. Cluster-wise Statistical Scrutiny (Cluster vs All)</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion4">
+  4<span>.</span> Marker Identification (Blind Clusters)
+</div>
+
+<p>
+  Having completed the topological phase documented in the previous module, we now have a spatial map where cells are structured into purely numerical clusters (0, 1, 2...). However, for computational biology, these mathematical groups are phenotypically "blind" entities. The true power of single-cell analysis lies in interrogating the underlying expression matrix of each of these groups to extract their intrinsic molecular identity.
+</p>
+
+<p>
+  This section is designed to guide the researcher through this discovery process systematically. To ensure a rigorous interpretation of the results, the document has been structured following a logical analytical progression:
+</p>
+
+<ul>
+  <li>First, we will set the rules of the game. We will define what exactly constitutes a marker gene from a statistical and computational perspective.</li>
+  <li>Second, we will apply this scrutiny to the natural tissue topology, exploring the gene signatures derived from the <strong>Merged</strong> strategy.</li>
+  <li>Third, we will repeat the process on the batch-corrected topology, evaluating the markers resulting from the <strong>Integrated</strong> strategy.</li>
+</ul>
+
+<p>
+  In each of these approaches, we descend from a global view (heatmaps of the entire tissue) down to the maximum level of detail (interactive inspection of cluster by cluster). Nevertheless, before delving into the extensive catalogs of candidate genes, it is essential to understand the algorithmic engine that selected them, which is detailed methodologically below.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.1">
+  4.1. Fundamentals of Differential Expression Analysis
+</div>
+
+<p>
+  In single-cell transcriptomics, marker gene identification is based on Differential Gene Expression Analysis (DEG). Since in this exploratory phase the clusters lack a predefined biological identity and no direct experimental conditions are being compared (e.g., WT versus KO), the Seurat algorithm executes a topological discovery approach known as <strong>"Cluster versus the rest" (<em>Cluster vs All</em>)</strong>.
+</p>
+
+<p>
+  This iterative strategy computationally isolates the cells of a cluster of interest (for example, Cluster 0) and simultaneously compares their transcriptional profile against all other cells in the sample combined (clusters 1, 2, 3... together). The statistical goal is to identify genes whose expression is exceptionally high and exclusive in the evaluated cluster.
+</p>
+
+<p>
+  To perform this massive comparison rigorously, the <strong>Wilcoxon rank sum test</strong> is typically used (the default standard in <em>Single-Cell</em> bioinformatics). This non-parametric test is ideal for handling asymmetric distributions and the high proportion of technical zeros (<em>dropouts</em>) inherent to this sequencing technology. As a result of this mathematical test, tabular files (<code>.tsv</code>) are generated, which will be explored in the subsequent sections. Each row of these tables corresponds to a candidate gene, described by the following fundamental metrics:
+</p>
+
+<ul>
+  <li><strong>Gene (First column) &rArr;</strong> Official gene identifier. <em>Note: By default in Seurat outputs, the header of this first column in raw files often appears blank.</em></li>
+  <li><strong>Raw p-value (<code>p_val</code>) &rArr;</strong> The nominal statistical significance level returned directly by the mathematical test. However, when testing thousands of genes simultaneously, this value alone produces false positives and should not be used as the main criterion.</li>
+  <li><strong>Log2 Fold Change (<code>avg_log2FC</code>) &rArr;</strong> Quantifies the magnitude of change in the gene's average expression. A positive value indicates the gene is overexpressed (<em>upregulated</em>) in the analyzed cluster versus the rest. The higher this logarithm, the "stronger" and more discriminative the marker.</li>
+  <li><strong>Local expression percentage (<code>pct.1</code>) &rArr;</strong> Indicates the fraction of cells <em>within</em> the cluster of interest that express the gene (i.e., that have at least 1 detected UMI). A robust marker should have a high <code>pct.1</code> (ideally above 0.50 or 50%), ensuring it represents the majority of that subpopulation.</li>
+  <li><strong>Global expression percentage (<code>pct.2</code>) &rArr;</strong> Indicates the fraction of cells <em>outside</em> the cluster of interest that also express the gene. An ideal and exclusive marker will show a very low <code>pct.2</code> (close to 0), demonstrating minimal residual expression in the rest of the tissue.</li>
+  <li><strong>Adjusted p-value (<code>p_val_adj</code>) &rArr;</strong> This is the definitive significance metric, subjected to strict multiple comparison correction (typically Bonferroni correction). For a gene to be considered a valid and biologically relevant biomarker, this value must be strictly below 0.05.</li>
+</ul>
+
+<p>
+  Correct interpretation of these tables requires understanding the interaction of their variables: <strong>the perfect biological marker combines a high <code>avg_log2FC</code>, a high <code>pct.1</code>, a very low <code>pct.2</code>, and a significant <code>p_val_adj</code></strong>. With these foundations established, the following subsections present this empirical scrutiny individually for each clustering strategy.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.2">
+  4.2. Gene Signatures in Baseline Clustering (Merged)
+</div>
+
+<p>
+  We begin the phenotypic identification by exploring the <em>Merged</em> strategy. Since this clustering preserves the original expression levels without applying alignment or batch correction algorithms, the gene signatures discovered here represent the molecular differences of the cells in their purest transcriptomic state. It serves as the reference approach as long as the experimental conditions do not present limiting technical biases.
+</p>
+
+<p>
+  Below is the complete directory corresponding to the markers extracted from this baseline topology. From this explorer, you can download all files generated in this phase, including possible consolidated master tables (files <code>.csv</code> or <code>.xlsx</code>) containing the global compendium of all markers identified in the tissue.
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# 1. GENERATE BOX-FILES FOR MERGED
+if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
+
+  # Extract the cluster number from the file name to enforce a "natural order"
+  num_cluster <- as.numeric(stringr::str_extract(markers_merged_df$file_name, "\\d+"))
+  
+  # Files without numbers (like summaries or global CSVs) are assigned -1 to appear first
+  num_cluster[is.na(num_cluster)] <- -1
+  
+  # First sort by cluster number (-1, 0, 1, 2... 10) and then alphabetically (to break ties for .pdf and .tsv)
+  df_sorted <- markers_merged_df[order(num_cluster, markers_merged_df$file_name), ]
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(df_sorted)) {
+    f <- df_sorted$file_name[i]
+    ruta <- df_sorted$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else if (grepl("\\.csv$|\\.tsv$", f, ignore.case = TRUE)) {
+      "file-csv"
+    } else if (grepl("\\.xlsx$", f, ignore.case = TRUE)) {
+      "file-xlsx"
+    } else if (grepl("\\.xls$", f, ignore.case = TRUE)) {
+      "file-xls"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center" style="margin-top: 15px;">
+    <a href="{ruta_markers_merged_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore Marker Directory (Merged)
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No marker files were detected for the <em>Merged</em> strategy in this project. The corresponding subsections will be displayed empty.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.2.1">
+  4.2.1. Global Marker Visualization
+</div>
+
+<p>
+  Before dissecting each cellular subpopulation independently, it is immensely useful to obtain a visual overview of expression across the entire tissue. In cases where it has been generated, this subsection will display a consolidated PDF document. This file acts as a summary atlas, grouping in a single multipage format the spatial and expression projections (<em>FeaturePlots</em>, heatmaps, etc.) of the most significant markers for all clusters simultaneously, facilitating general review and sharing.
+</p>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 2. DISPLAY GLOBAL PDF (IF EXISTS)
+if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
+  
+  # Search for a PDF that is NOT individual (we assume individual ones contain "_vs_all" in their name)
+  global_pdf_df <- markers_merged_df[grepl("\\.pdf$", markers_merged_df$file_name, ignore.case = TRUE) & 
+                                      !grepl("_vs_all", markers_merged_df$file_name, ignore.case = TRUE), ]
+  
+  if (nrow(global_pdf_df) > 0) {
+    out_global <- tagList()
+    
+    for (i in 1:nrow(global_pdf_df)) {
+      file_name_clean <- global_pdf_df$file_name[i]
+      ruta_rel <- global_pdf_df$ruta_relativa[i]
+      
+      out_global <- tagAppendChild(out_global, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 20px; padding-top: 25px;"></div>
+
+        <p style="margin-bottom: 15px;">
+          <strong>Consolidated Graphic Report:</strong> The following interactive panel shows the joint visualization of the main markers for baseline clustering.
+        </p>
+
+        <p style="margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>File:</strong> <code>{file_name_clean}</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{ruta_rel}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 20px;">
+          <a href="{ruta_rel}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in new tab
+          </a>
+          <a href="{ruta_rel}" download="{file_name_clean}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+          </a>
+        </div>
+      ')))
+    }
+    out_global
+  
+  } else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box" style="margin-top: 20px;">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Note</b><br>
+      No consolidated global PDF file (summary) was found for this strategy. Please review the individual scrutiny below.
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box" style="margin-top: 20px;">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Empty Directory</b><br>
+      The folder does not contain results to perform this visualization.
+    </div>
+    '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.2.2">
+  4.2.2. Cluster-wise Statistical Scrutiny (Cluster vs All)
+</div>
+
+<p>
+  Next, the analytical core of the section is presented through the individualized breakdown of each primary grouping. For each mathematically evaluated cluster, a results panel is provided documenting its differential profile against the rest of the cell population.
+</p>
+
+<p>
+  In cases where the directory structure contains individual files (typically designated with the suffix <code>_vs_all</code>), the following will be displayed iteratively:
+</p>
+
+<ul>
+  <li><strong>Visual PDF Report:</strong> Spatial and distribution projections (such as <em>Feature Plots</em> or heatmaps) illustrating the expression of the main marker genes identified for the cluster in question.</li>
+  <li><strong>DEG Statistical Table (TSV/CSV):</strong> The navigable catalog of all contrasted genes, allowing inspection of the magnitude of change (<code>avg_log2FC</code>) and its significance (<code>p_val_adj</code>).</li>
+</ul>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# MATCH AND DISPLAY PDF AND TSV BY CLUSTER
+if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
+  
+  # Isolate only files containing "_vs_all"
+  indiv_df <- markers_merged_df[grepl("_vs_all", markers_merged_df$file_name, ignore.case = TRUE), ]
+  
+  if (nrow(indiv_df) > 0) {
+    # Extract cluster numbers using regular expressions to sort numerically
+    clusters_detected <- as.numeric(stringr::str_extract(indiv_df$file_name, "\\d+"))
+    clusters_unique <- sort(unique(clusters_detected[!is.na(clusters_detected)]))
+    
+    out_indiv <- tagList()
+    
+    # Index for subsection numbering (4.2.2.1, 4.2.2.2, etc.)
+    idx <- 1
+    
+    for (c in clusters_unique) {
+      
+      # Filter exact files for this cluster 
+      pattern_cluster <- paste0("[^0-9]", c, "_vs_all")
+      cluster_files <- indiv_df[grepl(pattern_cluster, indiv_df$file_name, ignore.case = TRUE), ]
+      
+      pdf_row <- cluster_files[grepl("\\.pdf$", cluster_files$file_name, ignore.case = TRUE), ]
+      tsv_row <- cluster_files[grepl("\\.tsv$|\\.csv$", cluster_files$file_name, ignore.case = TRUE), ]
+      
+      # Add subsection header for this cluster (Quality Control Style)
+      out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+        <div style="height: 12px; background-color: transparent;"></div>
+
+        <div class="titulo4" id="tab3-seccion4.2.2.{idx}" style="padding-bottom: 8px; line-height: 1.2;">
+          4.2.2.{idx}. Cluster {c} Scrutiny
+        </div>
+
+        <p style="margin-top: 20px;">
+          This section details the specific differential expression profile of <strong>Cluster {c}</strong> in the <em>Merged</em> strategy. Isolated review of this grouping allows unambiguous identification of its gene signature against the rest of the tissue, laying the empirical foundation for subsequent phenotypic annotation.
+        </p>
+      ')))
+      
+      # --- BLOCK 1: PDF ---
+      if (nrow(pdf_row) > 0) {
+        ruta_rel_pdf <- pdf_row$ruta_relativa[1]
+        nombre_pdf <- pdf_row$file_name[1]
+        
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <p style="margin-top: 20px; margin-bottom: 18px;">
+            <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+            <strong>Top Marker Graphic Report:</strong> <code>{nombre_pdf}</code>
+          </p>
+          
+          <p style="margin-bottom: 18px;">
+            The following interactive panel visually summarizes the spatial localization and expression levels of the most representative genes of this cluster.
+          </p>
+
+          <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+            <iframe src="{ruta_rel_pdf}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+            <a href="{ruta_rel_pdf}"
+              target="_blank" 
+              class="boton-iframe">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in new tab
+            </a>
+
+            <a href="{ruta_rel_pdf}"
+              download="{nombre_pdf}"
+              class="boton-iframe-download">
+              <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+            </a>
+          </div>
+        ')))
+      
+      } else {
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <div class="alert-info alert-box" style="margin-bottom: 25px;">
+            <i class="fa-solid fa-circle-info"></i> No PDF graphic report was found for Cluster {c}.
+          </div>
+        '), sep = "\n"))
+      }
+      
+      # --- BLOCK 2: TSV / CSV (Datatable) ---
+      if (nrow(tsv_row) > 0) {
+        ruta_abs_tsv <- tsv_row$ruta_absoluta[1]
+        ruta_rel_tsv <- tsv_row$ruta_relativa[1]
+        nombre_tsv <- tsv_row$file_name[1]
+        
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <p style="margin-top: 20px; margin-bottom: 18px;">
+            <i class="fa-solid fa-table" style="color: #276DC3;"></i> 
+            <strong>Complete Statistical Table (DEG):</strong> <code>{nombre_tsv}</code>
+          </p>
+          
+          <p style="margin-bottom: 20px;">
+            To complement the visual analysis above, this table directly and interactively displays all statistics of the differential contrast, ordered by biological significance for Cluster {c}.
+          </p>
+        ')))
+        
+        sep_char <- ifelse(grepl("\\.csv$", nombre_tsv, ignore.case=T), ",", "\t")
+        
+        tryCatch({
+          datos_tsv <- read.table(ruta_abs_tsv, sep=sep_char, header=TRUE, stringsAsFactors=FALSE, fill=TRUE)
+          
+          # Rename first column if it has no name
+          if(colnames(datos_tsv)[1] == "X" || colnames(datos_tsv)[1] == "") {
+              colnames(datos_tsv)[1] <- "Gene"
+          }
+          
+          # Numeric formatting
+          if("avg_log2FC" %in% colnames(datos_tsv)) datos_tsv$avg_log2FC <- round(as.numeric(datos_tsv$avg_log2FC), 4)
+          if("p_val_adj" %in% colnames(datos_tsv)) datos_tsv$p_val_adj <- signif(as.numeric(datos_tsv$p_val_adj), 4)
+          if("p_val" %in% colnames(datos_tsv)) datos_tsv$p_val <- signif(as.numeric(datos_tsv$p_val), 4)
+          
+          # Datatable block (Quality Control Style)
+          out_indiv <- tagAppendChild(out_indiv, 
+            DT::datatable(
+              datos_tsv,
+              options = list(
+                scrollX = TRUE,
+                scrollY = "400px",
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                lengthChange = FALSE,
+                info = FALSE,
+                dom = 't', 
+                language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+              ),
+              class = 'stripe hover row-border order-column compact',
+              rownames = FALSE
+            )
+          )
+          
+          # Table download button
+          out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+            <div style="text-align: center; margin-top: 16px; margin-bottom: 60px;">
+              <a href="{ruta_rel_tsv}" 
+                download="{nombre_tsv}" 
+                class="boton-file-download">
+                <i class="fa-solid fa-file-arrow-down"></i> Download markers (.tsv)
+              </a>
+            </div>
+          ')))
+          
+        }, error = function(e) {
+            out_indiv <<- tagAppendChild(out_indiv, HTML(glue::glue('
+              <div class="alert-info alert-box" style="margin-bottom: 50px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Error reading the table {nombre_tsv}. Unexpected format.
+              </div>
+            '), sep = "\n"))
+        })
+      
+      } else {
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <div class="alert-info alert-box" style="margin-bottom: 50px;">
+            <i class="fa-solid fa-circle-info"></i> No data table was found for Cluster {c}.
+          </div>
+        ')))
+      }
+      
+      idx <- idx + 1
+    }
+    
+    out_indiv
+    
+  } else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Note</b><br>
+      No individual cluster files (formats <code>_vs_all</code>) were found to perform detailed scrutiny.
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Empty Directory</b><br>
+      The folder does not contain results to perform this individual analysis.
+    </div>
+    '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.3">
+  4.3. Gene Signatures in Aligned Clustering (Integrated)
+</div>
+
+<p>
+  After analyzing the baseline topology, we proceed to explore the markers derived from the <em>Integrated</em> strategy. In this scenario, the matrix has been subjected to mathematical anchoring algorithms to correct for potential batch effects. The gene signatures emerging in this section are particularly robust, as they represent conserved genes defining a cell type while overcoming technical or biological deviations across different conditions (e.g., WT vs KO).
+</p>
+
+<p>
+  Below is the complete directory corresponding to the markers extracted from this aligned topology. From this explorer, you can download all generated files, including consolidated master tables (files <code>.csv</code> or <code>.xlsx</code>) containing the global compendium of biomarkers.
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# 1. GENERATE BOX-FILES FOR INTEGRATED
+if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
+  
+  # Extract the cluster number from the file name to enforce a "natural order"
+  num_cluster <- as.numeric(stringr::str_extract(markers_integrated_df$file_name, "\\d+"))
+  
+  # Files without numbers (like summaries, CSVs, or global XLSX) are assigned -1 to appear first
+  num_cluster[is.na(num_cluster)] <- -1
+  
+  # First sort by cluster number (-1, 0, 1, 2... 10) and then alphabetically (to break ties for .pdf and .tsv)
+  df_sorted <- markers_integrated_df[order(num_cluster, markers_integrated_df$file_name), ]
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(df_sorted)) {
+    f <- df_sorted$file_name[i]
+    ruta <- df_sorted$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else if (grepl("\\.csv$|\\.tsv$", f, ignore.case = TRUE)) {
+      "file-csv"
+    } else if (grepl("\\.xlsx$", f, ignore.case = TRUE)) {
+      "file-xlsx"
+    } else if (grepl("\\.xls$", f, ignore.case = TRUE)) {
+      "file-xls"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center" style="margin-top: 15px;">
+    <a href="{ruta_markers_integrated_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore Marker Directory (Integrated)
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No marker files were detected for the <em>Integrated</em> strategy in this project. The corresponding subsections will be displayed empty.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.3.1">
+  4.3.1. Global Marker Visualization
+</div>
+
+<p>
+  As in the previous case, in projects where available, this subsection will host a consolidated PDF document. This file groups in a single multipage format the spatial visualizations of the top markers for all integrated clusters simultaneously, providing an essential overview of the aligned tissue before proceeding to individual dissection.
+</p>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 2. DISPLAY GLOBAL PDF (IF EXISTS)
+if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
+  
+  # Search for a PDF that is NOT individual (assuming individual files contain "_vs_all" in their name)
+  global_pdf_df <- markers_integrated_df[grepl("\\.pdf$", markers_integrated_df$file_name, ignore.case = TRUE) & 
+                                          !grepl("_vs_all", markers_integrated_df$file_name, ignore.case = TRUE), ]
+  
+  if (nrow(global_pdf_df) > 0) {
+    out_global <- tagList()
+    
+    for (i in 1:nrow(global_pdf_df)) {
+      file_name_clean <- global_pdf_df$file_name[i]
+      ruta_rel <- global_pdf_df$ruta_relativa[i]
+      
+      out_global <- tagAppendChild(out_global, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 20px; padding-top: 25px;"></div>
+
+        <p style="margin-bottom: 15px;">
+          <strong>Consolidated Graphic Report:</strong> The following interactive panel shows the combined visualization of the main markers for the aligned clustering.
+        </p>
+
+        <p style="margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>File:</strong> <code>{file_name_clean}</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{ruta_rel}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 20px;">
+          <a href="{ruta_rel}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in new tab
+          </a>
+          <a href="{ruta_rel}" download="{file_name_clean}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+          </a>
+        </div>
+      ')))
+    }
+
+    out_global
+  
+  } else {
+    HTML('
+    <div class="alert-info alert-box" style="margin-top: 20px;">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Note</b><br>
+      No global consolidated PDF (summary) was found for this strategy. Please review individual scrutiny below.
+    </div>
+    ')
+  }
+
+} else {
+    HTML('
+    <div class="alert-info alert-box" style="margin-top: 20px;">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Empty Directory</b><br>
+      The folder does not contain results to perform this visualization.
+    </div>
+    ')
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.3.2">
+  4.3.2. Statistical Scrutiny by Cluster (Cluster vs All)
+</div>
+
+<p>
+  The analytical core is presented below through an individualized breakdown of each integrated grouping. For each evaluated cluster, a panel is provided documenting its differential profile against the rest of the corrected cell population.
+</p>
+
+<p>
+  In cases where the structure contains individual files (typically designated with the suffix <code>_vs_all</code>), the following will be displayed iteratively:
+</p>
+
+<ul>
+  <li><strong>PDF visual report:</strong> Spatial and distribution projections illustrating the expression of the main marker genes identified for the cluster.</li>
+  <li><strong>DEG statistical table (TSV/CSV):</strong> A navigable catalog of all contrasted genes, allowing inspection of the magnitude of change and statistical significance.</li>
+</ul>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 3. MATCH AND DISPLAY PDF AND TSV BY CLUSTER (INTEGRATED)
+if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
+  
+  # Isolate only files containing "_vs_all"
+  indiv_df <- markers_integrated_df[grepl("_vs_all", markers_integrated_df$file_name, ignore.case = TRUE), ]
+  
+  if (nrow(indiv_df) > 0) {
+    # Extract cluster numbers using regular expressions to sort numerically
+    clusters_detected <- as.numeric(stringr::str_extract(indiv_df$file_name, "\\d+"))
+    clusters_unique <- sort(unique(clusters_detected[!is.na(clusters_detected)]))
+    
+    out_indiv <- tagList()
+    
+    # Index for subsection numbering (4.3.2.1, 4.3.2.2, etc.)
+    idx <- 1
+    
+    for (c in clusters_unique) {
+      
+      # Filter the exact files for this cluster 
+      pattern_cluster <- paste0("[^0-9]", c, "_vs_all")
+      cluster_files <- indiv_df[grepl(pattern_cluster, indiv_df$file_name, ignore.case = TRUE), ]
+      
+      pdf_file <- cluster_files[grepl("\\.pdf$", cluster_files$file_name, ignore.case = TRUE), ]
+      tsv_file <- cluster_files[grepl("\\.tsv$|\\.csv$", cluster_files$file_name, ignore.case = TRUE), ]
+      
+      # Add subsection header for this cluster
+      out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+        <div style="height: 12px; background-color: transparent;"></div>
+
+        <div class="titulo4" id="tab3-seccion4.3.2.{idx}" style="padding-bottom: 8px; line-height: 1.2;">
+          4.3.2.{idx}. Cluster {c} Scrutiny
+        </div>
+
+        <p style="margin-top: 20px;">
+          This section details the differential expression profile specific to <strong>Cluster {c}</strong> in the <em>Integrated</em> strategy. Isolated review of this group allows unequivocal identification of its gene signature while overcoming potential origin biases, establishing the empirical basis for subsequent phenotypic annotation.
+        </p>
+      ')))
+      
+      # --- BLOCK 1: PDF ---
+      if (nrow(pdf_file) > 0) {
+        ruta_rel_pdf <- pdf_file$ruta_relativa[1]
+        nombre_pdf <- pdf_file$file_name[1]
+        
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <p style="margin-top: 20px; margin-bottom: 18px;">
+            <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+            <strong>Top Marker Graphic Report:</strong> <code>{nombre_pdf}</code>
+          </p>
+          
+          <p style="margin-bottom: 18px;">
+            The following interactive panel visually summarizes the spatial localization and expression level of the most representative genes for this integrated cluster.
+          </p>
+
+          <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+            <iframe src="{ruta_rel_pdf}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+            <a href="{ruta_rel_pdf}"
+              target="_blank" 
+              class="boton-iframe">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in new tab
+            </a>
+
+            <a href="{ruta_rel_pdf}"
+              download="{nombre_pdf}"
+              class="boton-iframe-download">
+              <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+            </a>
+          </div>
+        ')))
+      } else {
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <div class="alert-info alert-box" style="margin-bottom: 25px;">
+            <i class="fa-solid fa-circle-info"></i> No PDF graphic report was found for Cluster {c}.
+          </div>
+        '), sep = "\n"))
+      }
+      
+      # --- BLOCK 2: TSV / CSV (Datatable) ---
+      if (nrow(tsv_file) > 0) {
+        ruta_abs_tsv <- tsv_file$ruta_absoluta[1]
+        ruta_rel_tsv <- tsv_file$ruta_relativa[1]
+        nombre_tsv <- tsv_file$file_name[1]
+        
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <p style="margin-top: 20px; margin-bottom: 18px;">
+            <i class="fa-solid fa-table" style="color: #276DC3;"></i> 
+            <strong>Complete DEG Statistical Table:</strong> <code>{nombre_tsv}</code>
+          </p>
+          
+          <p style="margin-bottom: 20px;">
+            To complement the visual analysis above, this table directly and interactively displays all differential contrast statistics, ordered by biological significance for Cluster {c}.
+          </p>
+        ')))
+        
+        sep_char <- ifelse(grepl("\\.csv$", nombre_tsv, ignore.case=T), ",", "\t")
+        
+        tryCatch({
+          datos_tsv <- read.table(ruta_abs_tsv, sep=sep_char, header=TRUE, stringsAsFactors=FALSE, fill=TRUE)
+          
+          # Rename first column if unnamed
+          if(colnames(datos_tsv)[1] == "X" || colnames(datos_tsv)[1] == "") {
+              colnames(datos_tsv)[1] <- "Gene"
+          }
+          
+          # Numeric formatting
+          if("avg_log2FC" %in% colnames(datos_tsv)) datos_tsv$avg_log2FC <- round(as.numeric(datos_tsv$avg_log2FC), 4)
+          if("p_val_adj" %in% colnames(datos_tsv)) datos_tsv$p_val_adj <- signif(as.numeric(datos_tsv$p_val_adj), 4)
+          if("p_val" %in% colnames(datos_tsv)) datos_tsv$p_val <- signif(as.numeric(datos_tsv$p_val), 4)
+          
+          # Datatable block
+          out_indiv <- tagAppendChild(out_indiv, 
+            DT::datatable(
+              datos_tsv,
+              options = list(
+                scrollX = TRUE,
+                scrollY = "500px", 
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                lengthChange = FALSE,
+                info = FALSE,
+                dom = 't', 
+                language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+              ),
+              class = 'stripe hover row-border order-column compact',
+              rownames = FALSE
+            )
+          )
+          
+          # Download button for the table
+          out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+            <div style="text-align: center; margin-top: 16px; margin-bottom: 30px;">
+              <a href="{ruta_rel_tsv}" 
+                download="{nombre_tsv}" 
+                class="boton-file-download">
+                <i class="fa-solid fa-file-arrow-down"></i> Download markers (.tsv)
+              </a>
+            </div>
+          ')))
+          
+        }, error = function(e) {
+            out_indiv <<- tagAppendChild(out_indiv, HTML(glue::glue('
+              <div class="alert-info alert-box" style="margin-bottom: 50px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Error reading the table {nombre_tsv}. Unexpected format.
+              </div>
+            '), sep = "\n"))
+        })
+      } else {
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <div class="alert-info alert-box" style="margin-bottom: 50px;">
+            <i class="fa-solid fa-circle-info"></i> No data table found for Cluster {c}.
+          </div>
+        ')))
+      }
+      
+      idx <- idx + 1
+    }
+    
+    out_indiv
+    
+  } else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Note</b><br>
+      No individual cluster files (formats <code>_vs_all</code>) were found to perform detailed scrutiny.
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Empty directory</b><br>
+      The folder does not contain results to perform this individual analysis.
+    </div>
+    '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  Having exhaustively extracted and cataloged the gene signatures of each cluster — both in the basal and integrated topology — we now have the molecular "identity card" of each subpopulation. However, numerical designations like "Cluster 0" or "Cluster 1" remain purely mathematical artifacts. The final essential step to give biological and functional meaning to this topological map consists of translating these isolated gene lists into actual cellular phenotypes.
+</p>
+
+<p>
+  This phenotypic inference process will be approached in the project using a dual analytical strategy. First, an <strong>automatic annotation</strong> will be performed, employing algorithms that cross our gene signatures with reference transcriptomic databases (such as <em>Human Primary Cell Atlas</em>, <em>Monaco Immune Data</em>, or generic mouse atlases) to quickly and unbiasedly assign main lineages (e.g., T Cells, Monocytes, Stroma).
+</p>
+
+<p>
+  Second, since the intrinsic biology of the tissue often presents a resolution or maturation stages that escape generic databases, a <strong>curated manual annotation</strong> will be performed. Through expert inspection of canonical markers, the nomenclature will be refined to define specific subpopulations and precise developmental stages.
+</p>
+
+<p>
+  The definitive assignment of these lineages represents the crystallization of the single-cell analysis, providing biological context to all previous calculations. This entire process of cellular labeling and validation is detailed in the next module of the report: <strong><a href="05-anotacion.html" class="normalink">5. Cellular annotation (automatic and manual)</a></strong>.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

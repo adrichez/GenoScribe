@@ -1,0 +1,1982 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  amplicon_type: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS ITS | 6. DIVERSIDAD MICROBIANA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+# Cargar librerías
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_metagenomics_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..", "..")
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Rutas de la carpeta 
+ruta_Def_ITS <- file.path(params$project_path, "Resultados", "Def_ITS")
+ruta_Def_ITS_relativa <- file.path(ruta_proyecto_relativa, "Resultados", "Def_ITS")
+
+
+# Definir ruta del archivo alpha-rarefaction.qzv
+ruta_alpha_rarefaction_qzv_relativa <- file.path(ruta_Def_ITS_relativa, "alpha-rarefaction.qzv")
+ruta_alpha_rarefaction_qzv <- file.path(ruta_Def_ITS, "alpha-rarefaction.qzv")
+
+# Definir ruta de salida para el unzip
+ruta_Def_ITS_unzip <- file.path(ruta_Def_ITS_relativa, "unzip")
+ruta_unzip_alpha_rarefaction <- file.path(ruta_Def_ITS_unzip, "alpha-rarefaction")
+
+# Crear carpeta de salida si no existe
+if (!dir.exists(ruta_Def_ITS_unzip)) dir.create(ruta_Def_ITS_unzip, recursive = TRUE)
+
+# Solo hacer unzip si el archivo existe
+if (file.exists(ruta_alpha_rarefaction_qzv_relativa)) {
+  # Usando system2 para llamar a unzip desde R
+  system2("unzip", args = c("-o", shQuote(ruta_alpha_rarefaction_qzv_relativa),
+                            "-d", shQuote(ruta_unzip_alpha_rarefaction)))
+} else {
+  message("⚠️ The file alpha-rarefaction.qzv does not exist. Unzip is skipped.")
+}
+
+
+# Comprobar que el unzip se ha realizado
+if (dir.exists(ruta_unzip_alpha_rarefaction)) {
+  
+  # Listar subcarpetas dentro de la carpeta unzip (solo 1er nivel)
+  subcarpetas <- list.dirs(ruta_unzip_alpha_rarefaction, recursive = FALSE, full.names = TRUE)
+  
+  if (length(subcarpetas) == 0) {
+    stop("No subfolder was found inside ", ruta_unzip_alpha_rarefaction)
+  }
+  
+  # Tomamos la primera subcarpeta (la aleatoria generada por QIIME2)
+  carpeta_random <- subcarpetas[1]
+  
+  # Ruta a 'data'
+  ruta_data <- file.path(carpeta_random, "data")
+  
+  # Archivos dentro de 'data'
+  ruta_faith_pd_csv <- file.path(carpeta_random, "data", "faith_pd.csv")
+  ruta_observed_features_csv <- file.path(carpeta_random, "data", "observed_features.csv")
+  ruta_shannon_csv <- file.path(carpeta_random, "data", "shannon.csv")
+  ruta_index_html <- file.path(ruta_data, "index.html")
+  
+  # Check existence
+  if (!file.exists(ruta_faith_pd_csv)) message("⚠️ faith_pd.csv not found")
+  if (!file.exists(ruta_observed_features_csv)) message("⚠️ observed_features.csv not found")
+  if (!file.exists(ruta_shannon_csv)) message("⚠️ shannon.csv not found")
+  if (!file.exists(ruta_index_html)) message("⚠️ index.html not found")
+  
+} else {
+  message("⚠️ Unzip folder not found. Cannot access the files.")
+}
+
+
+# Rutas de la carpeta core-metrics-results
+ruta_core_metrics_results <- file.path(ruta_Def_ITS, "core-metrics-results")
+ruta_core_metrics_results_relativa <- file.path(ruta_Def_ITS_relativa, "core-metrics-results")
+
+
+# Carpeta donde se guardarán los unzip
+directorio_unzip <- file.path(ruta_core_metrics_results_relativa, "unzip")
+if (!dir.exists(directorio_unzip)) dir.create(directorio_unzip, recursive = TRUE)
+
+# Listar todos los archivos .qzv en el directorio
+archivos_qzv <- list.files(ruta_core_metrics_results_relativa, pattern = "\\.qzv$", full.names = TRUE)
+
+# Iterar sobre cada archivo
+for (archivo in archivos_qzv) {
+  
+  # Nombre base sin extensión
+  nombre_base <- tools::file_path_sans_ext(basename(archivo))
+  
+  # Carpeta de salida para este archivo
+  carpeta_salida <- file.path(directorio_unzip, nombre_base)
+  if (!dir.exists(carpeta_salida)) dir.create(carpeta_salida, recursive = TRUE)
+  
+  # Descomprimir
+  system2("unzip", args = c("-o", shQuote(archivo),
+                            "-d", shQuote(carpeta_salida)))
+  
+  # Comprobar que se descomprimió correctamente
+  if (dir.exists(carpeta_salida)) {
+    message("✅ Unzipped: ", archivo, " → ", carpeta_salida)
+  } else {
+    warning("⚠️ Could not unzip: ", archivo)
+  }
+}
+
+
+# Directorio raíz donde guardaste los unzip
+directorio_core_metrics_results_unzip <- file.path(ruta_core_metrics_results_relativa, "unzip")
+
+# Lista de carpetas de los qzv descomprimidos
+carpetas_qzv <- list.dirs(directorio_core_metrics_results_unzip, recursive = FALSE, full.names = TRUE)
+
+# Lista para guardar rutas a index.html
+indices_html <- list()
+
+for (carpeta in carpetas_qzv) {
+  # Buscar subcarpetas (nivel 1) → hash aleatorio
+  subcarpetas <- list.dirs(carpeta, recursive = FALSE, full.names = TRUE)
+  
+  if (length(subcarpetas) > 0) {
+    carpeta_random <- subcarpetas[1]
+    ruta_index <- file.path(carpeta_random, "data", "index.html")
+    
+    if (file.exists(ruta_index)) {
+      indices_html[[basename(carpeta)]] <- ruta_index
+      message("✅ index.html found: ", ruta_index)
+    } else {
+      message("⚠️ index.html not found in: ", carpeta)
+    }
+  } else {
+    message("⚠️ No subfolder found in: ", carpeta)
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatic Analysis (ITS)</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 6</h1>
+  <h2>Microbial diversity</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    <strong>Microbial diversity</strong> is a central aspect in the study of ITS communities, as it allows understanding not only which microorganisms are present, but also how they are distributed, coexist, and differ between conditions or experimental groups. Unlike taxonomic or differential abundance analyses, which focus on the presence or change in abundance of specific taxa, the study of diversity provides a <strong>global ecological perspective</strong> of the communities, integrating richness, evenness, and variation between samples.
+  </p>
+
+  <p>
+    This section systematically addresses microbial diversity analysis using metrics generated by the <strong>QIIME2</strong> workflow. The goal is to characterize the <strong>internal structure</strong> of each community and assess <strong>compositional differences</strong> between groups or experimental conditions. This block is organized into three main subsections:
+  </p>
+
+  <ul style="list-style-type: disc; padding-left: 20px;">
+    <li style="margin-bottom: 0.8em;">
+      <strong>Rarefaction curves and coverage</strong> <strong>&rArr;</strong> allow verification of sampling effort sufficiency, evaluating whether the number of sequences analyzed was adequate to capture most of the microbial diversity present in each sample.
+    </li>
+    <li style="margin-bottom: 0.8em;">
+      <strong>Alpha diversity (within samples):</strong> <strong>&rArr;</strong> various indices (observed richness, Shannon, evenness, and Faith's phylogenetic diversity) are analyzed to quantify richness, uniformity, and phylogenetic depth of communities, providing a detailed description of their internal complexity.
+    </li>
+    <li style="margin-bottom: 0.8em;">
+      <strong>Beta diversity (between samples):</strong> <strong>&rArr;</strong> differences in community composition are explored using dissimilarity metrics (Bray–Curtis, Jaccard, unweighted and weighted UniFrac), complemented with multivariate analyses such as PCoA to identify clustering or separation patterns between experimental groups.
+    </li>
+  </ul>
+
+  <p>
+    Thus, this section serves as a bridge between the taxonomic and differential abundance analyses developed in the previous chapters and the <strong>functional prediction</strong> addressed in the next section. Understanding diversity, in its ecological and phylogenetic dimensions, is essential for interpreting how microbial communities are organized, respond to experimental factors, and ultimately how they may differ in their functional potential.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion6">
+        6<span>.</span> Microbial diversity
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion6.1">
+            6.1. Rarefaction curves and coverage
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion6.2">
+            6.2. Alpha diversity (within samples)
+          </a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion6.2.1">
+                  6.2.1. Shannon index (richness + evenness)
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion6.2.2">
+                  6.2.2. Faith’s phylogenetic diversity (branch lengths)
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion6.2.3">
+                  6.2.3. Evenness (abundance uniformity)
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion6.2.4">
+                  6.2.4. Observed richness (Observed Features)
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab3-seccion6.3">
+            6.3. Beta diversity (between samples)
+          </a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion6.3.1">
+                  6.3.1. Bray–Curtis distance (relative abundances)
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion6.3.2">
+                  6.3.2. Jaccard distance (presence/absence)
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion6.3.3">
+                  6.3.3. Unweighted UniFrac (phylogeny + presence/absence)
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion6.3.4">
+                  6.3.4. Weighted UniFrac (phylogeny + abundances)
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion6">
+  6<span>.</span> Microbial diversity
+</div>
+
+<p>
+  Microbial diversity is an essential component for understanding the organization, balance, and function of the communities present in each sample. It is not only about identifying which organisms are present, but also about examining how they are distributed, how they interact, and what differences exist between communities. Diversity analysis allows us to answer key questions: are the communities richer or poorer in certain experimental groups? Is there an even distribution of microorganisms or dominance by a few species? Do communities from different individuals or conditions resemble each other or differ completely?
+</p>
+
+<p>
+  To address these questions, various metrics are used, many of which have been obtained through the QIIME2 workflow and are interpreted and contextualized here. These metrics are organized into three main blocks:
+</p>
+
+<ul style="list-style-type: disc; padding-left: 20px;">
+  <li style="margin-bottom: 1em;">
+    <strong>Rarefaction and coverage</strong> <strong>&rArr;</strong> curves are generated showing how the number of observed species increases as the number of sequences analyzed grows. These curves are a key tool to assess whether the sampling depth is sufficient. 
+    <ul>
+      <li>If the curves tend to plateau, it means that the available reads have already captured most of the diversity.</li>
+      <li>If the curves continue rising without reaching a plateau, it implies that the sampling may be insufficient and some real diversity is likely being missed.</li>
+    </ul>
+    This initial check is crucial, as it ensures that subsequent analyses (alpha and beta diversity) are interpreted robustly and without biases due to uneven sampling.
+  </li>
+  
+  <li style="margin-bottom: 1em;">
+    <strong>Alpha diversity</strong> <strong>&rArr;</strong> refers to diversity within each individual sample. Various indices capture different aspects:
+    <ul>
+      <li><strong>Observed richness</strong> <strong>&rarr;</strong> total number of taxa detected in the sample.</li>
+      <li><strong>Shannon index</strong> <strong>&rarr;</strong> combines richness and evenness, reflecting both the number of taxa and how uniform their abundances are.</li>
+      <li><strong>Evenness</strong> <strong>&rarr;</strong> measures the uniformity in abundance distribution; a community with all taxa present in similar proportions is more even than one dominated by few taxa.</li>
+      <li><strong>Faith's phylogenetic diversity</strong> <strong>&rarr;</strong> adds an evolutionary dimension, considering the phylogenetic distance among detected organisms.</li>
+    </ul>
+    These metrics allow comparisons to see if certain experimental conditions promote more diverse, more dominated, or more phylogenetically rich communities than others.
+  </li>
+  
+  <li style="margin-bottom: 1em;">
+    <strong>Beta diversity</strong> <strong>&rArr;</strong> examines differences between communities, comparing how microbial composition varies among samples or study groups. It relies on distance or dissimilarity calculations, including:
+    <ul>
+      <li><strong>Bray–Curtis</strong> <strong>&rarr;</strong> sensitive to relative abundances of taxa.</li>
+      <li><strong>Jaccard</strong> <strong>&rarr;</strong> based only on presence or absence of taxa.</li>
+      <li><strong>Unweighted UniFrac</strong> <strong>&rarr;</strong> incorporates phylogeny but ignores abundances.</li>
+      <li><strong>Weighted UniFrac</strong> <strong>&rarr;</strong> adds abundance information to phylogenetic distance.</li>
+    </ul>
+    These metrics allow visualization of sample clustering, for example via principal coordinates analysis (PCoA), and evaluation of whether communities are structured according to experimental conditions or biological factors.
+  </li>
+</ul>
+
+<p>
+  The flow of this section follows a progressive logic. First, rarefaction and coverage are checked to confirm that sampling does not compromise analysis validity. Next, alpha diversity is addressed to detect potential differences within each sample among experimental groups. Finally, beta diversity is analyzed, seeking patterns of similarity or differentiation between communities, using both graphical visualizations and complementary statistical analyses.
+</p>
+
+<p>
+  Overall, studying microbial diversity provides a global view of the communities, integrating richness, evenness, phylogeny, and similarity between samples. This allows better contextualization of the previously presented taxonomic and differential abundance findings, offering a more complete interpretation of how microbial communities are structured and respond to the factors under investigation.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion6.1">
+  6.1. Rarefaction and Coverage Curves
+</div>
+
+<p>
+  Rarefaction and coverage analysis allows evaluating whether the sampling depth achieved in each sample is sufficient to representatively capture microbial diversity. Through rarefaction curves, one can observe how estimated diversity increases as the number of reads considered grows. If these curves tend to plateau, we can conclude that sampling is adequate; otherwise, there is a risk that part of the diversity remains undetected.
+</p>
+
+<p>
+  The file <code>alpha-rarefaction.qzv</code>, which is available in the following directory:
+</p> 
+
+```{r, results="asis"}
+if (file.exists(ruta_alpha_rarefaction_qzv)) {
+  cat(glue::glue('
+<code>{ruta_alpha_rarefaction_qzv}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>alpha-rarefaction.qzv</code> does not exist at the specified path:<br>
+    <code>{ruta_alpha_rarefaction_qzv}</code>.
+  </div>
+'), sep = "\n")
+}
+```
+
+<p>
+  This information is provided in an interactive format through an <code>index.html</code>, where three main plots corresponding to different alpha diversity metrics are displayed:
+</p>
+
+<ul>
+  <li><strong>Shannon Diversity</strong> <strong>&rArr;</strong> simultaneously reflects richness and evenness.</li>
+  <li><strong>Number of Observed Features</strong> <strong>&rArr;</strong> measures richness as the number of detected taxa.</li>
+  <li><strong>Faith's Phylogenetic Diversity</strong> <strong>&rArr;</strong> incorporates the evolutionary distance among observed taxa.</li>
+</ul>
+
+<p>
+  These plots can be explored interactively through the following <code>iframe</code> or opened in a new tab for a more convenient exploration of the report.
+</p>
+
+```{r, results='asis'}
+# Generar iframe para Quarto si existe index.html
+if (file.exists(ruta_index_html)) {
+
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{ruta_index_html}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_index_html}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+
+} else {
+
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Error</b><br>
+    The unrooted tree is not available.<br>
+    The corresponding <code>index.html</code> file was not found.<br>
+    Make sure you have generated and extracted the <code>alpha-rarefaction.qzv</code> file.
+  </div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  In addition to the visual component, the analysis generates data files in <code>.csv</code> format that allow detailed exploration of the exact values used in each curve:
+</p>
+
+<ul>
+  <li><code>shannon.csv</code> <strong>&rArr;</strong> Shannon index values at different rarefaction depths for each sample.</li>
+  <li><code>observed_features.csv</code> <strong>&rArr;</strong> number of observed taxa at each rarefaction point.</li>
+  <li><code>faith_pd.csv</code> <strong>&rArr;</strong> Faith's phylogenetic diversity estimates across sampling depths.</li>
+</ul>
+
+<p>
+  These files are analyzed in detail below, explaining what each represents and displaying their data in an interactive table format.
+</p>
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ File <code>shannon.csv</code>
+</div>
+
+<p>
+  This file contains the Shannon index values calculated for each sample at different rarefaction depths. The Shannon index combines richness (number of taxa) and evenness (uniformity in their abundances), so higher values indicate more diverse and balanced communities. Analyzing how this index evolves as the number of reads increases allows us to identify the point at which diversity no longer grows significantly, indicating that the sampling effort was sufficient.
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_shannon_csv)) {
+  library(readr)
+  shannon <- read_csv(ruta_shannon_csv, comment = "#", show_col_types = FALSE)
+
+  # Tabla interactiva
+  library(DT)
+  library(htmltools)
+
+  DT::datatable(
+    shannon,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Solo tabla
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>shannon.csv</code> does not exist at the specified path:<br>
+    <code>{ruta_shannon_csv}</code>.
+  </div>
+'), sep = "\n")
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_shannon_csv)) {
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_shannon_csv}"
+      download="{basename(ruta_shannon_csv)}"
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download file "shannon.csv"
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ File <code>observed_features.csv</code>
+</div>
+
+<p>
+  This file shows the number of distinct taxa detected in each sample according to the sampling depth. It is a direct measure of observed richness, without weighting for evenness or phylogenetic relationships. Its usefulness lies in checking whether the number of taxa tends to stabilize as the number of sequences increases; stabilization implies that most of the diversity has already been captured, while an upward curve suggests insufficient sampling.
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_observed_features_csv)) {
+  library(readr)
+  observed_features <- read_csv(ruta_observed_features_csv, comment = "#", show_col_types = FALSE)
+
+  # Tabla interactiva
+  library(DT)
+  library(htmltools)
+
+  DT::datatable(
+    observed_features,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Solo tabla
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>observed_features.csv</code> does not exist at the specified path:<br>
+    <code>{ruta_observed_features_csv}</code>.
+  </div>
+'), sep = "\n")
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_observed_features_csv)) {
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_observed_features_csv}"
+      download="{basename(ruta_observed_features_csv)}"
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download file "observed_features.csv"
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ File <code>faith_pd.csv</code>
+</div>
+
+<p>
+  This file contains the values of Faith's phylogenetic diversity index, which sums the branch lengths of the phylogenetic tree covering the taxa present in each sample. Unlike the previous metrics, this index incorporates evolutionary history, so not only the number of taxa matters, but also how different they are from each other phylogenetically. By analyzing its evolution with rarefaction, we can assess whether the evolutionary diversity of the communities is adequately represented with the available sequencing depth.
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_faith_pd_csv)) {
+  library(readr)
+  faith_pd <- read_csv(ruta_faith_pd_csv, comment = "#", show_col_types = FALSE)
+
+  # Tabla interactiva
+  library(DT)
+  library(htmltools)
+
+  DT::datatable(
+    faith_pd,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Solo tabla
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>faith_pd.csv</code> does not exist at the specified path:<br>
+    <code>{ruta_faith_pd_csv}</code>.
+  </div>
+'), sep = "\n")
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_faith_pd_csv)) {
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_faith_pd_csv}" 
+      download="{basename(ruta_faith_pd_csv)}" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download file"faith_pd.csv"
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  The joint interpretation of these results allows us to confirm whether the curves have reached a saturation point and, therefore, whether the sequencing effort is adequate for subsequent alpha and beta diversity analysis. This ensures that comparisons between samples will not be biased by differences in sampling depth.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion6.2">
+  6.2. Alpha diversity (within-sample)
+</div>
+
+<p>
+  <strong>Alpha diversity</strong> is a fundamental concept in microbial ecology that describes the variability and complexity of a community within an individual sample. Unlike <em>beta diversity</em>, which compares communities across samples or groups, alpha diversity focuses on the richness (number of taxa present) and evenness (how uniform the abundance distribution is among those taxa) of a particular microbial community. Evaluating alpha diversity allows us to answer key questions: how complex is each sample? Are there differences in richness and evenness between experimental conditions? Do the applied treatments or different study groups lead to enrichment, depletion, or a change in community structure?
+</p>
+
+<p>
+  The importance of this analysis lies in providing a synthetic measure of the ecological state of each sample. High alpha diversity is often associated with more stable and resilient communities, while low values may indicate taxon loss, dominance by a few taxa, or even a reduction in the functionality of the microbial ecosystem. Additionally, alpha diversity analysis is a necessary preliminary step for correctly interpreting subsequent comparisons between sample groups, as it provides a reference point regarding the internal complexity of each community before analyzing its similarity or difference with others.
+</p>
+
+<p>
+  In this section, we will work with the results produced by the <code>core-metrics</code> analysis in QIIME 2, which automatically generates several alpha diversity metrics. These results are located in the <code>core-metrics-results</code> folder within the analysis directory, in the following path:
+</p>
+
+```{r, results="asis"}
+if (file.exists(ruta_alpha_rarefaction_qzv)) {
+  cat(glue::glue('
+<code>{ruta_core_metrics_results}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The folder <code>core-metrics-results</code> does not exist at the specified path:<br>
+    <code>{ruta_core_metrics_results}</code>.
+  </div>
+'), sep = "\n")
+}
+```
+
+<p>
+  Each metric is represented in two main types of files:
+</p>
+
+<ul>
+  <li><code>.qza</code> <strong>&rArr;</strong> data files containing the values calculated per sample (numerical diversity vectors).</li>
+  <li><code>.qzv</code> <strong>&rArr;</strong> visualization files that allow interactive exploration of the results through boxplots and statistical tests of significance between groups defined in the metadata.</li>
+</ul>
+
+<p>
+  Specifically, we will work with four main metrics, each with a distinct ecological meaning:
+</p>
+
+<ul>
+  <li><strong>Shannon</strong> <strong>&rArr;</strong> index combining richness and evenness, providing a measure of effective diversity that penalizes dominance by a few taxa.</li>
+  <li><strong>Faith PD</strong> <strong>&rArr;</strong> incorporates phylogenetic information, measuring the sum of branch lengths in the evolutionary tree present in each sample.</li>
+  <li><strong>Evenness</strong> <strong>&rArr;</strong> reflects the degree of uniformity in the abundance distribution; high values indicate taxa with similar abundances.</li>
+  <li><strong>Observed features</strong> <strong>&rArr;</strong> measures pure richness, i.e., the number of distinct taxa observed in the sample without considering relative abundance or phylogeny.</li>
+</ul>
+
+<p>
+  The specific files to be used are as follows:
+</p>
+
+<ul>
+  <li><code>shannon_vector.qza</code> and <code>shannon-group-significance.qzv</code> <strong>&rArr;</strong> Shannon index and its comparison between groups.</li>
+  <li><code>faith_pd_vector.qza</code> and <code>faith-pd-group-significance.qzv</code> <strong>&rArr;</strong> Faith phylogenetic diversity and group comparisons.</li>
+  <li><code>evenness_vector.qza</code> and <code>evenness-group-significance.qzv</code> <strong>&rArr;</strong> evenness per sample and visualization by groups.</li>
+  <li><code>observed_features_vector.qza</code> and <code>observed-features-group-significance.qzv</code> <strong>&rArr;</strong> observed richness and its visualization by groups.</li>
+</ul>
+
+<p>
+  In the report, the presentation strategy will be uniform: first, the official visualization contained in the <code>.qzv</code> files will be displayed (embedding the corresponding <code>index.html</code>), then its biological interpretation will be discussed, and finally, if deemed necessary, some tables of values derived from the <code>.qza</code> or internal <code>.csv</code> files may be embedded so that the reader can explore the results in detail. In this way, the report not only reproduces the pipeline output but also complements it with clear explanations and interactive tables that provide transparency and facilitate interpretation.
+</p>
+
+<p>
+  Once this is addressed, each metric will be detailed individually, explaining what each index measures, how the results are represented in QIIME 2, and what preliminary conclusions can be drawn from each case.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion6.2.1">
+  6.2.1. Shannon Index (richness + evenness)
+</div>
+
+<p>
+  The <strong>Shannon</strong> index is one of the classic metrics in ecology and a benchmark in microbial diversity analysis because it combines two key components into a single value: <em>richness</em> and <em>evenness</em>. Richness refers to the number of distinct taxa present in a sample, while evenness measures how abundances are distributed among those taxa. A community with many different species but dominated by a single highly abundant taxon will have a lower Shannon value than another community with the same number of species but with abundances more evenly distributed. Therefore, this index provides a more nuanced view of diversity than simply counting the number of taxa.
+</p>
+
+<p>
+  From an ecological perspective, <strong>high Shannon index values</strong> are associated with <strong>more complex and balanced communities</strong>. This can be interpreted as a sign of stability, resilience, and high functional potential within the microbial ecosystem. Conversely, low values suggest communities with lower complexity, either due to low richness (few taxa) or because they are dominated by a few taxa concentrating most of the abundances. This situation may reflect stress processes, environmental disturbance, or conditions that favor the expansion of specific organisms at the expense of overall diversity.
+</p>
+
+<p>
+  In our analysis, the Shannon-related information is contained in two files generated by QIIME 2. The first, <code>shannon_vector.qza</code>, stores the values calculated for each sample numerically. The second, <code>shannon-group-significance.qzv</code>, provides an interactive visualization that facilitates interpretation of the results. This visualization includes boxplots comparing Shannon values across different groups defined in the metadata, as well as tables of descriptive statistics and <strong>significance tests such as Kruskal–Wallis</strong> or <strong>multiple comparisons</strong> corrected using the <strong>Benjamini–Hochberg method</strong>. In this way, general trends can be observed while also assessing whether differences between groups are statistically significant.
+</p>
+
+```{r, results='asis'}
+shannon_file <- indices_html$`shannon-group-significance`
+
+if (is.null(shannon_file)) {
+  # No file in the list, show alert
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    The unrooted tree is not available.<br>
+    The file <code>shannon-group-significance.qzv</code> was not found.<br>
+    Please ensure that the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(shannon_file)) {
+  # Element exists, but the physical file does not
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated, but it is not located in the specified directory:<br>
+    <code>{shannon_file}</code>.
+    Please ensure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Everything correct, display iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{shannon_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{shannon_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  When exploring the plot, several aspects should be considered: the median of each group (reflecting the central diversity value), the box width (indicative of internal variability among samples), and the presence of outliers. Notable differences between group medians, accompanied by a significant p-value in the statistical tests, suggest that the experimental condition is consistently influencing microbial diversity. For example, if an experimental group shows significantly higher Shannon values, this can be interpreted as a positive effect of the treatment on community complexity. Conversely, lower values could indicate a loss of diversity possibly related to stress or community simplification. When values are similar across groups, it is concluded that, at least in terms of richness and evenness, no detectable effects are observed.
+</p>
+
+<p>
+  In summary, Shannon analysis provides a solid first insight into the alpha diversity of the samples. It allows identification of general patterns in taxon distribution and evaluation of whether experimental conditions promote more balanced communities or, on the contrary, reduce internal heterogeneity. These results, together with those obtained from other alpha diversity metrics, will form a fundamental basis for interpreting the stability and potential functionality of the studied microbial communities.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion6.2.2">
+  6.2.2. Faith Phylogenetic Diversity (evolutionary branch length)
+</div>
+
+<p>
+  The <strong>Faith Phylogenetic Diversity (Faith PD)</strong> index is a metric that explicitly incorporates the <em>evolutionary history</em> of the organisms present in the microbial community. Unlike other indices that rely solely on the number of taxa or the distribution of their abundances, Faith PD quantifies the <strong>total branch length of the phylogenetic tree</strong> connecting all observed taxa in a sample. In this way, it reflects not only richness in terms of how many different taxa are present but also how evolutionarily diverse they are.
+</p>
+
+<p>
+  This approach is especially valuable in microbiomes, as two communities may have a similar number of taxa but very different phylogenetic diversity. For example, a sample containing several closely related species (belonging to the same lineage) will have a relatively low Faith PD, while another with phylogenetically distant species (belonging to different phyla) will show a higher value. Thus, this metric helps address questions about the <strong>potential functional complexity</strong> of a community: communities with higher phylogenetic diversity tend to include a broader range of metabolic and ecological capabilities.
+</p>
+
+<p>
+  In our analysis, this information is contained in two main files generated by QIIME 2. The first, <code>faith_pd_vector.qza</code>, stores the numerical values of phylogenetic diversity for each individual sample. The second, <code>faith-pd-group-significance.qzv</code>, allows interactive exploration of these results, showing boxplots comparing values across groups defined in the metadata, as well as tables of statistical significance. These comparisons are performed using <strong>non-parametric hypothesis tests</strong> such as Kruskal–Wallis, and in cases of significant differences, include multiple pairwise group comparisons adjusted to control the false discovery rate.
+</p>
+
+```{r, results='asis'}
+faith_pd_file <- indices_html$`faith-pd-group-significance`
+
+if (is.null(faith_pd_file)) {
+  # File not in the list, show alert
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    Faith PD visualization is not available.<br>
+    The file <code>faith-pd-group-significance.qzv</code> was not found.<br>
+    Please ensure that the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(faith_pd_file)) {
+  # Element exists, but the physical file does not
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated, but it is not located in the specified directory:<br>
+    <code>{faith_pd_file}</code>.
+    Please ensure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Everything correct, display iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{faith_pd_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{faith_pd_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  The interpretation of this metric should consider both the magnitude of the values and the differences between groups. <strong>High Faith PD values</strong> indicate communities encompassing greater evolutionary diversity, which is often associated with a <em>broader functional potential</em> and more resilient ecosystems in the face of environmental changes. Conversely, <strong>low values</strong> suggest that the community is composed of closely related lineages, which may reflect restrictive conditions or an environment favoring the proliferation of specific groups. If the boxplots show clear differences between groups, supported by statistical significance, it can be concluded that the experimental variable is modulating not only composition but also the phylogenetic breadth of the community. In the absence of differences, the interpretation would be that, despite possible changes in relative taxon abundances, the overall phylogenetic diversity remains stable.
+</p>
+
+<p>
+  Overall, Faith PD analysis complements the Shannon index and other alpha metrics by introducing the evolutionary dimension into diversity assessment. This perspective allows us to understand not only how many taxa are present and how they are distributed, but also <strong>how broad the phylogenetic representation is within each sample</strong>. In this way, a more complete view of the structure and ecological potential of the studied microbial communities is obtained.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion6.2.3">
+  6.2.3. Evenness (abundance uniformity)
+</div>
+
+<p>
+  The <strong>Evenness</strong> metric, also known as <em>uniformity</em>, focuses on evaluating how the abundances of taxa are distributed within a microbial community. Unlike other indices that combine richness and evenness, Evenness concentrates exclusively on the second dimension: the <strong>relative proportion among the present taxa</strong>. In simple terms, it indicates the extent to which taxa share the total community abundance evenly.
+</p>
+
+<p>
+  A community with <strong>high evenness</strong> is one in which species have similar abundances, with none dominating excessively. This pattern is typically interpreted as a sign of <em>ecological stability</em> and balanced interaction among ecosystem members. Conversely, <strong>low evenness</strong> reflects communities where a few species concentrate most of the abundance, which may indicate stress, imbalance, or environmental conditions favoring certain groups over others. In microbiomes, such situations can be associated with dysbiosis or highly selective environments.
+</p>
+
+<p>
+  In our case, the evaluation of Evenness is derived from two key files. The first, <code>evenness_vector.qza</code>, contains the values calculated for each sample individually, while the second, <code>evenness-group-significance.qzv</code>, provides an interactive visualization of these data in the form of boxplots and significance tables. This visualization allows comparison of evenness across different groups defined in the metadata and, using non-parametric statistical tests, determines whether the observed differences are biologically significant.
+</p>
+
+```{r, results='asis'}
+evenness_file <- indices_html$`evenness-group-significance`
+
+if (is.null(evenness_file)) {
+  # File not in the list, show alert
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    The "evenness" visualization is not available.<br>
+    The file <code>evenness-group-significance.qzv</code> was not found.<br>
+    Please ensure that the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(evenness_file)) {
+  # Element exists, but the physical file does not
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated, but it is not located in the specified directory:<br>
+    <code>{evenness_file}</code>.
+    Please ensure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Everything correct, display iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{evenness_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{evenness_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  The interpretation of this metric requires examining both absolute values and comparisons between groups. <strong>High Evenness values</strong> suggest that the community is balanced, with taxa coexisting without large differences in relative abundance. <strong>Low values</strong>, on the other hand, indicate strong dominance of a few taxa over the rest, which may imply ecosystem vulnerability to external disturbances. When visualizations show significant differences between experimental groups, it can be concluded that the condition under study affects the <em>internal structure</em> of the community, not only in terms of richness but also in how taxa share the ecological space.
+</p>
+
+<p>
+  Overall, Evenness analysis complements the Shannon and Faith PD metrics, providing a more specific perspective on community evenness. This allows identification of whether differences detected in alpha diversity are mainly due to variations in taxon richness or to changes in how evenly taxa are distributed across samples.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion6.2.4">
+  6.2.4. Observed Features
+</div>
+
+<p>
+  The <strong>Observed Features</strong> metric corresponds to one of the most direct and straightforward ways to assess alpha diversity in a microbiome: <strong>pure richness</strong>. In this case, the distribution of abundances or phylogenetic relationships among taxa is not considered; rather, it simply counts the <strong>number of observed taxonomic units</strong> in each sample after normalization and rarefaction processes. These units may correspond to <em>ASVs</em> (amplicon sequence variants), <em>OTUs</em> (operational taxonomic units), or other classification forms used in the analysis.
+</p>
+
+<p>
+  A <strong>high</strong> Observed Features value reflects a sample with a greater number of distinct taxa detected, which is generally interpreted as a signal of higher <em>biological richness</em>. Conversely, a <strong>low</strong> value indicates a community with few taxa, possibly dominated by a limited number of organisms. This information is key for identifying environments where diversity is constrained, whether due to environmental limitations, selective conditions, stress processes, or states of dysbiosis in biological systems.
+</p>
+
+<p>
+  In this analysis, we use the file <code>observed_features_vector.qza</code>, which contains the numeric richness values for each sample, and the file <code>observed-features-group-significance.qzv</code>, which provides an interactive visualization in the form of boxplots and statistical comparison tables. This combination allows, on one hand, assessing individual richness values, and on the other, exploring differences between experimental groups in a statistically grounded manner.
+</p>
+
+```{r, results='asis'}
+observed_file <- indices_html$`observed-features-group-significance`
+
+if (is.null(observed_file)) {
+  # No existe el archivo en la lista, mostrar alerta
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    The "observed features" visualization is not available.<br>
+    The file <code>observed-features-group-significance.qzv</code> was not found.<br>
+    Please ensure the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(observed_file)) {
+  # Elemento existe, pero el archivo físico no
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated, but it is not found in the indicated directory:<br>
+    <code>{observed_file}</code>.
+    Please make sure the file is located at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Todo correcto, mostrar iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{observed_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{observed_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  The interpretation of this metric focuses on detecting richness differences between the evaluated conditions. When an experimental group shows significantly higher Observed Features values, it can be interpreted that the conditions favor the colonization and coexistence of a greater number of taxa. Conversely, lower values may suggest a negative impact on richness, possibly associated with restrictive environmental factors or the expansion of a few dominant taxa that limit overall diversity.
+</p>
+
+<p>
+  Overall, this metric provides a clear and straightforward view of microbial richness without additional nuances and complements the Shannon, Faith PD, and Evenness indices. Thus, the combination of all these alpha diversity metrics allows us to obtain a comprehensive overview: not only of the number of taxa present, but also of their relative distribution and phylogenetic depth, offering a more robust and nuanced interpretation of the structure of the studied microbial communities.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion6.3">
+  6.3. Beta diversity (between samples)
+</div>
+
+<p>
+  Once alpha diversity, which describes richness and evenness within each sample, has been analyzed, we now focus on <strong>beta diversity</strong>. This metric allows the comparison of microbial communities between samples or groups, assessing how species composition varies across different experimental conditions or treatments. While alpha diversity informs us about the internal complexity of each sample, beta diversity helps us understand the similarity or dissimilarity between communities, providing critical insight into the heterogeneity and overall structure of the microbial ecosystem.
+</p>
+
+<p>
+  Beta diversity is measured using different types of distances between samples. Each distance captures a distinct aspect of the microbial community: <strong>Bray–Curtis</strong> assesses differences based on relative abundances of taxa, <strong>Jaccard</strong> measures only the presence or absence of taxa, <strong>Unweighted UniFrac</strong> incorporates phylogeny considering presence/absence, and <strong>Weighted UniFrac</strong> combines phylogeny with relative abundance. Analyzing these distances allows identification of clusters of similar samples, detection of outliers, and evaluation of whether experimental conditions generate consistent separation patterns between groups.
+</p>
+
+<p>
+  The analysis results are located in the <code>core-metrics-results</code> folder within the analysis folder, at the following directory:
+</p>
+
+```{r, results="asis"}
+if (dir.exists(ruta_core_metrics_results)) {
+  cat(glue::glue('<code>{ruta_core_metrics_results}</code>'), sep = "\n")
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The <code>core-metrics-results</code> folder does not exist at the specified path:<br>
+    <code>{ruta_core_metrics_results}</code>.
+  </div>
+'), sep = "\n")
+}
+```
+
+<p>
+  For each distance type, three main types of files are generated: distance matrices (<code>.qza</code>), PCoA results (<code>.qza</code>), and EMPeror-style interactive visualizations (<code>.qzv</code>). The <code>.qza</code> files contain the numerical information needed to calculate similarity between samples and derive PCoA coordinates, while the <code>.qzv</code> files allow interactive graphical exploration of group separation.
+</p>
+
+<p>
+  Specifically, the following beta diversity metrics will be used:
+</p>
+
+<ul style="list-style-type: disc; padding-left: 20px;">
+  <li style="margin-bottom: 1em;">
+    <p><strong>Bray–Curtis distance</strong> <strong>&rArr;</strong> this metric evaluates differences between communities based on the relative abundances of taxa present in each sample. It is particularly useful for detecting compositional changes when the abundance of certain taxa dominates the community.</p>
+    <ul style="padding-left: 20px;">
+      <li><strong>Visualization files</strong> <strong>&rarr;</strong> <code>bray_curtis_emperor.qzv</code>, <code>bray-curtis-emperor-Type.qzv</code></li>
+      <li><strong>Numerical files</strong> <strong>&rarr;</strong> <code>bray_curtis_distance_matrix.qza</code>, <code>bray_curtis_pcoa_results.qza</code></li>
+    </ul>
+  </li>
+
+  <li style="margin-bottom: 1em;">
+    <p><strong>Jaccard distance</strong> <strong>&rArr;</strong> measures community dissimilarity considering only the presence or absence of taxa, ignoring their abundances. It is useful for identifying changes in species composition without the influence of dominant taxa.</p>
+    <ul style="padding-left: 20px;">
+      <li><strong>Visualization files</strong> <strong>&rarr;</strong> <code>jaccard_emperor.qzv</code></li>
+      <li><strong>Numerical files</strong> <strong>&rarr;</strong> <code>jaccard_distance_matrix.qza</code>, <code>jaccard_pcoa_results.qza</code></li>
+    </ul>
+  </li>
+
+  <li style="margin-bottom: 1em;">
+    <p><strong>Unweighted UniFrac</strong> <strong>&rArr;</strong> evaluates phylogenetic diversity considering the presence or absence of taxa. It accounts for evolutionary distance between taxa, allowing detection of phylogenetic differences between communities.</p>
+    <ul style="padding-left: 20px;">
+      <li><strong>Visualization files</strong> <strong>&rarr;</strong> <code>unweighted_unifrac_emperor.qzv</code>, <code>unweighted-unifrac-emperor-Type.qzv</code>, <code>unweighted-unifrac-Type-significance.qzv</code></li>
+      <li><strong>Numerical files</strong> <strong>&rarr;</strong> <code>unweighted_unifrac_distance_matrix.qza</code>, <code>unweighted_unifrac_pcoa_results.qza</code></li>
+    </ul>
+  </li>
+
+  <li style="margin-bottom: 1em;">
+    <p><strong>Weighted UniFrac</strong> <strong>&rArr;</strong> combines phylogenetic information and relative abundance of taxa, providing a more complete view of community differences by considering both presence/absence and the proportion of each taxon.</p>
+    <ul style="padding-left: 20px;">
+      <li><strong>Visualization files</strong> <strong>&rarr;</strong> <code>weighted_unifrac_emperor.qzv</code></li>
+      <li><strong>Numerical files</strong> <strong>&rarr;</strong> <code>weighted_unifrac_distance_matrix.qza</code>, <code>weighted_unifrac_pcoa_results.qza</code></li>
+    </ul>
+  </li>
+</ul>
+
+<p>
+  In the report, the presentation strategy will be uniform: first, interactive visualizations contained in the <code>.qzv</code> files will be displayed by embedding the corresponding <code>index.html</code> so that the reader can explore group separation and the position of each sample in PCoA space. Subsequently, the biological interpretation of each metric will be discussed, explaining what each axis represents, the dispersion of samples, and how differences between experimental groups are reflected. Optionally, tables with PCoA coordinates derived from the <code>.qza</code> files can be included for more detailed analysis if needed.
+</p>
+
+<p>
+  Once this general context is established, each metric will be detailed separately: <strong>Bray–Curtis</strong>, <strong>Jaccard</strong>, <strong>Unweighted UniFrac</strong>, and <strong>Weighted UniFrac</strong>, describing their biological significance, showing the interactive visualization, and discussing the main conclusions that can be drawn from each analysis.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion6.3.1">
+  6.3.1. Bray–Curtis distance (relative abundances)
+</div>
+
+<p>
+  The <strong>Bray–Curtis distance</strong> is a widely used metric to quantify differences in microbial community composition. Its calculation is based on the <em>relative abundances</em> of taxa present in each sample, making it especially useful for detecting changes in community structure when certain taxa dominate over others.
+</p>
+
+<p>
+  From an ecological perspective, <strong>low Bray–Curtis values</strong> indicate that two communities are similar in terms of their relative abundances, while <strong>high values reflect very different compositions</strong>. This metric is sensitive to dominant taxa, so a community with a few highly abundant taxa can be strongly distinguished from another even if they share many rare taxa. Therefore, it is highly valuable for assessing the effect of experimental conditions on the overall structure of microbial communities.
+</p>
+
+<p>
+  In our analysis, we have two complementary visualizations in <code>.qzv</code> format, which allow exploration of Bray–Curtis results through principal coordinates analysis (PCoA) in the interactive QIIME 2 environment.
+</p>
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Visualization 1: <code>bray_curtis_emperor.qzv</code>
+</div>
+
+<p>
+  This file presents a three-dimensional PCoA where each point represents a sample, and the distance between points reflects their degree of similarity according to the Bray–Curtis metric. The <strong>Emperor</strong> tool allows rotation of the plot, highlighting of samples, and exploration of the overall data structure. It is especially useful for detecting global patterns, such as clustering of samples based on their relative composition, without yet applying any metadata factor.
+</p>
+
+```{r, results='asis'}
+bray_curtis_file <- indices_html$`bray_curtis_emperor`
+
+if (is.null(bray_curtis_file)) {
+  # No existe el archivo en la lista, mostrar alerta
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    3D Bray-Curtis visualization is not available.<br>
+    The file <code>bray_curtis_emperor.qzv</code> was not found.<br>
+    Please ensure the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(bray_curtis_file)) {
+  # Elemento existe, pero el archivo físico no
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated but is not found in the specified directory:<br>
+    <code>{bray_curtis_file}</code>.
+    Please make sure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Todo correcto, mostrar iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{bray_curtis_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{bray_curtis_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open 3D visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Visualization 2: <code>bray-curtis-emperor-Type.qzv</code>
+</div>
+
+<p>
+  Unlike the first one, this visualization incorporates the experimental variable <code>Type</code>, allowing samples to be colored and grouped according to that category. This facilitates immediate assessment of whether the groups defined by the metadata separate in multivariate space. A clear separation between groups suggests that the experimental variable exerts a strong effect on microbial structure, whereas extensive overlap would indicate that the variable does not explain much of the observed variation.
+</p>
+
+```{r, results='asis'}
+bray_curtis_type_file <- indices_html$`bray-curtis-emperor-Type`
+
+if (is.null(bray_curtis_type_file)) {
+  # No existe el archivo en la lista, mostrar alerta
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    3D Bray-Curtis visualization by type is not available.<br>
+    The file <code>bray-curtis-emperor-Type.qzv</code> was not found.<br>
+    Please ensure the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(bray_curtis_type_file)) {
+  # Elemento existe, pero el archivo físico no
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated but is not found in the specified directory:<br>
+    <code>{bray_curtis_type_file}</code>.
+    Please make sure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Todo correcto, mostrar iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{bray_curtis_type_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{bray_curtis_type_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open 3D visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ <code>Numerical files</code>
+</div>
+
+<p>
+  In addition to interactive visualizations, QIIME 2 generates <code>.qza</code> files that contain the underlying numerical information:
+</p>
+
+<ul style="padding-left: 20px;">
+  <li><strong><code>bray_curtis_distance_matrix.qza</code></strong> <strong>&rArr;</strong> distance matrix between all samples, where each value represents the Bray–Curtis dissimilarity between a pair of communities.</li>
+  <li><strong><code>bray_curtis_pcoa_results.qza</code></strong> <strong>&rArr;</strong> numerical results of the PCoA analysis, including the coordinates of each sample in multivariate space and the variance explained by each axis.</li>
+</ul>
+
+<p>
+  These files are particularly useful if <strong>reanalyzing in R or Python</strong>, performing additional statistical tests (e.g., PERMANOVA), or generating custom visualizations outside the QIIME 2 environment.
+</p>
+
+<p>
+  Overall, Bray–Curtis analysis provides a solid initial view of how microbial communities differ in terms of relative taxon abundance. The combination of interactive visualizations and numerical data allows both graphical exploration and statistical validation, facilitating the interpretation of beta diversity patterns in relation to the experimental variable under study.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion6.3.2">
+  6.3.2. Jaccard distance (presence/absence)
+</div>
+
+<p>
+  <strong>Jaccard distance</strong> is a metric that measures dissimilarity between microbial communities considering only the <em>presence or absence</em> of taxa, without taking their relative abundances into account. In this way, all species carry the same weight in the calculation, regardless of whether they are dominant or rare. This makes it a key tool for identifying <strong>changes in species composition</strong> when the focus is on whether certain taxa appear or disappear between experimental conditions, without the abundances of dominant taxa distorting the comparison.
+</p>
+
+<p>
+  From an ecological perspective, <strong>low Jaccard values</strong> reflect communities with high overlap in the taxa present, whereas <strong>high values indicate communities with very distinct compositions</strong>. This metric is particularly useful in scenarios where qualitative changes—the presence or absence of certain microorganisms—are more relevant than quantitative changes.
+</p>
+
+<p>
+  In our analysis, the Jaccard metric is represented through an interactive visualization in <code>.qzv</code> format, accompanied by numerical files containing the distance matrix and the results of the principal coordinates analysis (PCoA).
+</p>
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Visualization: <code>jaccard_emperor.qzv</code>
+</div>
+
+<p>
+  This file displays a three-dimensional PCoA in which each point corresponds to a sample, and the separation between points reflects their degree of dissimilarity according to the Jaccard metric. Unlike other abundance-based metrics, here only the presence or absence of taxa matters. The <strong>Emperor</strong> tool allows interactive exploration of these differences, rotating the plot and highlighting samples to assess potential groupings. This is particularly useful for observing microbial composition patterns where abundance is not a determining factor.
+</p>
+
+```{r, results='asis'}
+jaccard_emperor_file <- indices_html$`jaccard_emperor`
+
+if (is.null(jaccard_emperor_file)) {
+  # No existe el archivo en la lista, mostrar alerta
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    3D Jaccard Emperor visualization is not available.<br>
+    The file <code>jaccard_emperor.qzv</code> was not found.<br>
+    Please ensure the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(jaccard_emperor_file)) {
+  # Elemento existe, pero el archivo físico no
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated but is not found in the specified directory:<br>
+    <code>{jaccard_emperor_file}</code>.
+    Please make sure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Todo correcto, mostrar iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{jaccard_emperor_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{jaccard_emperor_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open 3D visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ <code>Numerical files</code>
+</div>
+
+<p>
+  In addition to the visualization, QIIME 2 generates the following <code>.qza</code> files containing the underlying information:
+</p>
+
+<ul style="padding-left: 20px;">
+  <li><strong><code>jaccard_distance_matrix.qza</code></strong> <strong>&rArr;</strong> distance matrix based on the Jaccard metric, where each value represents the degree of dissimilarity between a pair of samples.</li>
+  <li><strong><code>jaccard_pcoa_results.qza</code></strong> <strong>&rArr;</strong> numerical results of the PCoA analysis, including the coordinates of each sample in multivariate space and the percentage of variance explained by each axis.</li>
+</ul>
+
+<p>
+  These files allow <strong>statistical reanalysis in R or Python</strong>, such as PERMANOVA or PERMDISP tests, and the creation of custom visualizations that complement those provided within the QIIME 2 environment.
+</p>
+
+<p>
+  In summary, Jaccard analysis provides a perspective focused on the <strong>qualitative composition</strong> of microbial communities. Using this metric, we can identify whether the experimental variable influences the mere presence or absence of certain taxa, without the abundance of dominant taxa distorting interpretation. Thus, it serves as an ideal complement to abundance-based metrics like Bray–Curtis, providing a more comprehensive view of beta diversity.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion6.3.3">
+  6.3.3. Unweighted UniFrac (phylogeny + presence/absence)
+</div>
+
+<p>
+  The <strong>Unweighted UniFrac</strong> metric measures dissimilarity between communities by taking into account the <em>evolutionary history</em> of taxa while considering only their <strong>presence or absence</strong>. Unlike purely taxonomic metrics (e.g., Jaccard) that only compare sets of taxa, Unweighted UniFrac weights these differences by phylogenetic distance: the disappearance or appearance of a phylogenetically distant taxon contributes more to the distance than changes among very closely related taxa.
+</p>
+
+<p>
+  Ecologically, Unweighted UniFrac is especially useful for detecting changes in the <strong>phylogenetic structure</strong> of communities—for example, the replacement of entire clades or the appearance/disappearance of evolutionarily distant lineages—regardless of whether these taxa are abundant. Therefore, it is a metric sensitive to qualitative composition changes that have evolutionary significance.
+</p>
+
+<p>
+  To explore these patterns, we have several interactive visualizations and the underlying numerical files generated by QIIME 2. Below we show the visualizations (PCoA/Emperor) and explain what each provides.
+</p>
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Visualization 1: <code>unweighted_unifrac_emperor.qzv</code>
+</div>
+
+<p>
+  This file contains an interactive PCoA based on the Unweighted UniFrac distance. Each point represents a sample, and the separation between points reflects phylogenetic dissimilarity considering the presence/absence of taxa. The Emperor view allows rotating the space, isolating samples, and examining global groupings without applying coloring by experimental variables; it is ideal for exploratory inspection of the phylogenetic structure of the raw dataset.
+</p>
+
+```{r, results='asis'}
+unweighted_unifrac_emperor_file <- indices_html$`unweighted_unifrac_emperor`
+
+if (is.null(unweighted_unifrac_emperor_file)) {
+  # No existe el archivo en la lista, mostrar alerta
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    Unweighted UniFrac visualization is not available.<br>
+    The file <code>unweighted-unifrac-emperor.qzv</code> was not found.<br>
+    Please ensure the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(unweighted_unifrac_emperor_file)) {
+  # Elemento existe, pero el archivo físico no
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated but is not found in the specified directory:<br>
+    <code>{unweighted_unifrac_emperor_file}</code>.
+    Please make sure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Todo correcto, mostrar iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{unweighted_unifrac_emperor_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{unweighted_unifrac_emperor_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open Unweighted UniFrac visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Visualization 2: <code>unweighted-unifrac-emperor-Type.qzv</code>
+</div>
+
+<p>
+  This variant colors and groups samples according to the <code>Type</code> variable (or another metadata column chosen by the analyst). By adding the experimental label, we can inspect whether the groups defined by the metadata separate in phylogenetic space: a clear separation suggests that the condition (Type) is associated with changes in the presence/absence of phylogenetic lineages.
+</p>
+
+```{r, results='asis'}
+unweighted_unifrac_emperor_type_file <- indices_html$`unweighted_unifrac_emperor_Type`
+
+if (is.null(unweighted_unifrac_emperor_type_file)) {
+  # No existe el archivo en la lista, mostrar alerta
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    Unweighted UniFrac visualization is not available.<br>
+    The file <code>unweighted-unifrac-emperor-Type.qzv</code> was not found.<br>
+    Please ensure the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(unweighted_unifrac_emperor_type_file)) {
+  # Elemento existe, pero el archivo físico no
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated but is not found in the specified directory:<br>
+    <code>{unweighted_unifrac_emperor_type_file}</code>.
+    Please make sure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Todo correcto, mostrar iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{unweighted_unifrac_emperor_type_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{unweighted_unifrac_emperor_type_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open Unweighted UniFrac visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Visualization 3: <code>unweighted-unifrac-Type-significance.qzv</code>
+</div>
+
+<p>
+  This file provides significance test results associated with separation by <code>Type</code> (e.g., PERMANOVA or clustering tests shown in the QIIME 2 view). Here, we can check p-values and group comparisons that help determine whether the observed separation in the PCoA is statistically robust or could be due to chance.
+</p>
+
+```{r, results='asis'}
+unweighted_unifrac_type_significance_file <- indices_html$`unweighted-unifrac-Type-significance`
+
+if (is.null(unweighted_unifrac_type_significance_file)) {
+  # No existe el archivo en la lista, mostrar alerta
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    Unweighted UniFrac significance visualization is not available.<br>
+    The file <code>unweighted-unifrac-Type-significance.qzv</code> was not found.<br>
+    Please ensure the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(unweighted_unifrac_type_significance_file)) {
+  # Elemento existe, pero el archivo físico no
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated but is not found in the specified directory:<br>
+    <code>{unweighted_unifrac_type_significance_file}</code>.
+    Please make sure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Todo correcto, mostrar iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{unweighted_unifrac_type_significance_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{unweighted_unifrac_type_significance_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Numerical files
+</div>
+
+<p>
+  The underlying numerical artifacts are:
+</p>
+
+<ul style="padding-left: 20px;">
+  <li><strong><code>unweighted_unifrac_distance_matrix.qza</code></strong> <strong>&rArr;</strong> Unweighted UniFrac distance matrix between all samples (each cell represents phylogenetic dissimilarity based on presence/absence).</li>
+  <li><strong><code>unweighted_unifrac_pcoa_results.qza</code></strong> <strong>&rArr;</strong> PCoA results (coordinates of each sample and variance explained by axes), useful for quantitative analyses and table export.
+  </li>
+</ul>
+
+<p>
+  These files allow performing complementary statistical analyses outside QIIME 2, such as <strong>PERMANOVA</strong> (adonis2) to test whether the variable of interest explains a significant fraction of the variation between samples, or <strong>PERMDISP</strong> to check for homogeneity of dispersion among groups. They also facilitate the extraction of PCoA coordinates for custom plots in <code>ggplot2</code> or integration with additional metadata annotations.
+</p>
+
+<p>
+  In summary, Unweighted UniFrac is a powerful tool for detecting qualitative phylogenetic changes in communities. By combining interactive visualizations (PCoA/Emperor) with significance tests and numerical data, we obtain both exploratory and statistical assessments of whether experimental groups differ in the presence or absence of microbial lineages.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion6.3.4">
+  6.3.4. Weighted UniFrac (phylogeny + abundances)
+</div>
+
+<p>
+  The <strong>Weighted UniFrac</strong> metric combines phylogenetic information with the <em>relative abundance</em> of taxa, measuring dissimilarity between communities by considering both which lineages are present and in what proportion. Unlike Unweighted UniFrac (which treats rare and abundant taxa equally), Weighted UniFrac penalizes differences affecting abundant taxa while also incorporating evolutionary distances among them. This makes it a metric especially suitable for detecting changes in community structure that involve variations in the abundance of phylogenetically relevant lineages.
+</p>
+
+<p>
+  From an ecological perspective, <strong>low Weighted UniFrac values</strong> indicate that two communities share both lineages and their relative proportions, whereas <strong>high values</strong> show phylogenetic and/or abundance differences in dominant lineages. Comparing Weighted UniFrac with other metrics (e.g., Unweighted UniFrac and Bray–Curtis) helps determine whether group differences are mainly due to presence/absence of lineages, changes in relative abundances, or a combination of both.
+</p>
+
+<p>
+  In this analysis, we have an interactive visualization and the underlying numerical artifacts that allow both graphical exploration and quantitative reanalysis.
+</p>
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Visualization: <code>weighted_unifrac_emperor.qzv</code>
+</div>
+
+<p>
+  The file <code>weighted_unifrac_emperor.qzv</code> contains an interactive PCoA (Emperor) where each point represents a sample, and the distance between points reflects dissimilarity according to Weighted UniFrac. The interactive view allows coloring by metadata variables, rotating the 3D space, selecting samples, and assessing the influence of experimental factors on the combined phylogeny–abundance community structure. This visualization is useful for identifying clustering driven by changes in abundant taxa within evolutionarily relevant lineages.
+</p>
+
+```{r, results='asis'}
+weighted_unifrac_emperor_file <- indices_html$`weighted_unifrac_emperor`
+
+if (is.null(weighted_unifrac_emperor_file)) {
+  # No existe el archivo en la lista, mostrar alerta
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    Weighted UniFrac visualization is not available.<br>
+    The file <code>weighted_unifrac_emperor.qzv</code> was not found.<br>
+    Please ensure the corresponding file has been generated and extracted.
+  </div>
+  '), sep = "\n")
+
+} else if (!file.exists(weighted_unifrac_emperor_file)) {
+  # Elemento existe, pero el archivo físico no
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file was generated but is not found in the specified directory:<br>
+    <code>{weighted_unifrac_emperor_file}</code>.
+    Please make sure the file exists at this path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  # Todo correcto, mostrar iframe
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{weighted_unifrac_emperor_file}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{weighted_unifrac_emperor_file}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-chart-column"></i> Open 3D visualization in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4">
+  ➤ Numerical files
+</div>
+
+<p>
+  In addition to the visualization, QIIME 2 generates numerical artifacts that enable reproducible analyses and statistical testing:
+</p>
+
+<ul style="list-style-type: none; padding-left: 20px;">
+  <li><strong><code>weighted_unifrac_distance_matrix.qza</code></strong> <strong>&rArr;</strong> Weighted UniFrac distance matrix between all samples (each cell represents the phylogenetic dissimilarity weighted by abundance between a pair of samples).</li>
+  <li><strong><code>weighted_unifrac_pcoa_results.qza</code></strong> <strong>&rArr;</strong> PCoA results with coordinates of each sample and variance explained by each axis; useful for extracting coordinate tables and creating custom plots in R.</li>
+</ul>
+
+<p>
+  These files form the basis for performing complementary statistical analyses outside of QIIME 2, such as <strong>PERMANOVA</strong> (to assess whether the variable of interest explains a significant fraction of variation among samples) or <strong>PERMDISP</strong> (to check for homogeneity of dispersion among groups). They also allow reproducing figures in R (e.g., with <code>qiime2R::read_qza()</code> and <code>ggplot2</code>), adding annotations, calculating effect sizes, or integrating covariates into multivariable models.
+</p>
+
+<p>
+  When interpreting the results, potential artifacts should be considered: Weighted UniFrac can be influenced by differences in sequencing depth or by the presence of extremely abundant taxa; therefore, it is recommended to confirm that rarefaction/normalization and prior quality controls have been correctly applied (see the rarefaction subsection and <code>rarefied_table.qza</code>). Comparing the Weighted UniFrac signal with Unweighted UniFrac and Bray–Curtis helps determine whether observed differences are primarily due to abundance changes, qualitative phylogenetic changes, or both.
+</p>
+
+<p>
+  In summary, Weighted UniFrac provides an integrated perspective (phylogenetic + quantitative) on community dissimilarity and complements other beta diversity metrics. The combination of interactive visualization and numerical artifacts enables both visual exploration and statistical validation of the observed patterns in relation to experimental variables.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  Thus, finally, after characterizing the composition, structure, and variability of microbial communities through diversity analyses, the next step is to explore their <strong>functional potential</strong>. For this purpose, the <strong>Pycrust (based on PICRUSt2)</strong> tool is used, which allows <strong>inferring the most likely metabolic functions</strong> from the taxonomic profiles obtained in the ITS analysis. This predictive approach translates phylogenetic information into an estimate of each community's functional repertoire, facilitating the identification of metabolic pathways or biological processes that differ between experimental conditions.
+</p>
+
+<p>
+  In the following section, the results of these functional predictions will be presented, illustrated through graphical representations such as <strong>PCA analyses</strong>, <strong>heatmaps</strong>, and <strong>statistical comparisons</strong> between groups. The most relevant figures, generated from <em>MetagenomeSeq</em> and <em>ALDEx2</em> analyses, correspond to those whose names start with <code>pathway</code> (for example, <code>pathway_pca_p_0.05_all.png</code>, <code>pathway_ALDEx2_glm_test_p_values.png</code>, or <code>pathway_MetagenomeSeq_*.png</code>), as they summarize the most significant functional differences observed between communities.
+</p>
+
+<p>
+  In this way, the study progresses from the ecological description of diversity to the <strong>functional interpretation</strong> of microbial communities, thus completing a comprehensive understanding of the microbiome under the analyzed conditions.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../../04-javascript/script.js"></script>

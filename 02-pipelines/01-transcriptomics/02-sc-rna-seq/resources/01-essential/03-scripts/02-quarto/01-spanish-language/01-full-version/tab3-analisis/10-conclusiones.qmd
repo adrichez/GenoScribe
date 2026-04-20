@@ -1,0 +1,374 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 10. CONCLUSIONES Y PERSPECTIVAS -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        ¡Hola! Soy <strong>Geni</strong>, el asistente inteligente de <strong>GenoScribe</strong>.  
+        Estoy aquí para ayudarte a explorar de forma interactiva el contenido de este informe bioinformático.
+      </p>
+
+      <p>
+        Cuando me haces una pregunta, primero intento reconocer si coincide con alguno de los patrones o expresiones que conozco.  
+        Si encuentro una coincidencia, te responderé directamente con una respuesta predefinida, diseñada para ser rápida, clara e incluso un poco ingeniosa.  
+        Si no reconozco el patrón, entonces activo mis herramientas de búsqueda: genero representaciones vectoriales (embeddings) y busco los fragmentos más relevantes entre varios documentos —incluyendo el propio informe, archivos PDF y HTML externos, y sesiones de preguntas y respuestas (QA).  
+        A partir de esa información, creo un resumen que intenta ofrecerte una respuesta coherente y útil basada en el contenido existente.
+      </p>
+
+      <p>
+        Se debe tener en cuenta que este entorno es experimental. No utilizo grandes modelos de lenguaje, por lo que algunas respuestas pueden ser aproximadas o incompletas.  
+        El objetivo principal es facilitar una visualización rápida, comprensible y reproducible de la información contenida en los documentos, permitiendo una exploración más dinámica del informe.
+      </p>
+
+      <p>
+        Actualmente, los resultados pueden variar en precisión, ya que empleo modelos ligeros y locales para asegurar que la aplicación funcione en cualquier entorno sin necesidad de servidores externos.  
+        Sin embargo, la estructura del sistema está preparada para mejorar notablemente su rendimiento en el futuro mediante la integración con modelos más avanzados o APIs externas.  
+        Para comenzar, simplemente escribe tu pregunta en el campo inferior y deja que yo me encargue del resto. ¡Prometo poner todo mi código en ello!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Insertar aquí en el caso de que fuera necesario -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis Bioinformático Completo</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Sección 10</h1>
+  <h2>Conclusiones y Perspectivas</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+  
+  <p>
+    Tras haber ejecutado y evaluado exhaustivamente todas las fases del <em>pipeline</em> bioinformático de célula única —desde el preprocesamiento de datos crudos hasta la anotación funcional y el enriquecimiento de linajes—, este décimo y último módulo actúa como la piedra angular del estudio. Su propósito es destilar la inmensa cantidad de métricas generadas en resoluciones biológicas claras, estructuradas y directamente aplicables.
+  </p>
+
+  <p>
+    A diferencia de los capítulos anteriores, centrados en el escrutinio técnico, estadístico y visual, esta sección final ofrece una visión panorámica y traslacional del ecosistema tisular evaluado. En primer lugar, sintetiza los hallazgos más relevantes sobre la arquitectura celular y los mecanismos alterados por la perturbación experimental. En segundo lugar, traza una hoja de ruta estratégica, proponiendo los siguientes pasos experimentales y computacionales para llevar la investigación clínica o básica hacia su consolidación definitiva.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta sección
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion10">10<span>.</span> Conclusiones y perspectivas</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion10.1">10.1. Conclusiones Biológicas Fundamentales</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion10.2">10.2. Perspectivas y Direcciones Futuras</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion6">
+  10<span>.</span> Conclusiones y perspectivas
+</div>
+
+<p>
+  El presente estudio transcriptómico a nivel de célula única (<em>scRNA-seq</em>) ha permitido desentrañar, con una resolución sin precedentes, la complejidad inherente al ecosistema tisular evaluado. Al transitar desde la cuantificación global (<em>Bulk RNA-seq</em>) hacia la caracterización de células individuales, hemos superado el efecto de promediado de la secuenciación masiva, logrando diseccionar la heterogeneidad celular y el impacto específico de la perturbación biológica (Referencia vs Test) dentro de cada linaje poblacional.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion10.1">
+  10.1. Conclusiones Biológicas Fundamentales
+</div>
+
+<p>
+  La integración de las distintas fases del <em>pipeline</em> bioinformático —desde el riguroso control de calidad y la inferencia de linajes, hasta el cálculo de la expresión diferencial y el mapeo de vías funcionales— nos permite destilar los siguientes hallazgos estructurales y mecanísticos:
+</p>
+
+<ul>
+  <li>
+    <strong>Identificación de la Arquitectura Celular &rArr;</strong> El análisis no supervisado ha revelado la verdadera composición cuantitativa y cualitativa de la muestra. Ha permitido identificar no solo las poblaciones celulares mayoritarias, sino también delinear estados transicionales sutiles y aislar subtipos celulares raros que habrían quedado completamente enmascarados bajo un enfoque transcriptómico tradicional.
+  </li>
+  <li>
+    <strong>Vulnerabilidad y Resiliencia de Linajes &rArr;</strong> El contraste intrapoblacional ha demostrado de forma inequívoca que la mutación o perturbación experimental no afecta a todas las células del tejido por igual. Mientras que ciertos clústeres han exhibido una reconfiguración transcriptómica masiva, otros linajes han mostrado una notable resiliencia, manteniendo su homeostasis basal prácticamente intacta frente al mismo estímulo o déficit genético.
+  </li>
+  <li>
+    <strong>Firmas Funcionales y Mecanísticas &rArr;</strong> El análisis de enriquecimiento funcional (ORA y GSEA), aplicado de forma individualizada a cada clúster, ha permitido mapear con precisión quirúrgica qué redes metabólicas y cascadas de señalización se han interrumpido o sobreactivado. Esto proporciona dianas mecanicistas directas para explicar el fenotipo patológico o fisiológico observado a nivel macroscópico en el laboratorio.
+  </li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion10.2">
+  10.2. Perspectivas y Direcciones Futuras
+</div>
+
+<p>
+  Aunque este informe bioinformático proporciona un marco analítico exhaustivo y rigurosamente validado, la transcriptómica de célula única es, por su propia naturaleza, una disciplina generadora de hipótesis. Para consolidar estos descubrimientos <em>in silico</em> y escalar la investigación hacia sus próximas fases, sugerimos las siguientes líneas de validación y exploración:
+</p>
+
+<ul>
+  <li>
+    <strong>Validación Experimental Dirigida &rArr;</strong> Resulta altamente recomendable validar empíricamente los marcadores poblacionales (<em>cluster markers</em>) y los principales DEGs hallados mediante técnicas ortogonales. Aproximaciones como la Citometría de Flujo (FACS), la inmunofluorescencia o ensayos de RT-qPCR diferencial sobre poblaciones previamente purificadas, confirmarán la traslación de estos cambios al nivel proteico o tisular real.
+  </li>
+  <li>
+    <strong>Dinámica Celular y Comunicación &rArr;</strong> A nivel computacional, la inmensa riqueza de los datos aquí procesados abre la puerta a análisis avanzados <em>post-hoc</em>. Entre ellos destacan el análisis de <strong>comunicación célula-célula</strong> (interactoma ligando-receptor, para descubrir cómo la alteración de un linaje afecta a la señalización de sus vecinos) y la <strong>inferencia de trayectorias o pseudotiempo</strong>, crucial para entender si la mutación está bloqueando o acelerando el desarrollo biológico de células progenitoras hacia sus estados maduros.
+  </li>
+  <li>
+    <strong>Integración Multi-ómica y Espacial &rArr;</strong> Para dotar de contexto anatómico a la ganancia o pérdida de linajes celulares, la proyección de estos perfiles de <em>scRNA-seq</em> sobre plataformas de Transcriptómica Espacial permitiría mapear topológicamente dónde interactúan estas células en el tejido. Paralelamente, su combinación con ensayos de cromatina (<em>scATAC-seq</em>) ofrecería una visión absoluta de la regulación epigenética que gobierna y subyace a estos cambios de expresión.
+  </li>
+</ul>
+
+<p>
+  <strong>Reflexión Final:</strong> En definitiva, los resultados estructurados a lo largo de este informe representan un hito fundamental para la comprensión de los mecanismos moleculares y la dinámica celular de su modelo biológico. El nivel de granularidad alcanzado sienta unas bases extraordinariamente sólidas tanto para la redacción de publicaciones de alto impacto científico como para el futuro diseño de aplicaciones terapéuticas o biotecnológicas dirigidas.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-soporte">
+  ➤ Soporte y Contacto
+</div>
+
+<p>
+  El análisis de transcriptómica de célula única genera un ecosistema de datos inmenso y de gran complejidad técnica. Entendemos que la digestión de esta información y su integración con los resultados de laboratorio es un proceso continuo. 
+</p>
+
+<p>
+  Por ello, para cualquier duda metodológica, consulta sobre la interpretación de los resultados o necesidad de explorar los datos desde nuevas perspectivas, el equipo de la <strong>Unidad de Bioinformática</strong> queda a su entera disposición. Estaremos encantados de asistirle en la explotación óptima de este recurso y en la planificación de sus futuras líneas de investigación.
+</p>
+
+<div class='contact-cards' style="margin-top: 30px; margin-bottom: 40px;">
+<div class='contact-card blue'>
+  <i class='fa-solid fa-globe fa-2x'></i>
+  <p><strong>Web oficial y contacto</strong></p>
+  <a href='https://www.ipb.csic.es/servicios/Bioinformatica/index.html' target='_blank'>Unidad de Bioinformática CSIC</a>
+</div>
+<div class='contact-card green'>
+  <i class='fa-solid fa-envelope fa-2x'></i>
+  <p><strong>Email de soporte</strong></p>
+  <a href='mailto:bioinformatica@ipb.csic.es'>bioinformatica@ipb.csic.es</a>
+</div>
+<div class='contact-card purple'>
+  <i class='fa-brands fa-github fa-2x'></i>
+  <p><strong>Repositorio de código</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe' target='_blank'>GitHub del proyecto</a>
+</div>
+<div class='contact-card orange'>
+  <i class='fa-solid fa-book fa-2x'></i>
+  <p><strong>Documentación</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe/blob/main/06-info/0102_TRANSCRIPTOMICS_SC_RNA_SEQ_GUIDE.md' target='_blank'>Manual de uso</a>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

@@ -1,0 +1,927 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  amplicon_type: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS 16S | 7. PREDICCIÓN FUNCIONAL (PICRUSt2 / Pycrust) -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+# Cargar librerías
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+library(tibble)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_metagenomics_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..", "..")
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Rutas de la carpeta 
+ruta_Def_16S <- file.path(params$project_path, "Resultados", "Def_16S")
+ruta_Def_16S_relativa <- file.path(ruta_proyecto_relativa, "Resultados", "Def_16S")
+
+
+# Listar PNGs que empiezan por pathway
+all_pngs <- list.files(ruta_Def_16S, pattern = "^pathway.*\\.png$", full.names = FALSE)
+if (length(all_pngs) == 0) stop("No pathway*.png images found in: ", ruta_Def_16S)
+
+# Helper: formateo bonito
+make_pretty <- function(x) {
+  x %>% str_replace_all("_", " ") %>% str_trim() %>% str_to_sentence()
+}
+
+# Construir dataframe
+img_df <- tibble(
+  file = all_pngs,
+  path = file.path(ruta_Def_16S, all_pngs),
+  path_rel = file.path(ruta_Def_16S_relativa, all_pngs)
+) %>%
+  mutate(
+    # tipo
+    type = case_when(
+      str_detect(file, "^pathway_pca_MetagenomeSeq_") ~ "pca_pair",  # 7.4
+      file == "pathway_pca_p_0.05_all.png" ~ "pca_global",  # 7.1
+      str_detect(file, "^pathway_ALDEx2_") ~ "aldex2",  # 7.2
+      str_detect(file, "^pathway_MetagenomeSeq_") ~ "metagenomeseq_pair",  # 7.3
+      TRUE ~ "other"
+    ),
+    section = case_when(
+      type == "pca_global" ~ "7.1",
+      type == "aldex2" ~ "7.2",
+      type == "metagenomeseq_pair" ~ "7.3",
+      type == "pca_pair" ~ "7.4",
+      TRUE ~ NA_character_
+    ),
+    # extraer grupos para comparaciones
+    grp_str = case_when(
+      type %in% c("metagenomeseq_pair", "pca_pair") ~ str_match(file, "^(?:pathway_(?:pca_)?MetagenomeSeq_)(.+)\\.png$")[,2],
+      TRUE ~ NA_character_
+    ),
+    group_a_raw = if_else(!is.na(grp_str), str_split_fixed(grp_str, "_vs_", 2)[,1], NA_character_),
+    group_b_raw = if_else(!is.na(grp_str), str_split_fixed(grp_str, "_vs_", 2)[,2], NA_character_),
+    group_a = if_else(!is.na(group_a_raw), make_pretty(group_a_raw), NA_character_),
+    group_b = if_else(!is.na(group_b_raw), make_pretty(group_b_raw), NA_character_),
+    caption = case_when(
+      type == "pca_global" ~ "Global PCA of pathways (p < 0.05).",
+      type == "aldex2" & str_detect(file, "Kruskal") ~ "ALDEx2 — Heatmap (Kruskal-Wallis).",
+      type == "aldex2" & str_detect(file, "glm_test_heatmap") ~ "ALDEx2 — Heatmap (GLM).",
+      type == "aldex2" & str_detect(file, "glm_test_p_values") ~ "ALDEx2 — P-values (GLM).",
+      type == "metagenomeseq_pair" & !is.na(group_a) & !is.na(group_b) ~ paste0("MetagenomeSeq — Comparison: ", group_a, " vs ", group_b, "."),
+      type == "pca_pair" & !is.na(group_a) & !is.na(group_b) ~ paste0("Functional PCA — Comparison: ", group_a, " vs ", group_b, "."),
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  select(file, path, path_rel, type, section, group_a_raw, group_b_raw, group_a, group_b, caption)
+
+
+# Filtrar solo la fila que empieza por "pathway_pca_p"
+pca_global <- img_df %>%
+  filter(type == "pca_global")
+
+# Filtrar solo las imágenes ALDEx2
+aldex2_global <- img_df %>%
+  filter(type == "aldex2")
+
+# Filtrar solo las imágenes MetagenomeSeq por pares
+metagenomeseq_pair <- img_df %>%
+  filter(type == "metagenomeseq_pair")
+
+# Filtrar solo las imágenes de PCA funcional por pares
+pca_pair <- img_df %>%
+  filter(type == "pca_pair")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Complete Bioinformatic Analysis (16S)</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 7</h1>
+  <h2>Functional Prediction (PICRUSt2 / Pycrust)</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This section presents the results of the <strong>functional prediction</strong> of microbial communities based on 16S metagenomic data, using the tools <strong>PICRUSt2</strong> and <strong>Pycrust</strong>. 
+    The main objective is to infer the abundance of metabolic pathways (<em>pathways</em>) and biological functions present in the samples, providing a comprehensive view of microbial functionality and enabling the identification of differences between experimental groups.
+  </p>
+
+  <p>
+    The section is structured into four main blocks:
+  </p>
+
+  <ul>
+    <li>
+      <strong>7.1. Global PCA of pathways</strong> <strong>&rArr;</strong> A principal component analysis (PCA) is performed on the relative abundances of predicted pathways. This allows visualization of the overall functional variation across all study samples, identifying clustering patterns and potential functional similarities or differences between groups. The representation includes the first principal components (PC1 and PC2), points colored according to experimental group, confidence ellipses, and marginal distributions, facilitating a quick and clear interpretation of the global functional structure.
+    </li>
+
+    <li>
+      <strong>7.2. Global differential analysis (ALDEx2)</strong> <strong>&rArr;</strong> Global statistical methods are applied to identify pathways differentially abundant across all experimental groups. Heatmaps based on the Kruskal-Wallis test and generalized linear models (GLM) are included, as well as p-value plots highlighting pathways with significant differences. This analysis enables detection of global functional patterns and establishes a basis for more detailed comparisons between specific groups.
+    </li>
+
+    <li>
+      <strong>7.3. Pairwise comparisons (MetagenomeSeq)</strong> <strong>&rArr;</strong> Targeted pairwise comparisons are performed between experimental groups using MetagenomeSeq. Each figure in this subsection shows the relative abundance of selected pathways according to statistical significance criteria for that specific comparison. This allows identification of metabolic functions that distinguish one group from another in a focused manner and details the pathways responsible for specific functional or phenotypic differences.
+    </li>
+
+    <li>
+      <strong>7.4. Functional PCA by pairs (<code>pathway_pca_MetagenomeSeq_*</code>)</strong> <strong>&rArr;</strong> PCA analyses are conducted on relative pathway abundances for each pairwise comparison. These figures show how samples from two specific groups cluster, allowing visualization of functional separation between them and the consistency of patterns observed in MetagenomeSeq analyses. In some cases, the PCA may appear empty if no differentially abundant pathways are detected or if functional variability is insufficient to generate an informative representation.
+    </li>
+  </ul>
+
+  <p>
+    Overall, this section provides a comprehensive view of the metabolic functionality of the studied microbial communities. Global and specific analyses, statistical representations, and graphical visualizations are combined to interpret general functional patterns, detect key pathways that differentiate groups, and explore functional pairwise clustering. 
+    The ultimate goal is to facilitate understanding of potential metabolic functions associated with each experimental group and to serve as a basis for future biological or experimental interpretations.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of Contents for this Section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion7">
+        7<span>.</span> Functional Prediction (PICRUSt2 / Pycrust)
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion7.1">
+            7.1. Global PCA of pathways
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion7.2">
+            7.2. Global differential analysis (ALDEx2)
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion7.3">
+            7.3. Pairwise comparisons (MetagenomeSeq)
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion7.4">
+            7.4. Functional PCA by pairs (<code>pathway_pca_MetagenomeSeq_*</code>)
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion7">
+  7<span>.</span> Functional Prediction (PICRUSt2 / Pycrust)
+</div>
+
+<p>
+  This section presents the results of the <strong>functional prediction</strong> analysis of microbial communities using <strong>PICRUSt2</strong> (Phylogenetic Investigation of Communities by Reconstruction of Unobserved States, version 2). This tool allows inferring the potential functional capabilities of microbial communities from 16S rRNA sequencing data, complementing the previously obtained taxonomic information with a functional perspective.
+</p>
+
+<p>
+  PICRUSt2 relies on <em>phylogenetic inference</em> and the use of reference functional databases. Based on the ASVs (Amplicon Sequence Variants) obtained during taxonomic analysis, it predicts the presence and abundance of genes and metabolic pathways by projecting them onto phylogenetically related reference genomes. In this way, it is possible to estimate the potential functional repertoire of microbial communities without requiring complete metagenomic data.
+</p>
+
+<p>
+  The predicted metabolic pathways are annotated using the <strong>MetaCyc</strong> database, which contains structured information on metabolic pathways and biochemical reactions. From this annotation, pathway abundance tables are generated for each sample, serving as the basis for various statistical analyses and visualizations.
+</p>
+
+<p>
+  The main goal of this section is to <strong>explore and visualize functional variation</strong> among experimental groups, identifying differentially abundant pathways and functional clustering patterns. The results are presented in the following subsections, showing the figures generated during the analysis in a clear and organized manner:
+</p>
+
+<ul>
+  <li>
+    <strong>7.1. Global PCA of pathways</strong> <strong>&rArr;</strong> Evaluates the overall functional variation across all samples using Principal Component Analysis (PCA). The general clustering structure of the microbial communities at the functional level is visualized.  
+    <span class="soft-strong">Associated figure</span> <strong>&rarr;</strong> <code>pathway_pca_p_0.05_all.png</code>.
+  </li>
+  <li>
+    <strong>7.2. Global differential analysis (ALDEx2)</strong> <strong>&rArr;</strong> Identifies differentially abundant pathways between experimental groups using <code>ALDEx2</code>, with centered log-ratio (clr) transformations and non-parametric statistical tests. Figures include heatmaps and p-value distributions.  
+    <span class="soft-strong">Associated figures</span> <strong>&rarr;</strong> <code>pathway_ALDEx2_Kruskal-Wallace_test_heatmap.png</code>, <code>pathway_ALDEx2_glm_test_heatmap.png</code>, <code>pathway_ALDEx2_glm_test_p_values.png</code>.
+  </li>
+  <li>
+    <strong>7.3. Pairwise comparisons (MetagenomeSeq)</strong> <strong>&rArr;</strong> Performs differential abundance analysis between pairs of experimental groups using <code>MetagenomeSeq</code>, allowing the identification of specific metabolic pathways associated with each condition.  
+    <span class="soft-strong">Associated figures</span> <strong>&rarr;</strong> all files <code>pathway_MetagenomeSeq_*</code>.
+  </li>
+  <li>
+    <strong>7.4. Functional PCA by pairs (<code>pathway_pca_MetagenomeSeq_*</code>)</strong> <strong>&rArr;</strong> Displays PCA for each pairwise group comparison, showing functional separation based on pathway profiles. This complements the differential abundance analysis, highlighting functional consistency and divergence between groups.  
+    <span class="soft-strong">Associated figures</span> <strong>&rarr;</strong> all files <code>pathway_pca_MetagenomeSeq_*</code>.
+  </li>
+</ul>
+
+<p>
+  To facilitate review and exploration of the results generated in this section, a list of all images related to functional prediction is provided below. Each file corresponds to a figure generated during global PCA, global differential analysis with ALDEx2, pairwise comparisons with MetagenomeSeq, and functional PCA by pairs. The file names reflect the type of analysis and, for pairwise comparisons, the groups involved. Clicking each link allows the reader to open the corresponding figure in a new window and examine the results in detail.
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_Def_16S_relativa)) {
+  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_Def_16S_relativa))
+} else {
+  # List files starting with "pathway" and ending with .png
+  files <- list.files(ruta_Def_16S_relativa, pattern = "^pathway.*\\.png$", full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No pathway*.png images were found in the specified folder.</em></p>\n')
+  } else {
+    enlace <- ruta_Def_16S_relativa
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Assign CSS class according to image convention
+      clase <- "file-img"
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, echo=FALSE, results="asis"}
+# General link to the folder containing pathway images
+enlace <- ruta_Def_16S_relativa
+
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{enlace}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explore all pathway*.png files in the folder "{basename(enlace)}" here
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Overall, this section integrates global and specific functional analyses, providing the reader with a comprehensive view of the metabolic potential of the studied microbial communities. The figures allow comparison of functional profiles, identification of relevant pathways, and observation of clustering patterns that reflect differences and similarities between experimental groups.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion7.1">
+  7.1. Global PCA of pathways
+</div>
+
+<p>
+  In this subsection, a <strong>global principal component analysis (PCA)</strong> is presented based on metabolic pathways (<em>pathways</em>) predicted from 16S metagenomics data using <strong>PICRUSt2</strong>. 
+  A <strong>pathway</strong> represents an interconnected biochemical route within an organism or microbial community, composed of a set of reactions that contribute to specific metabolic functions, such as carbohydrate degradation, amino acid biosynthesis, energy production, or cellular signaling pathways. 
+  Each pathway is assigned using the <strong>MetaCyc</strong> database, which provides a standardized reference to map metabolic functions to the microorganisms present in the samples.
+</p>
+
+<p>
+  The objective of this section is to provide a <strong>global view of functional variability</strong> across all samples in the study. 
+  Since the relative abundance of pathways can be extremely high and complex, PCA allows dimensionality reduction of the data and represents the relationships between samples in a two-dimensional space (PC1 and PC2) that captures most of the functional variability.
+</p>
+
+<p>
+  The figure shown below was constructed considering only pathways with <em>p</em> &lt; 0.05, that is, those that show statistically significant differences in at least one comparison between groups. 
+  This filtering allows the visualization to focus on the most relevant pathways and reduces background noise that could be introduced by pathways with low variability.
+</p>
+
+<p>
+  To generate this figure, metabolic functionality for each sample was first predicted using PICRUSt2 from the ASV table obtained in the 16S metagenomics analysis. 
+  This produced a pathway abundance table per sample. Subsequently, significant pathways were selected and PCA was applied to the relative abundances, resulting in a plot that clearly and visually summarizes the global functional structure of the microbial community.
+</p>
+
+```{r, results="asis"}
+if (file.exists(pca_global$path_rel)) {
+  cat(glue::glue('
+  <p>
+    The generated image is located in the following directory:
+  </p>
+
+  <p>
+    <code>{pca_global$path}</code>
+  </p>
+
+  <p>
+    The figure is shown below, which can be explored in more detail, if needed, by clicking on the button provided just below.
+  </p>
+
+  <div class="box-images">
+    <img 
+      src="{pca_global$path_rel}" 
+      alt="Image {pca_global$file}"
+      style="width: 575px; max-width: 100%;">
+  </div>
+
+  <div style="display: flex; justify-content: center; gap: 25px;">
+    <a href="{pca_global$path_rel}"
+      target="_blank" 
+      class="boton-image">
+      <i class="fa-solid fa-chart-column"></i> View plot on a new page
+    </a>
+    
+    <a href="{pca_global$path_rel}"
+      download="{basename(pca_global$path_rel)}"
+      class="boton-image-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download image
+    </a>
+  </div>
+  '), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>{pca_global$file}</code> does not exist at the specified path:<br>
+    <code>{pca_global$path}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  This figure represents each sample as a point within a two-dimensional space defined by the principal components PC1 (X-axis) and PC2 (Y-axis). 
+  The points are colored according to the experimental group to which each sample belongs, and <strong>confidence ellipses</strong> are included to summarize the functional dispersion within each group. 
+  In addition, marginal distributions of the points by group are shown on the axes, facilitating the observation of how pathway abundance is distributed along each principal component.
+</p>
+
+<p>
+  The interpretation of this figure allows the identification of <strong>functional clustering patterns</strong> among the samples. 
+  A compact clustering of samples from the same group indicates that they have similar functional profiles, while clear separation between groups suggests significant metabolic differences. 
+  Overlaps between ellipses may reflect functional similarities or redundancies between groups.
+</p>
+
+<p>
+  In summary, the global PCA of pathways provides an <strong>initial and comprehensive view of the functional structure</strong> of the microbial communities in the study. 
+  This visualization serves as a basis before analyzing more specific comparisons using statistical methods. 
+  In the next section, the <strong>global differential analysis with ALDEx2</strong> will be presented, which will allow identification of which pathways show significant changes in abundance between the different experimental groups.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion7.2">
+  7.2. Global differential analysis (ALDEx2)
+</div>
+
+<p>
+  In this subsection, the results of the <strong>global differential analysis</strong> of pathways using <strong>ALDEx2</strong> are presented. 
+  ALDEx2 is a statistical package designed for relative abundance studies of sequencing data, which allows identification of features (in this case, pathways) that differ significantly between experimental groups, taking into account the compositional nature of microbiome data.
+</p>
+
+<p>
+  While the global PCA summarizes overall functional variation, ALDEx2 allows <strong>statistical assessment of which pathways show significant differences</strong> in relative abundance across all study groups. The results are mainly presented through heatmaps and p-value plots.
+</p>
+
+<p>
+  The following figures generated previously are included in this section:
+</p>
+
+<ul>
+  <li><code>pathway_ALDEx2_Kruskal-Wallis_test_heatmap.png</code> <strong>&rArr;</strong> Heatmap based on the Kruskal-Wallis test to identify pathways with global differences.</li>
+  <li><code>pathway_ALDEx2_glm_test_heatmap.png</code> <strong>&rArr;</strong> Heatmap based on the generalized linear model (GLM), showing the relative abundance of pathways across groups.</li>
+  <li><code>pathway_ALDEx2_glm_test_p_values.png</code> <strong>&rArr;</strong> GLM p-value plot, highlighting pathways with statistically significant differences.</li>
+</ul>
+
+```{r, results="asis"}
+for(i in seq_len(nrow(aldex2_global))) {
+  if (file.exists(aldex2_global$path_rel[i])) {
+
+    # Detect analysis type according to file name
+    tipo_figura <- case_when(
+      grepl("Kruskal", aldex2_global$file[i], ignore.case = TRUE) ~ "Heatmap based on the Kruskal–Wallis test",
+      grepl("glm_test_heatmap", aldex2_global$file[i], ignore.case = TRUE) ~ "Heatmap based on the generalized linear model (GLM)",
+      grepl("p_values", aldex2_global$file[i], ignore.case = TRUE) ~ "GLM p-value plot",
+      TRUE ~ "Visualization of ALDEx2 analysis results"
+    )
+
+    cat(glue::glue('
+    <div style="height: 10px; background-color: transparent;"></div>
+
+    <div class="titulo4">
+      ➤ Figure {i}: {aldex2_global$file[i]}
+    </div>
+
+    <p>
+      The following figure corresponds to the <strong>{tipo_figura}</strong> generated from the global functional analysis. 
+      This type of representation allows visual and comparative observation of how the relative abundance of different pathways varies between experimental groups, 
+      facilitating the identification of patterns and potential relevant functional differences.
+    </p>
+
+    <p>
+      Below is the exact location where this output file is stored within the analysis workflow:
+    </p>
+
+    <p>
+      <code>{aldex2_global$path[i]}</code>
+    </p>
+
+    <p>
+      The generated figure is shown below:
+    </p>
+
+    <div class="box-images">
+      <img 
+        src="{aldex2_global$path_rel[i]}" 
+        alt="Image {aldex2_global$file[i]}"
+        style="width: 575px; max-width: 100%;">
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px;">
+      <a href="{aldex2_global$path_rel[i]}"
+        target="_blank" 
+        class="boton-image">
+        <i class="fa-solid fa-chart-column"></i> View plot on a new page
+      </a>
+      
+      <a href="{aldex2_global$path_rel[i]}"
+        download="{basename(aldex2_global$path_rel[i])}"
+        class="boton-image-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download image
+      </a>
+    </div>
+    '), sep = "\n")
+  
+  } else {
+    cat(glue::glue('
+    <div class="alert-warning alert-box">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <b>Warning</b><br>
+      The file <code>{aldex2_global$file[i]}</code> does not exist at the specified path:<br>
+      <code>{aldex2_global$path[i]}</code>.
+    </div>
+    '), sep = "\n")
+  }
+}
+```
+
+<p>
+  <strong>Heatmaps</strong> allow visualization of the relative abundance of pathways across all experimental groups. 
+  Each row corresponds to a pathway and each column to a group or sample, with colors representing the relative magnitude of abundance. 
+  This facilitates the identification of general patterns of functional expression and pathways that behave similarly across different groups.
+</p>
+
+<p>
+  The <strong>p-value</strong> plot provides complementary information, highlighting metabolic pathways whose relative abundance differs significantly according to the applied statistical model. 
+  Pathways with low p-values are those that show the most consistent changes between groups and are therefore of greater interest for biological interpretation.
+</p>
+
+<p>
+  Overall, the global analysis with ALDEx2 allows the <strong>identification of key metabolic pathways</strong> that differentiate the microbial communities across the study groups, serving as a basis before exploring more specific pairwise comparisons, which are presented in the next section using <strong>MetagenomeSeq</strong>.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion7.3">
+  7.3. Pairwise specific comparisons (MetagenomeSeq)
+</div>
+
+<p>
+  In this subsection, the results of <strong>pairwise specific functional comparisons between groups</strong> obtained using <strong>MetagenomeSeq</strong> are presented. 
+  This statistical tool is specifically designed to analyze relative abundance data in metagenomics studies, taking into account characteristics inherent to this type of data, such as dispersion, its censored nature (due to the high number of zeros), and variability between samples.
+</p>
+
+<p>
+  Unlike the global analysis performed with <strong>ALDEx2</strong>, which summarizes differences across all groups simultaneously, MetagenomeSeq allows for <strong>targeted comparisons between specific pairs of groups</strong>. 
+  This makes it possible to detect metabolic pathways whose relative abundance differs significantly only in that specific comparison, providing a more focused view of functional changes associated with each experimental condition.
+</p>
+
+<p>
+  Each figure shown below represents the result of one of these comparisons. 
+  They display pathways that exceed the defined thresholds of statistical significance and relative abundance, facilitating the identification of potentially relevant biological functions that differentiate one group from another.
+</p>
+
+<p>
+  The images included in this section come from previously generated files named with the prefix <code>pathway_MetagenomeSeq_</code>, each corresponding to a specific comparison between two experimental groups.
+</p>
+
+<p>
+  It is important to note that, in some cases, <strong>a figure may appear empty or without visible content</strong>. 
+  This is usually due to <strong>no differentially abundant pathways being detected</strong> for that comparison under the established statistical criteria (for example, adjusted p-values below the defined threshold). 
+  It may also occur when differences between groups are very small or when there is an insufficient number of samples to achieve statistical significance.
+</p>
+
+```{r, results="asis"}
+for(i in seq_len(nrow(metagenomeseq_pair))) {
+  if (file.exists(metagenomeseq_pair$path_rel[i])) {
+    cat(glue::glue('
+    <div class="titulo4">
+      ➤ Figure {i}: {metagenomeseq_pair$file[i]}
+    </div>
+
+    <p>
+      The following figure shows the results of the differential pathway analysis performed with <strong>MetagenomeSeq</strong> for the specific comparison between groups 
+      <strong>{metagenomeseq_pair$group_a[i]}</strong> and <strong>{metagenomeseq_pair$group_b[i]}</strong>. 
+      This type of analysis allows identification of metabolic pathways whose relative abundance differs significantly between both groups, 
+      revealing potential biological functions that characterize each one.
+    </p>
+
+    <p>
+      Below is the path where the file generated during the analysis workflow is stored:
+    </p>
+
+    <p>
+      <code>{metagenomeseq_pair$path[i]}</code>
+    </p>
+
+    <p>
+      The corresponding figure for this comparison is shown below:
+    </p>
+
+    <div class="box-images">
+      <img 
+        src="{metagenomeseq_pair$path_rel[i]}" 
+        alt="Image {metagenomeseq_pair$file[i]}"
+        style="width: 575px; max-width: 100%;">
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px;">
+      <a href="{metagenomeseq_pair$path_rel[i]}"
+        target="_blank" 
+        class="boton-image">
+        <i class="fa-solid fa-chart-column"></i> View plot on a new page
+      </a>
+      
+      <a href="{metagenomeseq_pair$path_rel[i]}"
+        download="{basename(metagenomeseq_pair$path_rel[i])}"
+        class="boton-image-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download image
+      </a>
+    </div>
+    '), sep = "\n")
+  
+  } else {
+    cat(glue::glue('
+    <div class="alert-warning alert-box">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <b>Warning</b><br>
+      The file <code>{metagenomeseq_pair$file[i]}</code> does not exist at the specified path:<br>
+      <code>{metagenomeseq_pair$path[i]}</code>.
+    </div>
+    '), sep = "\n")
+  }
+}
+```
+
+<p>
+  Each MetagenomeSeq plot shows the <strong>relative abundance of pathways</strong> for the specific comparison between two groups. 
+  In bar plots, each bar represents a pathway, with its height indicating the relative abundance and the color or marker indicating statistical significance. 
+  This allows identification of pathways that are over- or under-represented in one group compared to another.
+</p>
+
+<p>
+  The interpretation of these figures allows the detection of <strong>key metabolic pathways associated with differences between specific groups</strong>. 
+  By analyzing these pairwise comparisons, it is possible to identify metabolic functionality particular to certain experimental groups and potential pathways responsible for phenotypic differences or treatment responses.
+</p>
+
+<p>
+  Overall, the pairwise comparisons from MetagenomeSeq complement the global ALDEx2 analyses, providing a finer level of detail on functional differences. 
+  In the next subsection 7.4, <strong>pairwise functional PCAs</strong> will be presented, allowing visualization of pathway clustering patterns in each individual comparison.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion7.4">
+  7.4. Pairwise functional PCA (<code>pathway_pca_MetagenomeSeq_*</code>)
+</div>
+
+<p>
+  In this subsection, the results of the <strong>functional Principal Component Analysis (PCA)</strong> performed specifically for each pair of experimental groups are presented. 
+  Unlike the global PCA shown in section 7.1, here only the functional variation between <strong>two specific groups</strong> is analyzed, using the pathway profiles obtained after analysis with <strong>MetagenomeSeq</strong>.
+</p>
+
+<p>
+  Each pairwise PCA figure allows visual evaluation of how the samples from the two compared groups cluster based on their functional profile. 
+  The points represent individual samples, colored according to the group, while the ellipses show the dispersion and central pattern of each group. 
+  The PC1 and PC2 axes reflect the two principal components that capture most of the functional variability among the samples in each comparison.
+</p>
+
+<p>
+  The files shown in this section have names that begin with <code>pathway_pca_MetagenomeSeq_</code>, each corresponding to a specific comparison between two experimental groups. 
+  These graphical representations allow visual identification of <strong>functional separations or overlaps</strong> between groups, evaluating the consistency of the patterns observed in the MetagenomeSeq analyses.
+</p>
+
+<p>
+  It is important to mention that some figures may appear empty or without visible content. 
+  This occurs when insufficient functional variability is detected between groups to generate an informative PCA, or when image generation was omitted in the R analysis workflow. 
+  The absence of a graphical signal does not imply an error, but rather reflects <strong>the lack of statistically relevant patterns</strong> in that specific comparison.
+</p>
+
+```{r, results="asis"}
+for(i in seq_len(nrow(pca_pair))) {
+  if (file.exists(pca_pair$path_rel[i])) {
+    cat(glue::glue('
+    <div class="titulo4">
+      ➤ Figure {i}: {pca_pair$file[i]}
+    </div>
+
+    <p>
+      The following figure shows the <strong>pairwise functional PCA</strong> corresponding to the comparison between the groups 
+      <strong>{pca_pair$group_a[i]}</strong> and <strong>{pca_pair$group_b[i]}</strong>. 
+      This type of analysis allows visualization of how samples cluster according to their functional profile and to evaluate the separation or overlap between both groups.
+    </p>
+
+    <p>
+      The path where the file generated during the analysis workflow is stored is shown below:
+    </p>
+
+    <p>
+      <code>{pca_pair$path[i]}</code>
+    </p>
+
+    <p>
+      The figure corresponding to this comparison is presented below:
+    </p>
+
+    <div class="box-images">
+      <img 
+        src="{pca_pair$path_rel[i]}" 
+        alt="Image {pca_pair$file[i]}"
+        style="width: 575px; max-width: 100%;">
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px;">
+      <a href="{pca_pair$path_rel[i]}"
+        target="_blank" 
+        class="boton-image">
+        <i class="fa-solid fa-chart-column"></i> View plot on a new page
+      </a>
+      
+      <a href="{pca_pair$path_rel[i]}"
+        download="{basename(pca_pair$path_rel[i])}"
+        class="boton-image-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download image
+      </a>
+    </div>
+    '), sep = "\n")
+
+  } else {
+    cat(glue::glue('
+    <div class="alert-warning alert-box">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <b>Warning</b><br>
+      The file <code>{pca_pair$file[i]}</code> does not exist at the specified path:<br>
+      <code>{pca_pair$path[i]}</code>.
+    </div>
+    '), sep = "\n")
+  }
+}
+```
+
+<p>
+  Each pairwise functional PCA visually summarizes the distribution of samples according to their pathway profiles. The interpretation allows detection of <strong>clear functional separations</strong> between groups, identification of possible overlaps, and evaluation of the consistency of the patterns observed in the MetagenomeSeq analyses.
+</p>
+
+<p>
+  Overall, these pairwise PCA complement the MetagenomeSeq analyses performed in section 7.3, providing a <strong>detailed visual view</strong> of the functional separation between specific groups. This information can help prioritize relevant pathways for subsequent analyses or validation experiments.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../../04-javascript/script.js"></script>

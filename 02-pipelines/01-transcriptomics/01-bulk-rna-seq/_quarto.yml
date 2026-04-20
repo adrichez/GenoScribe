@@ -1,0 +1,91 @@
+project:
+  type: website
+  output-dir: report
+  render:
+    - index_es.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab1-metodologia/metodologia.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab2-resumen/resumen.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/00-contexto.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/01-revision-inicial.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/02-evaluacion-calidad.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/03-alineamiento.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/04-cuantificacion.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05.0-analisis-estadistico.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05.1-normalizacion.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05.2-evaluacion-calidad-normalizacion.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05.3-analisis-expresion.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05.4-analisis-funcional.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/06-conclusiones.qmd
+
+resources:
+  - resources/**
+  - '!resources/01-essential/03-scripts/01-r/'
+  - '!resources/01-essential/03-scripts/05-python/'
+
+format:
+  html:
+    css: resources/01-essential/03-scripts/03-css/styles.css
+    theme: lux
+    toc: false
+    code-fold: false
+    code-tools: false
+    number-sections: false
+    page-layout: custom
+    smooth-scroll: true
+    highlight-style: a11y-dark
+    self-contained: false
+    copy-files: true
+    html: true
+
+include-in-header:
+  text: |-
+    <link rel="shortcut icon" href="resources/01-essential/01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="resources/01-essential/01-images/icons/favicon.ico">
+
+execute:
+  echo: false
+  warning: false
+  message: false
+  freeze: false
+  cache: true
+
+params:
+  project_path: ''
+  experiment_name: ''
+  report_language: ''
+  report_version: ''
+
+website:
+  navbar:
+    title: |-
+      <img class='brand-logo' src='/resources/01-essential/01-images/icons/ipbln.png'>
+      <a class='brand-text' href='https://www.ipb.csic.es/servicios/Bioinformatica/index.html'>IPBLN</a>
+    right:
+      - text: "Inicio"
+        icon: house
+        href: "index_es.qmd"
+      - text: "Metodología"
+        icon: wrench
+        href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab1-metodologia/metodologia.qmd"
+      - text: "Resumen"
+        icon: clipboard-data
+        href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab2-resumen/resumen.qmd"
+      - text: "Análisis"
+        icon: bar-chart
+        menu:
+          - text: "➤ Introducción contextual"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/00-contexto.qmd"
+          - text: "1. Revisión inicial de muestras y metadatos"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/01-revision-inicial.qmd"
+          - text: "2. Evaluación de calidad de las lecturas"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/02-evaluacion-calidad.qmd"
+          - text: "3. Alineamiento de las lecturas"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/03-alineamiento.qmd"
+          - text: "4. Cuantificación de la expresión génica"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/04-cuantificacion.qmd"
+          - text: "5. Análisis estadístico de la expresión génica"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05.0-analisis-estadistico.qmd"
+          - text: "6. Conclusiones y perspectivas"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/06-conclusiones.qmd"
+
+clean: false

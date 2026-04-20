@@ -1,0 +1,1489 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 1: METODOLOGÍA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        ¡Hola! Soy <strong>Geni</strong>, el asistente inteligente de <strong>GenoScribe</strong>.  
+        Estoy aquí para ayudarte a explorar de forma interactiva el contenido de este informe bioinformático.
+      </p>
+
+      <p>
+        Cuando me haces una pregunta, primero intento reconocer si coincide con alguno de los patrones o expresiones que conozco.  
+        Si encuentro una coincidencia, te responderé directamente con una respuesta predefinida, diseñada para ser rápida, clara e incluso un poco ingeniosa.  
+        Si no reconozco el patrón, entonces activo mis herramientas de búsqueda: genero representaciones vectoriales (embeddings) y busco los fragmentos más relevantes entre varios documentos —incluyendo el propio informe, archivos PDF y HTML externos, y sesiones de preguntas y respuestas (QA).  
+        A partir de esa información, creo un resumen que intenta ofrecerte una respuesta coherente y útil basada en el contenido existente.
+      </p>
+
+      <p>
+        Se debe tener en cuenta que este entorno es experimental. No utilizo grandes modelos de lenguaje, por lo que algunas respuestas pueden ser aproximadas o incompletas.  
+        El objetivo principal es facilitar una visualización rápida, comprensible y reproducible de la información contenida en los documentos, permitiendo una exploración más dinámica del informe.
+      </p>
+
+      <p>
+        Actualmente, los resultados pueden variar en precisión, ya que empleo modelos ligeros y locales para asegurar que la aplicación funcione en cualquier entorno sin necesidad de servidores externos.  
+        Sin embargo, la estructura del sistema está preparada para mejorar notablemente su rendimiento en el futuro mediante la integración con modelos más avanzados o APIs externas.  
+        Para comenzar, simplemente escribe tu pregunta en el campo inferior y deja que yo me encargue del resto. ¡Prometo poner todo mi código en ello!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+library(tools)
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Rutas de resources
+ruta_archives <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives")
+ruta_archives_metodologia <- file.path(ruta_archives, "02-tmp", "tab1-metodologia")
+ruta_archives_metodologia_nxqt <- file.path(ruta_archives_metodologia, "nexflow-quarto")
+
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_metodologia_nxqt)
+
+
+
+
+#===================================================================================================================================================
+# ARCHIVOS DE QUARTO Y NEXTFLOW
+#===================================================================================================================================================
+
+# Ruta de archivos en la raíz del proyecto
+ruta_main_nf_absoluta <- file.path(ruta_sc_rna_seq_pipeline_absoluta, "main.nf")
+ruta_main_nf <- file.path(ruta_sc_rna_seq_pipeline, "main.nf")
+ruta_main_nf_archives <- file.path(ruta_archives_metodologia_nxqt, "main.nf")
+
+ruta_nextflow_config_absoluta <- file.path(ruta_sc_rna_seq_pipeline_absoluta, "nextflow.config")
+ruta_nextflow_config <- file.path(ruta_sc_rna_seq_pipeline, "nextflow.config")
+ruta_nextflow_config_archives <- file.path(ruta_archives_metodologia_nxqt, "nextflow.config")
+
+ruta_params_yml_absoluta <- file.path(ruta_sc_rna_seq_pipeline_absoluta, "params.yml")
+ruta_params_yml <- file.path(ruta_sc_rna_seq_pipeline, "params.yml")
+ruta_params_yml_archives <- file.path(ruta_archives_metodologia_nxqt, "params.yml")
+
+ruta_quarto_yml_absoluta <- file.path(ruta_sc_rna_seq_pipeline_absoluta, "_quarto.yml")
+ruta_quarto_yml <- file.path(ruta_sc_rna_seq_pipeline, "_quarto.yml")
+ruta_quarto_yml_archives <- file.path(ruta_archives_metodologia_nxqt, "_quarto.yml")
+
+
+# Copiar archivos de la raiz del poryecto
+file.copy(from = ruta_main_nf_absoluta, to = ruta_main_nf_archives, overwrite = TRUE)
+file.copy(from = ruta_nextflow_config_absoluta, to = ruta_nextflow_config_archives, overwrite = TRUE)
+file.copy(from = ruta_params_yml_absoluta, to = ruta_params_yml_archives, overwrite = TRUE)
+file.copy(from = ruta_quarto_yml_absoluta, to = ruta_quarto_yml_archives, overwrite = TRUE)
+
+
+# Vector con las rutas de los archivos copiados
+archivos_copiados <- c(
+  ruta_main_nf_archives,
+  ruta_nextflow_config_archives,
+  ruta_params_yml_archives,
+  ruta_quarto_yml_archives
+)
+
+# Función auxiliar para cambiar extensión a "_txt"
+cambiar_a_txt <- function(ruta_original) {
+  # Quita la extensión original y añade "_txt.txt"
+  ruta_sin_ext <- sub("\\.[^.]+$", "", ruta_original)
+  ruta_nueva <- paste0(ruta_sin_ext, ".txt")
+  return(ruta_nueva)
+}
+
+# Crear los nuevos archivos .txt
+for (archivo in archivos_copiados) {
+  # Leer contenido original
+  contenido <- readLines(archivo, warn = FALSE)
+  # Definir nueva ruta con _txt
+  nueva_ruta <- cambiar_a_txt(archivo)
+  # Escribir contenido en el nuevo archivo
+  writeLines(contenido, nueva_ruta)
+}
+
+
+# Definir nuevas rutas de archivos modificados a .txt
+ruta_main_txt_archives <- file.path(ruta_archives_metodologia_nxqt, "main.txt")
+ruta_nextflow_txt_archives <- file.path(ruta_archives_metodologia_nxqt, "nextflow.txt")
+ruta_params_txt_archives <- file.path(ruta_archives_metodologia_nxqt, "params.txt")
+ruta_quarto_txt_archives <- file.path(ruta_archives_metodologia_nxqt, "_quarto.txt")
+
+
+
+
+#===================================================================================================================================================
+# SCRIPS DE R DEL PROYECTO
+#===================================================================================================================================================
+
+# Ruta scripts de R principales
+ruta_scripts_main <- file.path(params$project_path, "scripts", "01_main")
+ruta_scripts_main_relativa <- file.path(ruta_proyecto_relativa, "scripts", "01_main")
+
+# Ruta scripts de R de funciones empleadas
+ruta_scripts_functions <- file.path(params$project_path, "scripts", "02_functions")
+ruta_scripts_functions_relativa <- file.path(ruta_proyecto_relativa, "scripts", "02_functions")
+
+# Crear objetos con las rutas relativas de los archivos .R
+list_scripts_main <- list.files(ruta_scripts_main_relativa, pattern = "\\.[Rr]$", full.names = TRUE)
+list_scripts_functions <- list.files(ruta_scripts_functions_relativa, pattern = "\\.[Rr]$", full.names = TRUE)
+
+
+# Rutas de los archivos copiados a la carpeta metodologia para mostrar en el informe
+ruta_archives_metodologia_scripts_main <- file.path(ruta_archives_metodologia, "scripts-main")
+ruta_archives_metodologia_scripts_functions <- file.path(ruta_archives_metodologia, "scripts-functions")
+
+
+# Asegurarse de que el directorio de archivos de scripts existe
+dir.create(ruta_archives_metodologia_scripts_main)
+dir.create(ruta_archives_metodologia_scripts_functions)
+
+
+# Copiar scripts principales a la carpeta de metodología
+file.copy(from = list_scripts_main, to = ruta_archives_metodologia_scripts_main, overwrite = TRUE)
+
+# Copiar scripts de funciones a la carpeta de metodología
+file.copy(from = list_scripts_functions, to = ruta_archives_metodologia_scripts_functions, overwrite = TRUE)
+
+
+# Crear objetos con las rutas relativas de los archivos .R en la carpeta de metodología
+list_archives_metodologia_scripts_main <- list.files(ruta_archives_metodologia_scripts_main, pattern = "\\.[Rr]$", full.names = TRUE)
+list_archives_metodologia_scripts_functions <- list.files(ruta_archives_metodologia_scripts_functions, pattern = "\\.[Rr]$", full.names = TRUE)
+
+
+# Crear los nuevos archivos .txt de scripts principales
+for (archivo in list_archives_metodologia_scripts_main) {
+  # Leer contenido original
+  contenido <- readLines(archivo, warn = FALSE)
+  # Definir nueva ruta con _txt
+  nueva_ruta <- cambiar_a_txt(archivo)
+  # Escribir contenido en el nuevo archivo
+  writeLines(contenido, nueva_ruta)
+}
+
+# Crear los nuevos archivos .txt de scripts de funciones
+for (archivo in list_archives_metodologia_scripts_functions) {
+  # Leer contenido original
+  contenido <- readLines(archivo, warn = FALSE)
+  # Definir nueva ruta con _txt
+  nueva_ruta <- cambiar_a_txt(archivo)
+  # Escribir contenido en el nuevo archivo
+  writeLines(contenido, nueva_ruta)
+}
+
+
+# Definir nuevas rutas de archivos modificados a .txt
+list_archives_metodologia_scripts_main_txt <- 
+  list.files(ruta_archives_metodologia_scripts_main, 
+              pattern = "\\.txt$", 
+              full.names = TRUE,
+              ignore.case = TRUE)
+
+list_archives_metodologia_scripts_functions_txt <- 
+  list.files(ruta_archives_metodologia_scripts_functions, 
+              pattern = "\\.txt$", 
+              full.names = TRUE,
+              ignore.case = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab-unique">
+  <h1>Pestaña</h1>
+  <h2>Metodología y Herramientas</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    Esta pestaña tiene un carácter eminentemente técnico y documenta cómo se ha generado el informe, qué datos se han utilizado, qué herramientas han intervenido y cómo se ha organizado el flujo de trabajo. Su finalidad es que cualquier persona que consulte este informe pueda comprender los procedimientos realizados, verificar los resultados y, si lo desea, reproducir el análisis completo con exactitud.
+  </p>
+
+  <p>
+    Durante la elaboración del informe, se proporcionan los siguientes parámetros de ejecución:
+  </p>
+
+  <ul>
+    <li><strong>project_path</strong> &rArr; ruta que contiene los resultados del análisis bioinformático completo realizado previamente.</li>
+    <li><strong>report_version</strong> &rArr; define la versión del informe a generar, que puede ser <code>full</code> o <code>compact</code>.</li>
+  </ul>
+
+  <p>
+    Los datos del informe provienen de un análisis integral que parte de los archivos crudos de secuenciación (<code>BCL</code>). En una primera fase, se emplea el pipeline <strong>Cell Ranger</strong> (10x Genomics) para la demultiplexación y conversión a formato <code>FASTQ</code>. A continuación, esta misma herramienta realiza el alineamiento contra el genoma de referencia y el control de calidad primario, generando informes automáticos (<em>web summaries</em>) y las matrices de conteo de expresión (archivos <code>.h5</code>). Posteriormente, estas matrices se importan al <strong>lenguaje de programación R</strong>, donde el análisis <em>downstream</em> se ejecuta utilizando principalmente el paquete <strong>Seurat</strong>. Este flujo abarca desde el riguroso filtrado de células únicas (QC), pasando por la reducción de dimensionalidad y clustering, hasta la anotación experta de poblaciones y el análisis de expresión diferencial entre condiciones, garantizando un flujo de trabajo exhaustivo y reproducible.
+  </p>
+
+  <p>
+    Una vez finalizado el análisis bioinformático, <strong>Nextflow</strong> organiza los resultados y prepara los archivos de configuración que sirven como interfaz con <strong>Quarto</strong>:
+  </p>
+  
+  <ul>
+    <li><strong><code>params.yml</code></strong> &rArr; contiene parámetros específicos de la ejecución, rutas de los resultados, versión del informe y opciones de visualización.</li>
+    <li><strong><code>_quarto.yml</code></strong> &rArr; define la estructura del informe, incluyendo plantillas, pestañas, secciones y rutas internas, generado mediante <code>yaml_generator.py</code>.</li>
+  </ul>
+
+  <p>
+    Cuando todos los procesos previos han finalizado, Nextflow invoca <code>quarto render</code>, generando el informe HTML final en la carpeta <code>report/</code>. Este flujo asegura que el documento refleje de manera completa, consistente y reproducible todos los resultados transcriptómicos a nivel de célula única.
+  </p>
+
+  <p>
+    Gracias a esta arquitectura modular:
+  </p>
+
+  <ul>
+    <li>Cada etapa del análisis (procesamiento de lecturas, control de calidad celular, clustering matemático, anotación biológica, expresión diferencial y generación del informe) puede ejecutarse de forma independiente o conjunta.</li>
+    <li>Se permite procesar múltiples experimentos dentro de la misma carpeta raíz sin comprometer la trazabilidad ni la reproducibilidad.</li>
+    <li>Se facilita la verificación y reconstrucción del informe en el futuro con los mismos datos y parámetros.</li>
+  </ul>
+
+  <p>
+    Además, esta pestaña incluye referencias a manuales, repositorios y documentación complementaria, accesibles mediante tarjetas de información. Para cualquier duda o soporte adicional, los datos de contacto se encuentran en la pestaña de inicio.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta pestaña
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab1-intro">Metodología y herramientas</a>
+      <ul>
+        <li>
+          <a href="#tab1-seccion1">1<span>.</span> Software y herramientas empleadas en el análisis</a>
+          <ul>
+            <li><a href="#tab1-seccion1.1">1.1. Procesamiento primario con Cell Ranger (10x Genomics)</a></li>
+            <li><a href="#tab1-seccion1.2">1.2. Análisis transcriptómico celular con R (Seurat)</a></li>
+          </ul>
+        </li>
+        <li><a href="#tab1-seccion2">2<span>.</span> Estructura de los datos y resultados generados</a></li>
+        <li>
+          <a href="#tab1-seccion3">3<span>.</span> Generación automatizada del informe</a>
+          <ul>
+            <li><a href="#tab1-seccion3.1">3.1. Estructura del directorio de ejecución</a></li>
+            <li><a href="#tab1-seccion3.2">3.2. Integración de Nextflow y Quarto</a></li>
+            <li><a href="#tab1-seccion3.3">3.3. Configuración del archivo _quarto.yml y params.yml</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab1-seccion4">4<span>.</span> Manuales, repositorios y documentación complementaria</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab1-intro">
+  Metodología y herramientas
+</div>
+
+<p>
+  Esta sección detalla el marco técnico y metodológico subyacente a la generación de este informe, garantizando la total <strong>transparencia</strong> y <strong>reproducibilidad</strong> del análisis. El objetivo es documentar exhaustivamente el flujo de trabajo, desde el procesamiento bioinformático de los datos brutos hasta el renderizado automatizado del documento final, permitiendo a cualquier usuario comprender, auditar y replicar el proceso exacto.
+</p>
+
+<p>
+  En el apartado <strong>1. Software y herramientas empleadas en el análisis</strong>, se describe el pipeline principal, que comprende el procesamiento primario de las lecturas mediante <strong>Cell Ranger (10x Genomics)</strong> y el posterior análisis transcriptómico a nivel unicelular utilizando el paquete <strong>Seurat</strong> en el entorno de programación <strong>R</strong>. A continuación, en <strong>2. Estructura de los datos y resultados generados</strong>, se detalla la organización de los directorios de salida y los archivos clave resultantes del experimento. 
+</p>
+
+<p>
+  El apartado <strong>3. Generación automatizada del informe</strong> profundiza en la arquitectura modular del sistema, explicando paso a paso cómo <strong>Nextflow</strong> gestiona los directorios de ejecución e interactúa con <strong>Quarto</strong> a través de archivos de configuración esenciales como <code>params.yml</code> y <code>_quarto.yml</code>. Finalmente, la sección <strong>4. Manuales, repositorios y documentación complementaria</strong> proporciona acceso directo a los recursos técnicos oficiales de las herramientas empleadas para facilitar consultas adicionales.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab1-seccion1">
+  1<span>.</span> Software y herramientas empleadas en el análisis
+</div>
+
+<p>
+  El proceso de análisis de Single-Cell RNA-Seq (scRNA-Seq) llevado a cabo en este estudio se sustenta en una arquitectura de dos fases computacionales diferenciadas. Esta separación permite manejar eficientemente la enorme carga computacional inicial y, posteriormente, aplicar algoritmos estadísticos interactivos de alta resolución.
+</p>
+
+<p>
+  En primer lugar, se utiliza el pipeline oficial <strong>Cell Ranger</strong> (desarrollado por <em>10x Genomics</em>) para el procesamiento primario de las lecturas crudas, garantizando la correcta demultiplexación y alineamiento frente al genoma de referencia. En segundo lugar, el análisis <em>downstream</em> (secundario y terciario) se ejecuta íntegramente en el <strong>lenguaje de programación R</strong>, apoyado fuertemente en el paquete <strong>Seurat</strong>, el estándar actual de la industria para el análisis de célula única.
+</p>
+
+<p>
+  En los siguientes apartados se describen con detalle estas dos etapas metodológicas, los tipos de resultados que generan y, en el caso del análisis con R, se adjuntan los scripts utilizados para garantizar la trazabilidad y reproducibilidad total del experimento.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15x; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab1-seccion1.1">
+  1.1. Procesamiento primario con Cell Ranger (10x Genomics)
+</div>
+
+<p>
+  <strong>Cell Ranger</strong> constituye el estándar computacional oficial diseñado por 10x Genomics para procesar los datos de su tecnología microfluídica Chromium. En este proyecto, el procesamiento inicial (<em>upstream</em>) se ejecutó de manera automatizada en infraestructuras de alto rendimiento (HPC), actuando como el puente directo entre la señal bruta del secuenciador y las matrices matemáticas de expresión celular.
+</p>
+
+<p>
+  Un prerrequisito crítico e ineludible para el éxito de esta fase es la disponibilidad de una arquitectura genómica de alta resolución. El proceso depende absolutamente de dos archivos estructurados aportados o consensuados con el investigador: la secuencia del genoma completo (en formato <code>.fasta</code>) y su anotación transcripcional (en formato <code>.gtf</code> o <code>.gff</code>). Esta anotación actúa como el "mapa de coordenadas" biológico; su calidad y grado de actualización dictan de forma directa qué porcentaje de lecturas genómicas se traducirán en genes detectables y cuánta información se perderá en regiones intergénicas no anotadas.
+</p>
+
+<p>
+  Las etapas algorítmicas clave que ejecuta esta herramienta se dividen en:
+</p>
+
+<ol>
+  <li>
+    <strong>Construcción de la Referencia (mkref)</strong> &rArr; Indexación computacional de los archivos <code>.fasta</code> y <code>.gtf</code> proporcionados, creando un entorno de mapeo optimizado y filtrado (ej. restringiendo la cuantificación a genes codificantes o biotipos de interés).
+  </li>
+  <li>
+    <strong>Demultiplexación (mkfastq)</strong> &rArr; Transformación de los archivos binarios crudos (<em>Base Call Files</em> o <code>BCL</code>) emitidos por el secuenciador Illumina en secuencias de texto legibles (archivos <code>FASTQ</code>), separando matemáticamente las muestras del proyecto en base a sus índices moleculares.
+  </li>
+  <li>
+    <strong>Alineamiento y Cuantificación (count)</strong> &rArr; Mapeo de los millones de lecturas de los <code>FASTQ</code> contra el genoma de referencia empleando el algoritmo <em>STAR aligner</em>. En este paso ultracomplejo se realiza la corrección de errores de los códigos de barras celulares (<em>Cell Barcodes</em>, que identifican a qué célula pertenece cada lectura) y el colapso de los identificadores moleculares únicos (<em>UMIs</em>, para eliminar duplicados exactos de la PCR).
+  </li>
+  <li>
+    <strong>Generación de Matrices Topológicas</strong> &rArr; Tras el conteo de moléculas reales, se construyen las matrices de expresión de característica-código de barras (<em>Feature-Barcode matrices</em>). Se exportan tanto en formato optimizado de alta compresión <code>.h5</code> (HDF5) como en formato abierto MEX (<em>Market Exchange Format</em>).
+  </li>
+  <li>
+    <strong>Control de Calidad Primario</strong> &rArr; Emisión automática de reportes HTML (<em>Web Summaries</em>) que auditan la salud de la secuenciación, detallando métricas de éxito vitales como la fracción de lecturas válidas en células, la profundidad de saturación y la mediana de genes capturados por cada gota lipídica.
+  </li>
+</ol>
+
+<p>
+  Dado que <em>Cell Ranger</em> es un <em>pipeline</em> secuencial cerrado y altamente calibrado por el fabricante, las matrices matemáticas purificadas en esta etapa constituyen el "bloque de arcilla" inamovible sobre el que se esculpirá todo el análisis biológico posterior en <code>R/Seurat</code>. A continuación, se muestra de forma esquemática este flujo de obtención de datos:
+</p>
+
+<div class="box-images">
+  <img 
+    src="../../../../../01-images/tab1-metodologia/cellranger_workflow.png" 
+    alt="Pipeline conceptual de Cell Ranger (10x Genomics)"
+    style="width: 850px; max-width: 100%;">
+</div>
+
+<div style="display: flex; justify-content: center; gap: 25px;">
+  <a href="../../../../../01-images/tab1-metodologia/cellranger_workflow.png" 
+    target="_blank" 
+    class="boton-image">
+    <i class="fa-solid fa-sitemap"></i> Visualizar esquema en una página nueva
+  </a>
+  
+  <a href="../../../../../01-images/tab1-metodologia/cellranger_workflow.png" 
+    download="cellranger_workflow.png"
+    class="boton-image-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Descargar imagen
+  </a>
+</div>
+
+
+
+
+
+
+
+
+<div style="height: 15x; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab1-seccion1.2">
+  1.2. Análisis transcriptómico celular con R (Seurat)
+</div>
+
+<p>
+  Una vez obtenidas las matrices de conteo (<code>.h5</code>) desde Cell Ranger, el análisis <em>downstream</em> se trasladó al ecosistema de <strong>R</strong>. La herramienta principal utilizada para el procesado de célula única es <strong>Seurat</strong>, complementada con librerías accesorias para la visualización, anotación y cálculo estadístico.
+</p>
+
+<p>
+  El análisis mediante scripts personalizados en R abarca las siguientes fases críticas:
+</p>
+
+<ul>
+  <li><strong>Filtrado y QC Celular:</strong> Eliminación de células de baja calidad (alto porcentaje mitocondrial) o posibles dobletes (exceso de genes detectados).</li>
+  <li><strong>Normalización e Integración:</strong> Estandarización de la expresión génica y aplicación de algoritmos de integración matemática para corregir posibles efectos de lote (<em>batch effects</em>) o desbalances en el número de células capturadas entre condiciones (downsampling).</li>
+  <li><strong>Reducción de Dimensionalidad y Clustering:</strong> Cálculo de componentes principales (PCA), proyección en mapas no lineales (UMAP) y agrupación ciega mediante algoritmos de grafos compartidos (SNN).</li>
+  <li><strong>Anotación:</strong> Cruce de perfiles de expresión con bases de datos públicas (Tabula Muris, HPCA) y curación experta manual basada en marcadores canónicos.</li>
+  <li><strong>Expresión Diferencial:</strong> Contrastes estadísticos pareados o por condición clínica (e.g., WT vs KO) dentro de cada subpoblación celular anotada.</li>
+</ul>
+
+<p>
+  Para garantizar <strong>reproducibilidad</strong> y permitir la inspección técnica del código por parte de otros bioinformáticos, a continuación se proporciona acceso directo a los scripts analíticos principales desarrollados para este experimento, así como a las funciones auxiliares empleadas a lo largo del flujo.
+</p>
+
+
+
+
+
+
+<div style="height: 12x; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab1-seccion1.2.1">
+  1.2.1. Scripts principales de análisis
+</div>
+
+<p>
+  Los scripts ejecutables que contienen el flujo secuencial principal (procesamiento, clustering, anotación y DEGs) se ubican en el directorio:
+</p>
+
+```{r, results="asis"}
+cat(glue::glue(' 
+<p><code>{ruta_scripts_main}</code></p>
+\n\n'))
+
+```
+
+<p>
+  A continuación, se listan los archivos contenidos en dicho directorio:
+</p>
+
+```{r, results="asis"}
+if (!dir.exists(ruta_scripts_main)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_scripts_main))
+} else {
+  # Listar archivos y carpetas en la ruta
+  files <- list.files(ruta_scripts_main_relativa, full.names = FALSE)
+  files <- files[!grepl("(_cache|_libs|\\.html$)", files)]
+  
+  if (length(files) == 0) {
+    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+  
+  } else {
+    carpetas <- files[file.info(file.path(ruta_scripts_main_relativa, files))$isdir]
+    archivos <- setdiff(files, carpetas)
+    
+    carpetas <- sort(carpetas)
+    archivos <- sort(archivos)
+    files_ordenados <- c(carpetas, archivos)
+
+    cat("<ul class='box-files'>\n")
+    for (f in files_ordenados) {
+      ruta_f <- file.path(ruta_scripts_main_relativa, f)
+      es_dir <- file.info(ruta_f)$isdir
+
+      clase <- "file-default"
+      if (es_dir) {
+        clase <- "file-folder"
+      } else if (grepl("\\.R$", f, ignore.case = TRUE)) {
+        clase <- "file-code"
+      } else if (grepl("\\.sh$", f, ignore.case = TRUE)) {
+        clase <- "file-sh"
+      }
+      cat(sprintf('<li class="%s">%s</li>\n', clase, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+```{r, results="asis"}
+# Imprimir el botón para explorar la carpeta
+cat(glue::glue('
+<p style="text-align:center; margin-bottom: 30px;">
+  <a href="{ruta_scripts_main_relativa}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{basename(ruta_scripts_main)}" aquí
+  </a>
+</p>
+\n\n'))
+```
+
+<p>
+  Una vez mostrados dichos archivos, se pasa a mostrar su código fuente uno por uno. Puede revisarlos cómodamente desde esta misma ventana o descargarlos para su ejecución.
+</p>
+
+```{r, results="asis"}
+if (length(list_scripts_main) > 0) {
+  # Bucle para recorrer el objeto y mostrar cada script directamente
+  for (archivo in list_scripts_main) {
+    nombre_base <- basename(archivo)
+
+    # Quitar extensión
+    nombre_sin_ext <- tools::file_path_sans_ext(nombre_base)
+
+    # Reconstruir cada ruta con su extensión correcta
+    ruta_relativa <- file.path(ruta_scripts_main_relativa, paste0(nombre_sin_ext, ".R"))
+    ruta_relativa_txt <- file.path(ruta_archives_metodologia_scripts_main, paste0(nombre_sin_ext, ".txt"))
+    
+    cat(glue::glue('
+    <p style="margin-top: 10px; margin-bottom: -10px;">
+      <i class="fa-brands fa-r-project" style="color: #276DC3;"></i> 
+      <strong>Script auxiliar:</strong> <code>{nombre_base}</code>
+    </p>
+    
+    <!-- IFRAME para nextflow.config -->
+    <div class="iframe-container">
+      <iframe src="{ruta_relativa_txt}" frameborder="0" style="height: 500px;"></iframe>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px;">
+      <a href="{ruta_relativa_txt}"
+        target="_blank" 
+        class="boton-iframe">
+        <i class="fa-solid fa-file-lines"></i> Ver archivo completo en una nueva página
+      </a>
+
+      <a href="{ruta_relativa}"
+        download="{nombre_base}"
+        class="boton-iframe-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Descargar archivo
+      </a>
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Advertencia</b><br>
+    No se han encontrado scripts <code>.R</code> en el directorio especificado:  
+    <code>{ruta_scripts_main}</code>.
+  </div>
+  \n\n'))
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab1-seccion1.2.2">
+  1.2.2. Scripts de funciones auxiliares
+</div>
+
+<p>
+  Además de los flujos principales, el análisis se apoya en funciones complejas predefinidas y modulares (como la generación de gráficos o cálculos estadísticos repetitivos). Estos archivos se agrupan en el directorio en el siguiente directorio:
+</p>
+
+```{r, results="asis"}
+cat(glue::glue(' 
+<p><code>{ruta_scripts_functions}</code></p>
+\n\n'))
+```
+
+```{r, results="asis"}
+if (!dir.exists(ruta_scripts_functions_relativa)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_scripts_functions))
+
+} else {
+  files_func <- list.files(ruta_scripts_functions_relativa, full.names = FALSE)
+  files_func <- files_func[!grepl("(_cache|_libs|\\.html$)", files_func)]
+  
+  if (length(files_func) == 0) {
+    cat('<p><em>La carpeta de funciones está vacía.</em></p>\n')
+  } else {
+    carpetas_f <- files_func[file.info(file.path(ruta_scripts_functions_relativa, files_func))$isdir]
+    archivos_f <- setdiff(files_func, carpetas_f)
+    
+    carpetas_f <- sort(carpetas_f)
+    archivos_f <- sort(archivos_f)
+    files_ordenados_f <- c(carpetas_f, archivos_f)
+
+    cat("<ul class='box-files'>\n")
+    for (f in files_ordenados_f) {
+      ruta_f <- file.path(ruta_scripts_functions_relativa, f)
+      es_dir <- file.info(ruta_f)$isdir
+
+      clase <- "file-default"
+      if (es_dir) {
+        clase <- "file-folder"
+      } else if (grepl("\\.R$", f, ignore.case = TRUE)) {
+        clase <- "file-code"
+      }
+      cat(sprintf('<li class="%s">%s</li>\n', clase, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+```{r, results="asis"}
+# Imprimir el botón para explorar la carpeta
+cat(glue::glue('
+<p style="text-align:center; margin-bottom: 30px;">
+  <a href="{ruta_scripts_functions_relativa}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{basename(ruta_scripts_functions)}" aquí
+  </a>
+</p>
+\n\n'))
+```
+
+<p>
+  Una vez mostrados dichos archivos, se pasa a mostrar su código fuente uno por uno (en el caso de que hubiera varios). Puede revisarlos cómodamente desde esta misma ventana o descargarlos para su ejecución.
+</p>
+
+```{r, results="asis"}
+if (length(list_scripts_functions) > 0) {
+  # Bucle para recorrer el objeto y mostrar cada script directamente
+  for (archivo in list_scripts_functions) {
+    nombre_base <- basename(archivo)
+
+    # Quitar extensión
+    nombre_sin_ext <- tools::file_path_sans_ext(nombre_base)
+
+    # Reconstruir cada ruta con su extensión correcta
+    ruta_relativa <- file.path(ruta_scripts_functions_relativa, paste0(nombre_sin_ext, ".R"))
+    ruta_relativa_txt <- file.path(ruta_archives_metodologia_scripts_functions, paste0(nombre_sin_ext, ".txt"))
+    
+    cat(glue::glue('
+    <p style="margin-top: 10px; margin-bottom: -10px;">
+      <i class="fa-brands fa-r-project" style="color: #276DC3;"></i> 
+      <strong>Script principal:</strong> <code>{nombre_base}</code>
+    </p>
+
+    <!-- IFRAME para nextflow.config -->
+    <div class="iframe-container">
+      <iframe src="{ruta_relativa_txt}" frameborder="0" style="height: 500px;"></iframe>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px;">
+      <a href="{ruta_relativa_txt}"
+        target="_blank" 
+        class="boton-iframe">
+        <i class="fa-solid fa-file-lines"></i> Ver archivo completo en una nueva página
+      </a>
+
+      <a href="{ruta_relativa}"
+        download="{nombre_base}"
+        class="boton-iframe-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Descargar archivo
+      </a>
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Advertencia</b><br>
+    No se han encontrado scripts <code>.R</code> en el directorio especificado:  
+    <code>{ruta_scripts_functions}</code>.
+  </div>
+  \n\n'))
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab1-seccion2">
+  2<span>.</span> Estructura de los datos y resultados generados
+</div>
+
+<p>
+  Una vez completadas todas las etapas del flujo de análisis de <strong>Single-Cell RNA-Seq</strong> mediante con las herramientas anteriormente vistas, los resultados se organizan en una <strong>estructura de directorios</strong> que sirve como base para la generación de este informe automatizado. 
+  Esta organización incluye archivos intermedios, resultados finales y metadatos asociados a cada módulo del pipeline, garantizando la trazabilidad y la reproducibilidad del análisis completo.
+</p>
+
+<p>
+  Esta sección, al igual que el resto de la pestaña de metodología, tiene un propósito puramente técnico y está pensada como referencia interna para el usuario que generó el informe. Su objetivo es permitir comprender cómo se estructuran los datos de salida del proyecto, de modo que sea posible <strong>revisar rápidamente la organización de resultados</strong> sin necesidad de volver al entorno de análisis original.
+</p>
+
+<p>
+  A continuación se muestra la ruta del directorio principal donde se encuentran los datos y resultados generados para este proyecto:
+</p>
+
+```{r, results="asis"}
+cat(glue::glue('
+  <code>{params$project_path}</code>'
+), sep = "\n\n")
+```
+
+<p> 
+  A continuación se muestra la estructura completa de dicho directorio. Esta representación permite visualizar los archivos y subcarpetas generados durante el análisis de Single-Cell RNA-Seq y que se emplearon como base para la construcción de este informe: 
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_proyecto_relativa)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_proyecto_relativa))
+} else {
+  # Listar todos los archivos, sin filtros
+  files <- list.files(ruta_proyecto_relativa, full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+  } else {
+    enlace <- ruta_proyecto_relativa
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Asignar clase según la extensión
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else if (grepl("\\.html$", f)) {
+        "file-html"
+      } else if (grepl("\\.zip$", f)) {
+        "file-zip"
+      } else if (grepl("\\.fastq\\.gz$", f)) {
+        "file-fastqgz"
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Para que funcione con rutas absolutas
+enlace <- ruta_proyecto_relativa
+
+# Imprimir el enlace
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{enlace}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{nombre_proyecto}" aquí
+  </a>
+</p>
+\n\n'))
+```
+
+```{r, results="asis"}
+cat(glue::glue('
+<p>
+  Tras visualizar la estructura de forma interactiva, se presenta a continuación un desglose detallado de las carpetas generadas durante el análisis de Single-Cell RNA-Seq para el proyecto <code>{nombre_proyecto}</code>.
+  Esta organización estandarizada está diseñada para mapear directamente el flujo biológico del análisis celular, facilitando la reproducibilidad y la trazabilidad de los resultados.
+</p>
+
+<div class="items">
+<ul>
+  <li>
+    <strong><code>{nombre_proyecto}/data/</code></strong> <strong>&rArr;</strong> Directorio raíz que aloja todos los datos crudos, matrices de expresión, objetos matemáticos y recursos externos empleados en el proyecto.
+    <ul>
+      <li><strong><code>01_raw_blc/</code></strong> <strong>&rarr;</strong> Archivos binarios directos del secuenciador (Illumina).</li>
+      <li><strong><code>02_fastq_cellranger/</code></strong> <strong>&rarr;</strong> Resultados del procesamiento primario (10x Genomics), conteniendo los archivos FASTQ, las matrices de conteo (<code>.h5</code>) y los reportes HTML (web summaries) por muestra.</li>
+      <li><strong><code>03_processed_objects/</code></strong> <strong>&rarr;</strong> Archivos RDS (R Data Structure) con los objetos Seurat generados tras las etapas clave de filtrado, integración y anotación.</li>
+      <li><strong><code>04_resources/</code></strong> <strong>&rarr;</strong> Metadatos adicionales, bases de datos (HPCA, Tabula Muris) y archivos de curación manual (listas de marcadores) empleados para la anotación celular.</li>
+    </ul>
+  </li>
+
+  <li>
+    <strong><code>{nombre_proyecto}/scripts/</code></strong> <strong>&rArr;</strong> Repositorio del código fuente desarrollado para el análisis transcriptómico.
+    <ul>
+      <li><strong><code>01_main/</code></strong> <strong>&rarr;</strong> Scripts principales de ejecución que contienen el flujo de Seurat (procesamiento, clustering y DEGs).</li>
+      <li><strong><code>02_functions/</code></strong> <strong>&rarr;</strong> Archivos con funciones R auxiliares, personalizadas para cálculos estadísticos o visualizaciones específicas.</li>
+      <li><strong><code>03_extra/</code></strong> <strong>&rarr;</strong> Scripts complementarios o pruebas de concepto no incluidas en el pipeline final.</li>
+    </ul>
+  </li>
+
+  <li>
+    <strong><code>{nombre_proyecto}/analysis/</code></strong> <strong>&rArr;</strong> Carpeta principal de resultados. Contiene todos los gráficos, tablas y contrastes estadísticos generados de forma secuencial, desde el filtrado hasta la expresión diferencial.
+    <ul>
+      <li><strong><code>01_qc/</code></strong> <strong>&rarr;</strong> Control de calidad estructurado en dos niveles: <code>01_reads_qc/</code> (calidad de secuenciación con Fastp/FastQC y MultiQC) en el caso de que la hubiera y <code>02_cells_qc/</code> (gráficos de violín y filtrado celular en Seurat).</li>
+      <li><strong><code>02_dim_reduction/</code></strong> <strong>&rarr;</strong> Gráficos matemáticos de variabilidad (Elbow plots, PCA) utilizados para determinar las dimensiones óptimas del dataset.</li>
+      <li><strong><code>03_clustering/</code></strong> <strong>&rarr;</strong> Mapas no lineales (UMAP) y gráficos de proporciones celulares. Se divide sistemáticamente en aproximaciones <em>merged</em> (<code>01_seurat_merged_clusters/</code>) e integradas/balanceadas (<code>02_seurat_integrated_clusters/</code>).</li>
+      <li><strong><code>04_markers/</code></strong> <strong>&rarr;</strong> Tablas estadísticas con los genes constitutivos (Top Markers) calculados para cada cluster numérico ciego.</li>
+      <li><strong><code>05_cell_annotation/</code></strong> <strong>&rarr;</strong> Fase de identidad biológica. Contiene los resultados del contraste automatizado (<code>01_automatic_dbs_annotation/</code>) y la curación experta iterativa (<code>02_manual_annotation/</code>).</li>
+      <li><strong><code>06_population_aggregation/</code></strong> <strong>&rarr;</strong> Justificación visual y mapas definitivos tras la unificación de sub-estadios en macro-poblaciones anatómicas robustas para el contraste estadístico.</li>
+      <li><strong><code>07_deg_conditions/</code></strong> <strong>&rarr;</strong> Núcleo estadístico del proyecto. Contiene las tablas y visualizaciones (Volcanos, DotPlots) de expresión diferencial clínica (e.g., WT vs KO), estructuradas según el nivel de agrupación celular (clusters ciegos, bases de datos automáticas o anotación curada final).</li>
+      <li><strong><code>08_enrichment/</code></strong> <strong>&rarr;</strong> Análisis de enriquecimiento funcional de los genes diferencialmente expresados.</li>
+      <li><strong><code>09_extra/</code></strong> <strong>&rarr;</strong> Peticiones específicas, como la exploración detallada de la expresión de genes individuales de interés (<code>01_specific_genes_of_interest/</code>).</li>
+    </ul>
+  </li>
+</ul>
+</div>
+
+<p>
+  Esta estructura modular y coherente no solo permite automatizar los pasos clave del análisis bioinformático, sino que también garantiza trazabilidad, reproducibilidad y facilidad de interpretación. Además, contribuye a una mejor documentación del flujo de trabajo, lo cual es especialmente útil en entornos colaborativos o proyectos de largo recorrido.
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab1-seccion3">
+  3<span>.</span> Generación automatizada del informe
+</div>
+
+<p>
+  Una vez obtenidos los datos procesados mediante el análisis bioinformático y mostrada la estructura del directorio en el cuál se encuentran los resultados generados a partir de todo el proceso de análisis, el siguiente paso consiste en la <strong>generación automatizada del informe final</strong>. Esta sección tiene como objetivo documentar de manera clara y reproducible todo el proceso mediante el cual se construye el informe, detallando la organización de los archivos de ejecución, la integración de herramientas y la configuración utilizada.
+</p>
+
+<p>
+  En particular, se abordarán los siguientes aspectos:
+</p>
+
+<ul>
+  <li>
+    <strong>3.1. Estructura del directorio de ejecución</strong> <strong>&rArr;</strong> Se mostrará la ubicación y organización de los archivos y carpetas desde los cuales se ejecuta el pipeline, incluyendo los scripts de Nextflow y los archivos asociados de Quarto. Esto permite al usuario técnico entender dónde se encuentran los datos, resultados intermedios y archivos de configuración necesarios para generar el informe.
+  </li>
+  <li>
+    <strong>3.2. Integración de Nextflow y Quarto</strong> <strong>&rArr;</strong> Se explicará cómo se ha utilizado <code>Nextflow</code> para automatizar la ejecución de Quarto y la generación del informe final, describiendo el rol de los scripts principales (<code>main.nf</code>) y cómo se coordinan las distintas etapas del pipeline.
+  </li>
+  <li>
+    <strong>3.3. Configuración del archivo <code>_quarto.yml</code> y <code>params.yml</code></strong> <strong>&rArr;</strong> Se mostrarán los archivos de configuración que permiten reproducir el informe exacto, incluyendo rutas de entrada, parámetros de análisis y opciones de visualización. Esta documentación asegura que cualquier usuario técnico pueda regenerar el informe con los mismos resultados en el futuro, garantizando trazabilidad y reproducibilidad.
+  </li>
+</ul>
+
+<p>
+  El propósito de esta sección es proporcionar un <strong>registro técnico completo</strong> del flujo de trabajo utilizado para generar el informe, de manera que cualquier persona que vuelva a consultar el proyecto pueda entender de forma clara cómo se ensamblaron los datos, qué herramientas se utilizaron y cómo se configuró todo el entorno de ejecución.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15x; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab1-seccion3.1">
+  3.1. Estructura del directorio de ejecución
+</div>
+
+<p>
+  En esta subsección se describe la <strong>estructura de archivos y carpetas</strong> desde la cual se ejecuta el pipeline de metagenómica que genera el informe automatizado. Esta información es fundamental para entender cómo se organizan los datos de entrada, los resultados intermedios y los archivos de configuración de Quarto y Nextflow.
+</p>
+
+<p>
+  La ruta raíz desde la cual se ejecuta este pipeline es:
+</p>
+
+```{r, results="asis"}
+cat(glue::glue('<code>{ruta_sc_rna_seq_pipeline_absoluta}</code>'), sep = "\n")
+```
+
+<p>
+  A continuación se presenta la estructura completa del directorio correspondiente a este proyecto. Es importante destacar que los elementos listados (tanto archivos como subcarpetas) no representan enlaces interactivos, sino que se muestran únicamente para ilustrar la organización interna de los contenidos. Esta representación permite al lector comprender de manera clara y visual cómo se distribuyen los distintos componentes del proyecto, facilitando la navegación conceptual del directorio sin necesidad de acceder directamente a cada archivo.
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_sc_rna_seq_pipeline_absoluta)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_sc_rna_seq_pipeline_absoluta))
+} else {
+  # Listar archivos y carpetas en la ruta
+  files <- list.files(ruta_sc_rna_seq_pipeline_absoluta, full.names = FALSE)
+  files <- files[!grepl("(_cache|_libs|\\.html$)", files)]
+  
+  # Identificar cuáles son carpetas
+  carpetas <- files[file.info(file.path(ruta_sc_rna_seq_pipeline_absoluta, files))$isdir]
+  archivos <- setdiff(files, carpetas)
+  
+  # Ordenar alfabéticamente si quieres
+  carpetas <- sort(carpetas)
+  archivos <- sort(archivos)
+  
+  # Reunir carpetas primero
+  files <- c(carpetas, archivos)
+
+  if (length(files) == 0) {
+    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+  } else {
+    cat("<ul class='box-files'>\n")
+    for (f in files) {
+      ruta_f <- file.path(ruta_sc_rna_seq_pipeline_absoluta, f)
+      es_dir <- file.info(ruta_f)$isdir
+
+      # Asignar clase según tipo
+      clase <- if (es_dir) {
+        "file-folder"
+      } else if (grepl("\\.html?$", f, ignore.case = TRUE)) {
+        "file-html"
+      } else if (grepl("\\.zip$", f, ignore.case = TRUE)) {
+        "file-zip"
+      } else if (grepl("\\.fastq\\.gz$", f, ignore.case = TRUE)) {
+        "file-fastqgz"
+      } else if (grepl("\\.bam$", f, ignore.case = TRUE)) {
+        "file-bam"
+      } else if (grepl("\\.bai$", f, ignore.case = TRUE)) {
+        "file-bai"
+      } else if (grepl("\\.sam$", f, ignore.case = TRUE)) {
+        "file-sam"
+      } else if (grepl("\\.metrics$", f, ignore.case = TRUE)) {
+        "file-metrics"
+      } else if (grepl("\\.ht2$", f, ignore.case = TRUE)) {
+        "file-ht2"
+      } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+        "file-pdf"
+      } else if (grepl("\\.xlsx?$", f, ignore.case = TRUE)) {
+        "file-xlsx"
+      } else if (grepl("\\.sh$", f, ignore.case = TRUE)) {
+        "file-sh"
+      } else if (grepl("\\.ya?ml$", f, ignore.case = TRUE)) {
+        "file-yml"
+      } else if (grepl("\\.qmd$", f, ignore.case = TRUE)) {
+        "file-qmd"
+      } else if (grepl("\\.nf$", f, ignore.case = TRUE)) {
+        "file-nf"
+      } else if (grepl("\\.config$", f, ignore.case = TRUE)) {
+        "file-config"
+      } else {
+        "file-default"
+      }
+
+      # Mostrar nombre
+      cat(sprintf('<li class="%s">%s</li>\n', clase, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Para que funcione con rutas absolutas
+enlace <- ruta_sc_rna_seq_pipeline_absoluta
+
+# Imprimir el enlace
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{enlace}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{basename(ruta_sc_rna_seq_pipeline_absoluta)}" aquí
+  </a>
+</p>
+\n\n'))
+```
+
+<p>
+  A continuación se detalla la organización principal del directorio raíz del pipeline (<code>01-bulk-rna-seq</code>). 
+  Esta descripción está pensada como referencia técnica: indica qué hace cada archivo o carpeta, dónde se guardan los datos generados y cómo se conectan las piezas para producir el <em>report</em> final.
+</p>
+
+<div class="items">
+<ul>
+  <li>
+    <strong><code>_quarto.yml</code>, <code>index.qmd</code></strong> <strong>&rArr;</strong> Archivos base de <strong>Quarto</strong> que definen la estructura del informe (toc, formatos, parámetros globales) y la página de índice. Cada pestaña del informe está representada por un <code>.qmd</code>.
+  </li>
+
+  <li>
+    <strong><code>main.nf</code>, <code>nextflow.config</code>, <code>params.yml</code></strong> <strong>&rArr;</strong> Ficheros de control del pipeline de <strong>Nextflow</strong>:
+    <ul>
+      <li><code>main.nf</code> <strong>&rarr;</strong> script principal que orquesta las tareas (organización de los resultados, creación de scripts de configuración y renderizado del informe).</li>
+      <li><code>nextflow.config</code> <strong>&rarr;</strong> configuración de ejecución (perfiles, recursos, módulos, rutas por defecto).</li>
+      <li><code>params.yml</code> <strong>&rarr;</strong> parámetros concretos del proyecto (paths de entrada, opciones del pipeline) — generado o rellenado por el usuario/Nextflow para cada corrida.</li>
+    </ul>
+  </li>
+
+  <li>
+    <strong><code>report/</code></strong> <strong>&rArr;</strong> Carpeta de salida donde Nextflow / Quarto depositan el informe final (HTML) y materiales derivados listos para compartir.
+  </li>
+
+  <li>
+    <strong><code>resources/</code></strong> <strong>&rArr;</strong> Repositorio local de recursos y de los resultados consolidados. A alto nivel:
+    <ul>
+      <li>
+        <code>resources/01-essential/</code> <strong>&rarr;</strong> recursos usados por las plantillas y por los <code>.qmd</code>:
+        <ul>
+          <li><code>01-images/</code> <strong>&rarr;</strong> iconos y gráficas (portada, diagramas de workflow, favicon, etc.).</li>
+          <li><code>02-archives/</code> <strong>&rarr;</strong> copias de ficheros de interés (scripts, logs, ejemplos de <code>.ini</code>/<code>.sh</code>) usados como referencia o para descarga en la pestaña de metodología.</li>
+          <li><code>03-scripts/</code> <strong>&rarr;</strong> scripts auxiliares (R, Quarto templates, CSS, JS, Python y Bash) que apoyan la construcción del informe y la generación de artefactos (p. ej. <code>yaml_generator.py</code>).</li>
+        </ul>
+      </li>
+
+      <li>
+        <code>resources/02-nextflow-results/</code> <strong>&rarr;</strong> ubicación donde Nextflow consolida los resultados del/los proyecto(s):
+        <ul>
+          <li><code>01-project-data/{nombre_del_proyecto}/</code> <strong>&rarr;</strong> copia local del proyecto procesado (entrada + resultados). Nextflow copia aquí los datos de trabajo para que Quarto los consuma de forma estable y reproducible.</li>
+          <li><code>02-analisis-estadistico/</code> <strong>&rarr;</strong> resultados exportados y productos intermedios listos para análisis estadísticos adicionales (por ejemplo exportes para R, tablas xlsx, gráficas volcán, etc.).</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li>
+    <strong><code>run_cleaning_dir.sh</code>, <code>run_pipeline_shell.sh</code>, <code>run_pipeline_shiny.sh</code></strong> <strong>&rArr;</strong> Scripts de <strong>utilidades</strong> en la raíz.
+    <ul>
+      <li><code>run_pipeline_shell.sh</code> <strong>&rarr;</strong> wrapper para lanzar el pipeline desde la terminal (ejecuta Nextflow con el perfil/params adecuados).</li>
+      <li><code>run_pipeline_shiny.sh</code> <strong>&rarr;</strong> invoca una interfaz gráfica (Shiny) que permite ejecutar el pipeline mediante un formulario para usuarios menos técnicos.</li>
+      <li><code>run_cleaning_dir.sh</code> <strong>&rarr;</strong> script para limpiar caches y ficheros temporales (útil para liberar espacio, especialmente cuando los resultados y cachés de Nextflow crecen mucho).</li>
+    </ul>
+  </li>
+</ul>
+</div>
+
+<p>
+  Una vez comentada la estructura general del directorio de ejecución, se puede señalar que el pipeline está organizado de manera modular para asegurar la reproducibilidad, la trazabilidad de los resultados y la claridad en la generación del informe. 
+  Los archivos <code>.qmd</code> representan las pestañas y subsecciones del informe, mientras que Nextflow se encarga de consolidar los resultados previos, generar reportes adicionales cuando es necesario y coordinar la ejecución de Quarto para producir el documento final.
+</p>
+
+<p>
+  Dentro de <code>resources/01-essential/03-scripts/02-quarto</code> se mantienen dos versiones de las plantillas:
+  <code>01-full-version</code>, que incluye la pestaña de metodología y todas las secciones detalladas de análisis, y <code>02-compact-version</code>, que omite la pestaña de metodología y ofrece una versión más compacta del informe. Cada archivo <code>.qmd</code> corresponde a una pestaña o subsección específica.
+</p>
+
+<p>
+  Nextflow utiliza los resultados existentes del análisis metagenómico (control de calidad, abundancias y predicciones funcionales) almacenados en <code>resources/02-nextflow-results/01-project-data/{nombre_del_proyecto}</code> y realiza operaciones adicionales como la preparación de datos estadísticos en <code>02-analisis-estadistico</code>. Asimismo, genera los archivos de configuración que Quarto requiere, incluyendo <code>params.yml</code> y, mediante <code>yaml_generator.py</code>, <code>_quarto.yml</code> con los parámetros y rutas específicos del proyecto, para asegurar que la renderización del informe sea reproducible y consistente.
+</p>
+
+<p> v
+  Para generar el informe, Nextflow invoca <code>quarto render</code> sobre los <code>.qmd</code> y los archivos de parámetros correspondientes, produciendo el HTML final en <code>report/</code>. Los scripts auxiliares en la raíz del proyecto, como <code>run_pipeline_shell.sh</code>, <code>run_pipeline_shiny.sh</code> y <code>run_cleaning_dir.sh</code>, permiten ejecutar el pipeline desde la terminal, mediante interfaz gráfica o limpiar caches y directorios temporales respectivamente.
+</p>
+
+<p>
+  Para reproducir un informe exacto, se requiere disponer de la copia completa de los resultados en <code>resources/02-nextflow-results/01-project-data/{nombre_del_proyecto}</code>, así como de los archivos <code>params.yml</code> y <code>_quarto.yml</code> generados durante la ejecución. Esta estructura modular facilita la localización de los archivos necesarios y asegura que cualquier usuario pueda reconstruir el informe de manera consistente.
+</p>
+
+<p>
+  Para detalles adicionales y pasos exactos de ejecución, se recomienda consultar la guía oficial del proyecto en GitHub: 
+  <a href="https://github.com/adrichez/GenoScribe/blob/main/06-info/0102_TRANSCRIPTOMICS_SC_RNA_SEQ_GUIDE.md" target="_blank" class="normalink">GenoScribe: Guía completa para el pipeline Transcriptómico de Single-Cell RNA-Seq</a>.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15x; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab1-seccion3.2">
+  3.2. Integración de Nextflow y Quarto
+</div>
+
+```{r, results="asis"}
+cat(glue::glue('
+<p>
+  La integración entre <strong>Nextflow</strong> y <strong>Quarto</strong> constituye la base técnica que permite generar de forma automatizada el informe final a partir de los resultados del análisis previo. Este enfoque busca asegurar <strong>reproducibilidad</strong>, <strong>modularidad</strong> y <strong>trazabilidad</strong>, evitando la dependencia de pasos manuales y reduciendo el riesgo de inconsistencias entre los resultados y la documentación generada. A diferencia de un pipeline clásico, en este caso Nextflow no ejecuta los procesos analíticos de pipelines precedentes como podría ser el de Cell Ranger o R, sino que <strong>consume sus resultados</strong> ya generados, realiza operaciones intermedias necesarias (copias estructuradas, generación de reportes auxiliares, preparación de parámetros) y finalmente <strong>invoca Quarto</strong> para la construcción del informe.
+</p>
+
+<p style="margin-botton: -25px">
+  El esquema general es el siguiente: 
+  <ol>
+    <li>Se define un conjunto de parámetros y rutas base mediante <code>nextflow.config</code>.</li>
+    <li>Nextflow inicia el pipeline, copia los archivos esenciales del proyecto a una estructura de trabajo reproducible, y ejecuta procesos auxiliares como MultiQC sobre los reportes de control de calidad.</li>
+    <li>Se generan o actualizan los archivos de configuración que Quarto utilizará (<code>params.yml</code> y <code>_quarto.yml</code>).</li>
+    <li>Finalmente, se invoca <code>quarto render</code> para ensamblar el informe HTML final de manera completamente automatizada.</li>
+  </ol>
+</p>
+
+<p style="margin-top: -25px">
+  El archivo de configuración <strong><code>nextflow.config</code></strong>, ubicado en <code>{ruta_nextflow_config_absoluta}</code>, es el punto de partida de esta integración. Define las variables globales del pipeline, incluyendo:
+</p>
+
+<ul>
+  <li><strong><code>outdir</code></strong> <strong>&rarr;</strong> Ruta de salida estándar donde se almacenarán los resultados y el informe final.</li>
+  <li><strong><code>project_path</code></strong> <strong>&rarr;</strong> Ubicación del proyecto, que contiene la estructura de directorios generada previamente mediante el correspondiente análisis bioinformático.</li>
+  <li><strong><code>report_version</code></strong> <strong>&rarr;</strong> Define la versión del informe a generar (<strong>full</strong> o <strong>compact</strong>), lo cual condiciona las pestañas y contenidos que Quarto renderizará.</li>
+</ul>
+
+<p>
+  Una vez comentado esto, podemos visualizar dicho archivo mediante el siguiente <code>iframe</code>, así como explorarlo de forma más detallada en una página completa o descargarlo (hay que abrir el informe mediante un servidor para que esta acción funcione, como ya se ha mencionado).
+</p>
+
+<!-- IFRAME para nextflow.config -->
+<div class="iframe-container">
+  <iframe src="{ruta_nextflow_txt_archives}" frameborder="0" style="height: 500px;"></iframe>
+</div>
+
+<div style="display: flex; justify-content: center; gap: 25px;">
+  <a href="{ruta_nextflow_txt_archives}"
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Ver archivo completo en una nueva página
+  </a>
+
+  <a href="{ruta_nextflow_config_archives}"
+    download="nextflow.config"
+    class="boton-iframe-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Descargar archivo
+  </a>
+</div>
+
+<p>
+  El archivo <strong><code>main.nf</code></strong>, ubicado en <code>{ruta_main_nf_absoluta}</code>, constituye el núcleo del pipeline y orquesta los diferentes procesos necesarios para la preparación del informe. Entre las etapas más relevantes que gestiona este script se incluyen:
+</p>
+
+<ul>
+  <li>
+    <strong>Copia estructurada de archivos del proyecto</strong> <strong>&rArr;</strong> Se seleccionan únicamente los elementos esenciales (sin archivos de gran tamaño como FASTQ o BAM) para trasladarlos a <code>resources/02-nextflow-results/01-project-data/</code>. Esto garantiza que Quarto trabaje sobre una estructura consolidada y ligera.
+  </li>
+  <li>
+    <strong>Preparación de parámetros para Quarto</strong> <strong>&rArr;</strong> A partir de las variables definidas en <code>nextflow.config</code>, se generan los archivos <code>params.yml</code> y <code>_quarto.yml</code> (este último, mediante <code>yaml_generator.py</code>), los cuales actúan como interfaz entre el pipeline y Quarto.
+  </li>
+  <li>
+    <strong>Renderizado del informe</strong> <strong>&rArr;</strong> Cuando todos los procesos previos han finalizado satisfactoriamente, se invoca <code>quarto render</code> para construir el informe HTML en la carpeta <code>report/</code>. Esto asegura que el informe se genere siempre con datos completos y parámetros consistentes.
+  </li>
+</ul>
+
+<p>
+  De igual modo, podemos visualizar este archivo mediante el siguiente <code>iframe</code>, así como explorarlo de forma más detallada en una página completa o descargándolo.
+</p>
+
+<!-- IFRAME para main.nf -->
+<div class="iframe-container">
+  <iframe src="{ruta_main_txt_archives}" frameborder="0" style="height: 500px;"></iframe>
+</div>
+
+<div style="display: flex; justify-content: center; gap: 25px;">
+<!-- Botón ver archivo completo -->
+  <a href="{ruta_main_txt_archives}"
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Ver archivo completo en una nueva página
+  </a>
+
+  <!-- Botón descargar archivo -->
+  <a href="{ruta_main_txt_archives}"
+    download="main.nf"
+    class="boton-iframe-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Descargar archivo
+  </a>
+</div>
+
+<p>
+  Este diseño modular permite ampliar o modificar el pipeline fácilmente sin comprometer su reproducibilidad. 
+  Al separar claramente las etapas de preparación de datos y la generación del informe, se facilita la trazabilidad de cada componente y se asegura que cualquier informe pueda ser <strong>reconstruido en el futuro</strong> a partir de los mismos parámetros y estructura de resultados.
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+<div style="height: 15x; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab1-seccion3.3">
+  3.3. Configuración del archivo _quarto.yml y params.yml
+</div>
+
+```{r, results="asis"}
+cat(glue::glue('
+<p>
+  Una vez ejecutado el pipeline de <strong>Nextflow</strong>, se generan los archivos de configuración <strong><code>_quarto.yml</code></strong> y <strong><code>params.yml</code></strong>. Estos archivos constituyen la interfaz entre el pipeline y <strong>Quarto</strong>, permitiendo que el último paso del flujo de trabajo ejecute <code>quarto render</code> y construya el informe HTML final a partir de los datos y parámetros proporcionados.
+</p>
+
+<p>
+  El archivo <code>params.yml</code> contiene todos los parámetros específicos de la ejecución, incluyendo rutas de archivos, opciones de visualización, marcador analizado, versión del informe y metadatos relevantes del proyecto. Por su parte, <code>_quarto.yml</code> establece la estructura del informe, definiendo las plantillas, pestañas, secciones a renderizar y rutas internas, mediante la ejecución del script <code>yaml_generator.py</code>. Juntos, estos archivos permiten que la generación del informe sea completamente automatizada, consistente y reproducible.
+</p>
+
+<p>
+  A continuación se puede visualizar <code>params.yml</code> mediante un <code>iframe</code>, explorar su contenido de manera interactiva, o abrirlo en una página completa y descargarlo si se desea:
+</p>
+
+<!-- IFRAME para params.yml -->
+<div class="iframe-container">
+  <iframe src="{ruta_params_txt_archives}" frameborder="0" style="height: 500px;"></iframe>
+</div>
+
+<div style="display: flex; justify-content: center; gap: 25px;">
+  <a href="{ruta_params_txt_archives}"
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Ver archivo completo en una nueva página
+  </a>
+
+  <a href="{ruta_params_yml_archives}"
+    download="params_yml"
+    class="boton-iframe-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Descargar archivo
+  </a>
+</div>
+
+<p>
+  Una vez comprendido el contenido de <code>params.yml</code>, se puede observar <code>_quarto.yml</code>, que actúa como guía estructural para Quarto, indicando qué plantillas y secciones deben incluirse y cómo deben organizarse dentro del informe. Este archivo es esencial para que <code>quarto render</code> genere un documento final coherente con los datos del proyecto.
+</p>
+
+<!-- IFRAME para _quarto.yml -->
+<div class="iframe-container">
+  <iframe src="{ruta_quarto_txt_archives}" frameborder="0" style="height: 500px;"></iframe>
+</div>
+
+<div style="display: flex; justify-content: center; gap: 25px;">
+  <a href="{ruta_quarto_txt_archives}"
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Ver archivo completo en una nueva página
+  </a>
+
+  <a href="{ruta_quarto_yml_archives}"
+    download="quarto_yml"
+    class="boton-iframe-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Descargar archivo
+  </a>
+</div>
+
+<p>
+  Esta arquitectura garantiza que cualquier informe pueda ser reproducido en el futuro de manera exacta, siempre que se disponga de los mismos resultados consolidados en <code>resources/02-nextflow-results/01-project-data/nombre_del_proyecto</code> y de los archivos <code>params.yml</code> y <code>_quarto.yml</code> generados por el pipeline. La separación clara entre la preparación de datos y la generación del informe asegura trazabilidad, modularidad y consistencia en los reportes finales.
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab1-seccion4">
+  4<span>.</span> Manuales, repositorios y documentación complementaria
+</div>
+
+<p>
+  Esta sección final cierra la pestaña de metodología, dirigida principalmente a usuarios interesados en comprender en detalle cómo se ha generado el informe, qué datos se han utilizado y cómo se ha estructurado la integración entre Nextflow y Quarto. La información aquí proporcionada permite acceder a recursos adicionales, consultar la documentación técnica y localizar los repositorios de código para revisar o reutilizar los scripts empleados.
+</p>
+
+<p>
+  De manera similar a las tarjetas de inicio, se presentan a continuación algunas tarjetas informativas que facilitan el acceso rápido a los recursos clave relacionados con este proyecto:
+</p>
+
+```{r, results="asis"}
+cat(glue::glue('
+<div class="contact-cards">
+<div class="contact-card blue">
+  <i class="fa-brands fa-github fa-2x"></i>
+  <p><strong>Repositorio de código</strong></p>
+  <a href="https://github.com/adrichez/GenoScribe" target="_blank">GitHub del proyecto</a>
+</div>
+<div class="contact-card green">
+  <i class="fa-solid fa-book fa-2x"></i>
+  <p><strong>Documentación</strong></p>
+  <a href="https://github.com/adrichez/GenoScribe/blob/main/06-info/0102_TRANSCRIPTOMICS_SC_RNA_SEQ_GUIDE.md" target="_blank">Manual de uso</a>
+</div>
+<div class="contact-card purple">
+  <i class="fa-solid fa-calendar fa-2x"></i>
+  <p><strong>Fecha de creación del informe</strong></p>
+  <span>{Sys.Date()}</span>
+</div>
+</div>
+'), sep = "\n")
+```
+
+<p style="margin-top: 25px;">
+  Para cualquier duda adicional o consultas de soporte, se puede recurrir a los datos de contacto que se muestran en la pestaña de inicio del informe, donde se incluyen enlaces a la Unidad de Bioinformática del CSIC y al correo de soporte.
+</p>
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

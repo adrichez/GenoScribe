@@ -1,0 +1,699 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  experiment_name: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 5.4. ANÁLISIS FUNCIONAL Y ENRIQUECIMIENTO -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+library(stringr)
+library(glue)
+library(fs)
+library(dplyr)
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_bulk_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_bulk_rna_seq_pipeline_absoluta <- normalizePath(ruta_bulk_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+nombre_experimento <- basename(params$experiment_name)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta donde están los resultados de enriquecimiento
+ruta_enrichment <- file.path(params$project_path, "Resultados", nombre_experimento, "Enrichment")
+ruta_enrichment_relativa <- file.path(ruta_proyecto_relativa, "Resultados", nombre_experimento, "Enrichment")
+
+
+# Archivos
+archivos_enrichment <- list.files(ruta_enrichment, pattern = "^Enrichment_.*\\.(pdf|xls)$", full.names = TRUE)
+archivos_enrichment_relativa <- list.files(ruta_enrichment_relativa, pattern = "^Enrichment_.*\\.(pdf|xls)$", full.names = TRUE)
+
+
+# Extraer categoría funcional y comparación
+info_archivos <- str_match(
+  basename(archivos_enrichment_relativa),
+  "^Enrichment_((?:GO_(?:BP|CC|MF)|KEGG))_([^_]+_vs_[^_]+)_"
+)
+
+
+# Crear un data.frame con columnas útiles
+df_info <- data.frame(
+  ruta_archivo = archivos_enrichment_relativa,
+  categoria_funcional = info_archivos[,2],
+  comparacion = info_archivos[,3],
+  tipo = tools::file_ext(archivos_enrichment_relativa),
+  stringsAsFactors = FALSE
+)
+
+
+# Reemplazar "_" por ":" en la columna 'categoria_funcional'
+df_info$categoria_funcional <- str_replace_all(df_info$categoria_funcional, "_", ":")
+
+# Reemplazar "_" por " " en la columna 'comparacion'
+df_info$comparacion <- str_replace_all(df_info$comparacion, "_", " ")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatic Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion">
+  <h1>Section 5</h1>
+  <h2>Statistical Analysis of Gene Expression</h2>
+</div>
+
+<div class="informe-titulo-subseccion-unique">
+  <h1>Subsection 5.4</h1>
+  <h2>Functional and Enrichment Analysis</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This section aims to interpret the results of the differential expression analysis from a <strong>functional biological</strong> perspective, using <strong>enrichment analysis</strong> tools. Once the <strong>differentially expressed genes (DEGs)</strong> between experimental conditions are identified, it is evaluated whether certain <em>biological functions</em>, <em>cellular processes</em>, or <em>metabolic pathways</em> are overrepresented among these genes.
+  </p>
+
+  <p>
+    For this purpose, widely recognized databases such as <strong>Gene Ontology</strong> (categories <em>Biological Process</em>, <em>Molecular Function</em>, and <em>Cellular Component</em>) and <strong>KEGG</strong> are used, allowing the genes to be linked to known functions in model organisms. The analysis is performed individually for each <em>pairwise comparison</em> between conditions, which contextualizes the effects of each experimental contrast within specific functional frameworks.
+  </p>
+
+  <p>
+    Each set of results includes an interactive table with the <strong>enriched terms</strong> and their associated statistics (such as adjusted <em>p</em> values and number of genes involved), as well as <strong>graphical representations</strong> (barplots or dotplots) that visually summarize the most relevant findings. This information facilitates the prioritization of pathways and processes that could be involved in the observed differences, providing interpretable biological hypotheses.
+  </p>
+
+  <p>
+    Overall, this analysis constitutes a key component for linking transcriptional changes with underlying functional mechanisms, providing <strong>biological value</strong> and <strong>mechanistic context</strong> to the data obtained in previous stages of the gene expression pipeline.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of Contents for this Subsection
+</div>
+
+```{=html}
+```{r, results="asis"}
+cat('
+<div class="toc">
+  <ul>
+    <li>
+      <a href="05-Analisis-estadistico.html#tab3-seccion5">
+        5<span>.</span> Statistical Analysis of Gene Expression
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion5.4">
+            5.4. Functional and Enrichment Analysis
+          </a>
+          <ul>
+')
+
+comparaciones <- unique(df_info$comparacion)
+for (i in seq_along(comparaciones)) {
+  comp <- comparaciones[i]
+  cat(glue::glue('
+            <li>
+              <a href="#tab3-seccion5.4.{i}">
+                5.4.{i}. Comparison: {comp}
+              </a>
+              <ul>
+  '))
+
+  subset_comp <- df_info[df_info$comparacion == comp, ]
+  categorias <- unique(subset_comp$categoria_funcional)
+
+  for (j in seq_along(categorias)) {
+    categ <- categorias[j]
+    cat(glue::glue('
+                <li>
+                  <a href="#tab3-seccion5.4.{i}.{j}">
+                    5.4.{i}.{j}. Functional Category: {categ}
+                  </a>
+                </li>
+    '))
+  }
+
+  cat('
+              </ul>
+            </li>
+  ')
+}
+
+cat('
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+')
+```
+```
+
+```{=html}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.4">
+  5.4. Functional and Enrichment Analysis
+</div>
+
+<p>
+  Once the differentially expressed genes (DEGs) between experimental conditions are identified, it is essential to interpret these changes in a broader biological context. 
+  For this purpose, a <strong>functional and enrichment analysis</strong> is conducted, which allows detection of whether certain functions, biological processes, or metabolic pathways are significantly represented among the altered genes.
+</p>
+
+<p>
+  This type of analysis is based on comparing the list of genes identified as differentially expressed against widely validated functional databases, in order to identify categories that appear more frequently than expected by chance.
+</p>
+
+<p>
+  In this project, the enrichment analysis has been performed for each comparison between conditions, using the following databases:
+</p>
+
+<ul>
+  <li><strong>Gene Ontology - Biological Process (GO:BP)</strong> <strong>&rArr;</strong> Biological processes involving the genes, such as "response to stress" or "cell cycle regulation".</li>
+  <li><strong>Gene Ontology - Molecular Function (GO:MF)</strong> <strong>&rArr;</strong> Molecular functions of gene products, such as "reverse transcriptase activity" or "ATP binding".</li>
+  <li><strong>Gene Ontology - Cellular Component (GO:CC)</strong> <strong>&rArr;</strong> Cellular localization or complexes where gene products act, such as "plasma membrane" or "nucleoplasm".</li>
+  <li><strong>KEGG</strong> <strong>&rArr;</strong> Known metabolic and signaling pathways, such as "MAPK pathway", "flavonoid biosynthesis", or "pathogen response".</li>
+</ul>
+
+<p>
+  For each category and comparison, two types of results are presented:
+</p>
+
+<ul>
+  <li>A <strong>PDF</strong> file with a visual representation of the most enriched terms (typically barplots or dotplots).</li>
+  <li>An <strong>Excel (.xls)</strong> file with a detailed list of all significant terms, ranked by <em>p</em> value or FDR, along with the number of genes involved.</li>
+</ul>
+
+<p>
+  Below, the results of functional enrichment for each comparison analyzed in this experiment are listed, organized by GO categories (BP, CC, and MF) and KEGG.
+</p>
+
+<div class="box-files-nested" style="margin-top: 30px;">
+
+```{r, results='asis'}
+# Función para asignar clase por extensión
+asignar_clase <- function(nombre_archivo) {
+  if (grepl("\\.html$", nombre_archivo)) {
+    "file-html"
+  } else if (grepl("\\.zip$", nombre_archivo)) {
+    "file-zip"
+  } else if (grepl("\\.fastq(\\..+)?\\.gz$", nombre_archivo)) {
+    "file-fastqgz"
+  } else if (grepl("\\.bam$", nombre_archivo)) {
+    "file-bam"
+  } else if (grepl("\\.bai$", nombre_archivo)) {
+    "file-bai"
+  } else if (grepl("\\.sam$", nombre_archivo)) {
+    "file-sam"
+  } else if (grepl("\\.metrics$", nombre_archivo)) {
+    "file-metrics"
+  } else if (grepl("\\.ht2$", nombre_archivo)) {
+    "file-ht2"
+  } else if (grepl("\\.xlsx$", nombre_archivo)) {
+    "file-xlsx"
+  } else if (grepl("\\.xls$", nombre_archivo)) {
+    "file-xls"
+  } else if (grepl("\\.pdf$", nombre_archivo)) {
+    "file-pdf"
+  } else {
+    "file-default"
+  }
+}
+
+# Verificar si hay archivos
+if (nrow(df_info) == 0) {
+  cat('<p><em>No functional enrichment files were found in the specified path.</em></p>\n')
+} else {
+  cat("<ol>\n")  # Lista numerada de comparaciones
+  
+  for (comp in unique(df_info$comparacion)) {
+    cat(glue::glue('<li><strong>{comp}</strong>\n<ul style="margin-top: 4px; margin-bottom: 4px;">\n'))
+    
+    # Filtrar archivos de esta comparación
+    subset_comp <- df_info[df_info$comparacion == comp, ]
+    
+    for (cat in unique(subset_comp$categoria_funcional)) {
+      subset_cat <- subset_comp[subset_comp$categoria_funcional == cat, ]
+      
+      # Obtener rutas
+      ruta_archivo_xls <- subset_cat$ruta_archivo[subset_cat$tipo == "xls"]
+      ruta_archivo_pdf <- subset_cat$ruta_archivo[subset_cat$tipo == "pdf"]
+      
+      # Asignar clases
+      clase_xls <- if (length(ruta_archivo_xls)) asignar_clase(ruta_archivo_xls) else NULL
+      clase_pdf <- if (length(ruta_archivo_pdf)) asignar_clase(ruta_archivo_pdf) else NULL
+      
+      # Mostrar si existen
+      cat(glue::glue('<li style="margin: 0;"><strong>{cat}</strong>\n<ul style="margin: 0 0 4px 12px;">\n'))
+      
+      if (length(ruta_archivo_xls)) {
+        cat(glue::glue('<li class="{clase_xls}" style="margin: 0;"><a href="{ruta_archivo_xls}" target="_blank">Results Table (.xls)</a></li>\n'))
+      }
+      
+      if (length(ruta_archivo_pdf)) {
+        cat(glue::glue('<li class="{clase_pdf}" style="margin: 0;"><a href="{ruta_archivo_pdf}" target="_blank">Summary Plot (.pdf)</a></li>\n'))
+      }
+      
+      cat('</ul></li>\n')
+    }
+    
+    cat("</ul></li>\n\n")
+  }
+  
+  cat("</ol>\n")
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Imprimir el enlace
+cat(glue::glue('
+<p style="text-align:center; margin-top: 4px; margin-bottom: 2px;">
+  <a href="{ruta_enrichment_relativa}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explore the files in the folder "{basename(ruta_enrichment_relativa)}" here
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Next, a structured summary of the functional enrichment analyses performed for each comparison between experimental conditions is presented. 
+  For each comparison, four main functional categories have been considered: <strong>GO:BP</strong> (biological processes), <strong>GO:MF</strong> (molecular functions), <strong>GO:CC</strong> (cellular components), and <strong>KEGG</strong> (metabolic and signaling pathways). 
+</p>
+
+<p>
+  The following sections provide a detailed look at the results obtained for each comparison. Each section includes:
+</p>
+
+<ul>
+  <li>An <strong>interactive</strong> visualization of the enriched terms tables, including information such as adjusted p-values (FDR), number of genes involved, and functional description.</li>
+  <li>A link to the corresponding <strong>PDF document</strong>, which graphically summarizes the most significant terms (typically using barplots or dotplots).</li>
+</ul>
+
+<p>
+  This analysis allows the identification of the most relevant biological functions and pathways in each experimental context, thereby facilitating the biological interpretation of differentially expressed genes.
+</p>
+
+```{r}
+library(readxl)
+library(DT)
+library(htmltools)
+library(glue)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+
+secciones <- tagList()  # Contenedor general
+
+comparaciones <- unique(df_info$comparacion)
+
+for (comp in comparaciones) {
+  # Contador para el título de la comparación
+  i <- 1
+
+  # Título general de la comparación
+  seccion_comp <- tagList(
+    HTML(glue('
+      <div style="height: 15px; background-color: transparent;"></div>
+
+      <div class="titulo3" id="tab3-seccion5.4.{i}" style="padding-bottom: 10px;">
+        5.4.{i}. Comparison: {comp}
+      </div>
+
+      <div style="height: 15px; background-color: transparent;"></div>
+
+      <p style="margin-bottom: 22px;">
+        The comparison <strong>{comp}</strong> corresponds to the differential expression analysis between two specific biological or experimental conditions within the study design. This analysis aims to identify genes whose transcriptional activity varies significantly between the two groups, which may reflect physiological processes, cellular responses, or relevant molecular mechanisms.
+      </p>
+
+      <p style="margin-bottom: 5px;">
+        Based on the differentially expressed genes (DEGs) detected, functional enrichment analyses have been conducted to associate these genes with biological functions, cellular processes, or metabolic pathways. This allows the observed changes to be interpreted in a broader functional context, facilitating the understanding of possible biological implications derived from the comparison <strong>{comp}</strong>.
+      </p>
+    '), sep = "\n")
+  )
+  
+  # Subset para esta comparación
+  subset_comp <- df_info[df_info$comparacion == comp, ]
+
+  categorias <- unique(subset_comp$categoria_funcional)
+  
+  # Contador para el título de la comparación
+  j <- 1
+
+  # Iniciar el bucle
+  for (categ in categorias) {
+    # Escoger la categoría actual
+    subset_categ <- subset_comp[subset_comp$categoria_funcional == categ, ]
+    
+    # Rutas relevantes
+    ruta_archivo_xls <- subset_categ$ruta_archivo[subset_categ$tipo == "xls"]
+    ruta_archivo_pdf <- subset_categ$ruta_archivo[subset_categ$tipo == "pdf"]
+    
+    if (length(ruta_archivo_xls) > 0) {
+      tmp <- read.csv(ruta_archivo_xls, sep = "\t", row.names = 1, check.names = FALSE)
+      if (any(duplicated(rownames(tmp)))) {
+        rownames(tmp) <- make.unique(rownames(tmp))
+      }
+      
+      seccion_categ <- tagList(
+        HTML(glue('
+          <div style="height: 10px; background-color: transparent;"></div>
+
+          <div class="titulo4" id="tab3-seccion5.4.{i}.{j}" style="padding-bottom: 10px;">
+            5.4.{i}.{j}. Functional Category: {categ}
+          </div>
+
+          <div style="height: 10px; background-color: transparent;"></div>
+        '), sep = "\n"),
+        
+        HTML(glue('
+          <p style="margin-bottom: 22px;">
+            This section focuses on the functional category <strong>{categ}</strong>, which groups a set of genes associated with specific biological functions that may be involved in the observed changes between the conditions compared in <strong>{comp}</strong>. The enrichment analysis allows determining whether this category is overrepresented among the differentially expressed genes, which may indicate a relevant functional implication in the experimental context.
+          </p>
+
+          <p style="margin-bottom: 22px;">
+            Below is the table of enriched terms within this category, along with the associated statistical parameters. These results allow prioritization of functions or cellular processes that may be modulated in response to the evaluated treatment or condition.
+          </p>
+        '), sep = "\n"),
+        
+        DT::datatable(
+          tmp,
+          escape = FALSE,
+          options = list(
+              scrollX = TRUE,
+              scrollY = "500px",
+              scrollCollapse = TRUE,
+              paging = FALSE,
+              lengthChange = FALSE,
+              info = FALSE,
+              dom = 'ft', # Only table
+              language = list(
+                url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+              )
+            ),
+          class = 'stripe hover compact'
+        ),
+        
+        HTML(glue('
+          <p style="text-align:center; margin-top: 17px; margin-bottom: 20px">
+            <a href="{ruta_archivo_xls}" 
+              download="{basename(ruta_archivo_xls)}" 
+              class="boton-file-download">
+              <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(ruta_archivo_xls)}"
+            </a>
+          </p>
+
+          <p style="margin-bottom: 22px;">
+            Next, the visualizations generated from the functional enrichment analysis for the category <strong>{categ}</strong> are presented. These plots allow intuitive exploration of overrepresented terms or biological pathways, as well as their statistical relevance and relation to the genes detected in the comparison <strong>{comp}</strong>.
+          </p>
+
+          <p style="margin-bottom: 22px;">
+            Depending on the type of analysis performed, the results may include bar plots with the most significant GO terms, pathway maps (such as those provided by KEGG), or graph-type representations reflecting the functional connections among enriched terms. These visualizations complement the results table and help interpret the data from a more integrated biological perspective.
+          </p>
+        '), sep = "\n"),
+        
+        if (length(ruta_archivo_pdf) > 0) {
+          HTML(glue('
+          <div class="iframe-container" style="margin-top: 38px;">
+            <iframe src="{ruta_archivo_pdf}" frameborder="0" style="height: 700px;"></iframe>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 25px; margin-top: 30px; margin-bottom: 15px;">
+            <a href="{ruta_archivo_pdf}"
+              target="_blank" 
+              class="boton-iframe">
+              <i class="fa-solid fa-file-lines"></i> Open file in a new page
+            </a>
+
+            <a href="{ruta_archivo_pdf}"
+              download="{basename(ruta_archivo_pdf)}"
+              class="boton-iframe-download">
+              <i class="fa-solid fa-file-arrow-down"></i> Download file
+            </a>
+          </div>
+        '), sep = "\n") 
+        
+        } else {
+          HTML(glue('
+          <div class="alert-warning alert-box">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <b>Warning</b><br>
+            The PDF document with plots for this category was not found at the specified path:<br>
+            <code>{ruta_archivo_pdf}</code>.<br>
+            Please ensure that these files are correctly provided in this specific path.
+          </div>
+          '), sep = "\n")
+        }
+      )
+      
+      # Agregar la subsección de categoría a la sección de la comparación
+      seccion_comp <- tagAppendChild(seccion_comp, seccion_categ)
+    }
+
+    # Incrementar el contador del título de la categoría
+    j <- j + 1
+  }
+  
+  # Agregar la sección completa de esta comparación al contenedor principal
+  secciones <- tagAppendChild(secciones, seccion_comp)
+
+  # Incrementar el contador del título de la comparación
+  i <- i + 1
+}
+
+# Mostrar el contenido final en el documento
+browsable(secciones)
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  This functional and enrichment analysis completes the full workflow of gene expression analysis, from the initial assessment of read quality to the biological interpretation of differentially expressed genes. 
+  Throughout this process, raw sequencing data has been transformed into biologically meaningful information, allowing not only the identification of genes with relevant expression patterns but also their contextualization within key cellular pathways and processes. 
+  This systematic approach provides a deeper understanding of the molecular mechanisms involved in the studied conditions and lays the groundwork for future experimental hypotheses, functional validations, or therapeutic strategies.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

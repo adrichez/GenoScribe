@@ -1,0 +1,65 @@
+name: genoscribe
+
+
+channels:
+  - conda-forge
+  - bioconda
+
+
+dependencies:
+  # Python
+  - python=3.11
+
+  # Herramientas bioinformáticas
+  - fastqc
+  - fastp
+  - hisat2
+  - multiqc
+  - bioconductor-deseq2
+  - bioconductor-tximport
+
+  # R base y paquetes del sistema R
+  - r-base=4.3
+
+  # Paquetes R que necesitamos (equivalentes a install.packages)
+  - r-shiny
+  - r-xfun
+  - r-knitr
+  - r-rmarkdown
+  - r-quarto
+  - r-fs
+  - r-jsonlite
+  - r-dplyr
+  - r-dt
+  - r-glue
+  - r-purrr
+  - r-stringr
+  - r-ggplot2
+  - r-readxl
+  - r-readr
+  - r-htmltools
+  - r-bslib
+  - r-ragg
+  - r-plotly
+  - r-scales
+  - r-tidyverse
+  - r-tidyr
+  - r-tibble
+  - r-magrittr
+  - r-htmlwidgets
+  - r-pheatmap
+  - r-httpuv
+  - r-promises
+  - r-remotes
+  - r-qiime2r
+  - r-codetools
+
+  # Paquetes Bioconductor necesarios
+  - bioconductor-biocgenerics
+  - bioconductor-biostrings
+  - bioconductor-genomicranges
+  - bioconductor-iranges
+  - bioconductor-s4vectors
+
+  # Librerías Python adicionales
+  - ruamel.yaml

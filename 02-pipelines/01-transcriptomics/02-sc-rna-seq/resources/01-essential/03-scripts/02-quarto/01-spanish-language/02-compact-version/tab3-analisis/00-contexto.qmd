@@ -1,0 +1,774 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 0. CONTEXTO -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        ¡Hola! Soy <strong>Geni</strong>, el asistente inteligente de <strong>GenoScribe</strong>.  
+        Estoy aquí para ayudarte a explorar de forma interactiva el contenido de este informe bioinformático.
+      </p>
+
+      <p>
+        Cuando me haces una pregunta, primero intento reconocer si coincide con alguno de los patrones o expresiones que conozco.  
+        Si encuentro una coincidencia, te responderé directamente con una respuesta predefinida, diseñada para ser rápida, clara e incluso un poco ingeniosa.  
+        Si no reconozco el patrón, entonces activo mis herramientas de búsqueda: genero representaciones vectoriales (embeddings) y busco los fragmentos más relevantes entre varios documentos —incluyendo el propio informe, archivos PDF y HTML externos, y sesiones de preguntas y respuestas (QA).  
+        A partir de esa información, creo un resumen que intenta ofrecerte una respuesta coherente y útil basada en el contenido existente.
+      </p>
+
+      <p>
+        Se debe tener en cuenta que este entorno es experimental. No utilizo grandes modelos de lenguaje, por lo que algunas respuestas pueden ser aproximadas o incompletas.  
+        El objetivo principal es facilitar una visualización rápida, comprensible y reproducible de la información contenida en los documentos, permitiendo una exploración más dinámica del informe.
+      </p>
+
+      <p>
+        Actualmente, los resultados pueden variar en precisión, ya que empleo modelos ligeros y locales para asegurar que la aplicación funcione en cualquier entorno sin necesidad de servidores externos.  
+        Sin embargo, la estructura del sistema está preparada para mejorar notablemente su rendimiento en el futuro mediante la integración con modelos más avanzados o APIs externas.  
+        Para comenzar, simplemente escribe tu pregunta en el campo inferior y deja que yo me encargue del resto. ¡Prometo poner todo mi código en ello!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Rutas de la carpeta "analysis" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "analysis")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "analysis")
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+ruta_archives_tmp_contexto <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "00-contexto")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_contexto)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis Bioinformático Completo</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Sección</h1>
+  <h2>Introducción Contextual</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    Esta pestaña tiene como propósito ofrecer una <strong>visión contextual y estructurada</strong> del análisis transcriptómico a nivel de célula única (<em>Single-Cell RNA-Seq</em>) ejecutado mediante la integración de <em>pipelines</em> primarios (como <code>Cell Ranger</code>) y el potente entorno analítico de <code>Seurat</code> en <code>R</code>. Actúa como una <strong>guía introductoria y mapa de navegación</strong>, describiendo el flujo de trabajo secuencial, la lógica subyacente y los contenidos interactivos que el investigador encontrará en cada uno de los módulos posteriores.
+  </p>
+
+  <p>
+    A diferencia de la secuenciación masiva tradicional (donde la señal del tejido se promedia), este estudio disecciona la heterogeneidad celular absoluta. El informe documenta exhaustivamente cada hito del proceso: desde el riguroso filtrado de calidad célula a célula, la reducción de dimensionalidad y el descubrimiento de linajes, hasta el modelado estadístico del impacto de las <strong>variables de estudio (ej. Referencia vs Test)</strong> y su correspondiente traducción funcional.
+  </p>
+
+  <p>
+    Esta arquitectura modular favorece una lectura progresiva y adaptada a distintos perfiles (técnicos, biológicos o clínicos). A continuación, se desglosa el contenido de los 10 bloques principales que conforman este informe:
+  </p>
+
+  <ul>
+    <li>
+      <strong>1. Revisión inicial de muestras y metadatos &rArr;</strong> Punto de partida que certifica la trazabilidad del proyecto. Ofrece una visión de la organización del repositorio, la procedencia de los datos crudos y el diseño experimental, asegurando la consistencia antes del procesamiento técnico.
+    </li>
+    <li>
+      <strong>2. Control de calidad y filtrado (QC) &rArr;</strong> Evaluación técnica implacable a múltiples niveles. Comienza auditando las métricas de secuenciación primaria (lecturas y alineamientos) y culmina con el filtrado celular estricto (eliminando células muertas, dobletes o material genético vacío) para garantizar que solo las células biológicamente viables pasen a la fase de agrupamiento.
+    </li>
+    <li>
+      <strong>3. Reducción de dimensionalidad y clustering &rArr;</strong> El núcleo topológico del estudio. Las células de alta calidad se proyectan espacialmente (mediante PCA y UMAP) basándose en sus similitudes transcripcionales. Aquí se evalúan y comparan las estrategias matemáticas con y sin corrección de efecto lote (<em>Integrated</em> vs <em>Merged</em>) para definir las agrupaciones celulares de forma robusta.
+    </li>
+    <li>
+      <strong>4. Identificación de marcadores (clústeres ciegos) &rArr;</strong> Extracción algorítmica de las firmas génicas basales. Se aplican contrastes estadísticos exhaustivos para descubrir qué genes definen intrínsecamente a cada agrupación matemática, sentando las bases moleculares para su futura identificación visual y fenotípica.
+    </li>
+    <li>
+      <strong>5. Anotación celular (automática y manual) &rArr;</strong> La fase de traducción biológica. Transforma los "clústeres numéricos" en identidades celulares reales (ej. <em>Macrófagos, Células T, Astrocitos</em>). Este proceso combina proyecciones rápidas contra atlas de referencia mundiales con una curación manual profunda y experta a diferentes niveles de resolución.
+    </li>
+    <li>
+      <strong>6. Agrupación de poblaciones biológicas &rArr;</strong> Consolidación del modelo definitivo. Muestra la evolución iterativa de las anotaciones hasta alcanzar el mapa topológico final consensuado, sirviendo como el marco inamovible sobre el que se ejecutarán los análisis de perturbación posteriores.
+    </li>
+    <li>
+      <strong>7. Análisis de Expresión Diferencial &rArr;</strong> El epicentro estadístico para responder a las hipótesis de trabajo. Presenta una arquitectura bifocal: por un lado, ejecuta un <em>Pipeline Estándar</em> que contrasta el transcriptoma de la condición de prueba (Test) frente al estado basal (Referencia) dentro de cada linaje celular; y por otro, integra un bloque de <em>Análisis Dirigidos</em> para resolver diseños complejos o comparaciones <em>ad-hoc</em>. Esto permite identificar con precisión quirúrgica el catálogo de genes (DEGs) alterados por el experimento.
+    </li>
+    <li>
+      <strong>8. Análisis funcional y de enriquecimiento &rArr;</strong> La interpretación sistémica de los datos. Proyecta las listas de DEGs alterados sobre bases del conocimiento global (como GO y KEGG) utilizando algoritmos avanzados (ORA y GSEA) para revelar qué rutas metabólicas, organelas o procesos de señalización se han visto comprometidos por la perturbación.
+    </li>
+    <li>
+      <strong>9. Análisis personalizados y ad hoc &rArr;</strong> Un ecosistema de exploración dinámica de alto nivel. Este repositorio a medida está destinado a alojar visualizaciones dirigidas (ej. <em>FeaturePlots</em> de genes concretos), tablas atípicas o <em>subclusterings</em> específicos solicitados expresamente por el equipo investigador fuera del flujo de trabajo automatizado.
+    </li>
+    <li>
+      <strong>10. Conclusiones y perspectivas &rArr;</strong> El cierre traslacional del informe. Sintetiza los hallazgos biológicos más relevantes sobre la arquitectura celular y la resiliencia de los linajes, proponiendo metodologías de validación experimental y las futuras líneas de integración multi-ómica (ej. Transcriptómica Espacial, Interactoma).
+    </li>
+  </ul>
+
+  <p>
+    En definitiva, esta pestaña actúa como el <strong>punto de acceso unificado al ecosistema de análisis</strong>. Navegando mediante el índice interactivo inferior, el investigador podrá transitar fluidamente a través de toda la cronología bioinformática, obteniendo un entendimiento profundo, dinámico y totalmente reproducible de su modelo biológico.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos general
+</div>
+
+<p>
+  Se presenta a continuación el índice interactivo de la pestaña de <strong>Análisis</strong>, el cual organiza de forma estructurada cada etapa del proceso seguido. Desde aquí, es posible navegar fácilmente entre las distintas secciones del informe.
+</p>
+
+```{=html}
+```{r, results="asis"}
+
+cat('
+<!-- ====================================================================================================================== -->
+<!-- APERTURA -->
+<!-- ====================================================================================================================== -->
+<div class="toc">
+  <ul>
+
+    <!-- ====================================================================================================================== -->
+    <!-- 1. REVISION INICIAL -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="01-revision-inicial.html#tab3-seccion1">
+        1<span>.</span> Revisión inicial de muestras y metadatos
+      </a>
+      <ul>
+        <li>
+          <a href="01-revision-inicial.html#tab3-seccion1.1">
+            1.1. Organización y estructura del directorio del proyecto
+          </a>
+        </li>
+        <li>
+          <a href="01-revision-inicial.html#tab3-seccion1.2">
+            1.2. Diseño experimental y metadatos clínicos
+          </a>
+        </li>
+        <li>
+          <a href="01-revision-inicial.html#tab3-seccion1.3">
+            1.3. Trazado de secuenciación y datos crudos
+          </a>
+        </li>
+      </ul>
+    </li>
+
+
+
+    <!-- ====================================================================================================================== -->
+    <!-- 2. CONTROL CALIDAD -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="02-control-calidad.html#tab3-seccion2">
+        2<span>.</span> Control de calidad y filtrado (QC)
+      </a>
+      <ul>
+        <li>
+          <a href="02-control-calidad.html#tab3-seccion2.1">
+            2.1. Calidad del procesamiento primario (Cell Ranger)
+          </a>
+          <ul>
+            <li>
+              <a href="02-control-calidad.html#tab3-seccion2.1.1">
+                2.1.1. Evaluación técnica individualizada
+              </a>
+            </li>
+            <li>
+              <a href="02-control-calidad.html#tab3-seccion2.1.2">
+                2.1.2. Consolidación de métricas globales
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="02-control-calidad.html#tab3-seccion2.2">
+            2.2. Evaluación de lecturas crudas (Opcional: FastQC / Fastp)
+          </a>
+          <ul>
+            <li>
+              <a href="02-control-calidad.html#tab3-seccion2.2.1">
+                2.2.1. Control de calidad mediante Fastp
+              </a>
+            </li>
+            <li>
+              <a href="02-control-calidad.html#tab3-seccion2.2.2">
+                2.2.2. Control de calidad mediante FastQC
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="02-control-calidad.html#tab3-seccion2.3">
+            2.3. Control de calidad y filtrado celular (Seurat)
+          </a>
+        </li>
+      </ul>
+    </li>
+
+
+
+    <!-- ====================================================================================================================== -->
+    <!-- 3. CLUSTERING -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="03-clustering.html#tab3-seccion3">
+        3<span>.</span> Reducción de dimensionalidad y clustering
+      </a>
+      <ul>
+        <li>
+          <a href="03-clustering.html#tab3-seccion3.1">
+            3.1. Reducción lineal (Análisis de Componentes Principales - PCA)
+          </a>
+          <ul>
+            <li>
+              <a href="03-clustering.html#tab3-seccion3.1.1">
+                3.1.1. Exploración visual de Componentes Principales
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="03-clustering.html#tab3-seccion3.2">
+            3.2. Estrategias de Agrupamiento: Merged vs. Integrated
+          </a>
+        </li>
+        <li>
+          <a href="03-clustering.html#tab3-seccion3.3">
+            3.3. Topología y Agrupamiento sin corrección de lote (Merged)
+          </a>
+          <ul>
+            <li>
+              <a href="03-clustering.html#tab3-seccion3.3.1">
+                3.3.1. Proyecciones espaciales (UMAP)
+              </a>
+            </li>
+            <li>
+              <a href="03-clustering.html#tab3-seccion3.3.2">
+                3.3.2. Proporciones celulares y abundancia
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="03-clustering.html#tab3-seccion3.4">
+            3.4. Topología y Agrupamiento con alineamiento de lote (Integrated)
+          </a>
+          <ul>
+            <li>
+              <a href="03-clustering.html#tab3-seccion3.4.1">
+                3.4.1. Proyecciones espaciales (UMAP)
+              </a>
+            </li>
+            <li>
+              <a href="03-clustering.html#tab3-seccion3.4.2">
+                3.4.2. Análisis estadístico y proporciones celulares
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+
+
+    <!-- ====================================================================================================================== -->
+    <!-- 4. MARCADORES -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="04-marcadores.html#tab3-seccion4">
+        4<span>.</span> Identificación de marcadores (clusters ciegos)
+      </a>
+      <ul>
+        <li>
+          <a href="04-marcadores.html#tab3-seccion4.1">
+            4.1. Fundamentos del Análisis de Expresión Diferencial
+          </a>
+        </li>
+        <li>
+          <a href="04-marcadores.html#tab3-seccion4.2">
+            4.2. Firmas génicas en agrupamiento basal (Merged)
+          </a>
+          <ul>
+            <li>
+              <a href="04-marcadores.html#tab3-seccion4.2.1">
+                4.2.1. Visualización global de marcadores
+              </a>
+            </li>
+            <li>
+              <a href="04-marcadores.html#tab3-seccion4.2.2">
+                4.2.2. Escrutinio estadístico por clúster (Cluster vs All)
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="04-marcadores.html#tab3-seccion4.3">
+            4.3. Firmas génicas en agrupamiento alineado (Integrated)
+          </a>
+          <ul>
+            <li>
+              <a href="04-marcadores.html#tab3-seccion4.3.1">
+                4.3.1. Visualización global de marcadores
+              </a>
+            </li>
+            <li>
+              <a href="04-marcadores.html#tab3-seccion4.3.2">
+                4.3.2. Escrutinio estadístico por clúster (Cluster vs All)
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+
+
+    <!-- ====================================================================================================================== -->
+    <!-- 5. ANOTACION -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="05-anotacion.html#tab3-seccion5">
+        5<span>.</span> Anotación celular (automática y manual)
+      </a>
+      <ul>
+        <li>
+          <a href="05-anotacion.html#tab3-seccion5.1">
+            5.1. Fundamentos de la Inferencia Fenotípica
+          </a>
+        </li>
+        <li>
+          <a href="05-anotacion.html#tab3-seccion5.2">
+            5.2. Anotación Automática basada en Atlas de Referencia
+          </a>
+        </li>
+        <li>
+          <a href="05-anotacion.html#tab3-seccion5.3">
+            5.3. Anotación Manual Curada (Resolución Específica)
+          </a>
+          <ul>
+            <li>
+              <a href="05-anotacion.html#tab3-seccion5.3.1">
+                5.3.1. Resolución Fina: Nivel de "Etapa"
+              </a>
+            </li>
+            <li>
+              <a href="05-anotacion.html#tab3-seccion5.3.2">
+                5.3.2. Resolución Agrupada: Nivel de "Big Etapa"
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+
+
+
+    <!-- ====================================================================================================================== -->
+    <!-- 6. AGRUPACION -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="06-agrupacion.html#tab3-seccion6">
+        6<span>.</span> Agrupación de poblaciones biológicas
+      </a>
+      <ul>
+        <li>
+          <a href="06-agrupacion.html#tab3-seccion6.1">
+            6.1. Fundamentos de la Consolidación Fenotípica
+          </a>
+        </li>
+        <li>
+          <a href="06-agrupacion.html#tab3-seccion6.2">
+            6.2. Evolución y Mapas Topológicos (Versiones)
+          </a>
+        </li>
+      </ul>
+    </li>
+
+
+
+    <!-- ====================================================================================================================== -->
+    <!-- 7. EXPRESION DIFERENCIAL -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="07-expresion-diferencial.html#tab3-seccion7">
+        7<span>.</span> Análisis de Expresión Diferencial
+      </a>
+      <ul>
+        <li>
+          <a href="07-expresion-diferencial.html#tab3-seccion7.1">
+            7.1. Fundamentos de la Expresión Diferencial
+          </a>
+        </li>
+        <li>
+          <a href="07-expresion-diferencial.html#tab3-seccion7.2">
+            7.2. Pipeline Estándar: Contrastes de Identidad y Genotipo
+          </a>
+          <ul>
+            <li>
+              <a href="07-expresion-diferencial.html#tab3-seccion7.2.1">
+                7.2.1. Exploración Preliminar en Clústeres Numéricos (Seurat)
+              </a>
+            </li>
+            <li>
+              <a href="07-expresion-diferencial.html#tab3-seccion7.2.2">
+                7.2.2. Exploración en Anotaciones Automáticas (Bases de Datos)
+              </a>
+            </li>
+            <li>
+              <a href="07-expresion-diferencial.html#tab3-seccion7.2.3">
+                7.2.3. Análisis Definitivo en Poblaciones Consolidadas (Manual)
+              </a>
+              <ul>
+                <li>
+                  <a href="07-expresion-diferencial.html#tab3-seccion7.2.3.1">
+                    7.2.3.1. Histórico de Versiones y Tipos de Contraste
+                  </a>
+                </li>
+                <li>
+                  <a href="07-expresion-diferencial.html#tab3-seccion7.2.3.2">
+                    7.2.3.2. Contraste Intrapoblacional (Referencia vs Test): Evaluación Detallada
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="07-expresion-diferencial.html#tab3-seccion7.3">
+            7.3. Análisis Dirigidos: Comparaciones Personalizadas (Ad-hoc)
+          </a>
+        </li>
+      </ul>
+    </li>
+
+
+
+    <!-- ====================================================================================================================== -->
+    <!-- 8. ENRIQUECIMIENTO -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="08-enriquecimiento.html#tab3-seccion8">
+        8<span>.</span> Análisis Funcional y de Enriquecimiento
+      </a>
+      <ul>
+        <li>
+          <a href="08-enriquecimiento.html#tab3-seccion8.1">
+            8.1. Fundamentos del Análisis de Vías Biológicas
+          </a>
+        </li>
+        <li>
+          <a href="08-enriquecimiento.html#tab3-seccion8.2">
+            8.2. Pipeline Estándar: Contrastes del Diseño Experimental
+          </a>
+          <ul>
+            <li>
+              <a href="08-enriquecimiento.html#tab3-seccion8.2.1">
+                8.2.1. Exploración Global: Arquitectura del Enriquecimiento Estándar
+              </a>
+            </li>
+            <li>
+              <a href="08-enriquecimiento.html#tab3-seccion8.2.2">
+                8.2.2. Análisis Definitivo: Enriquecimiento Intrapoblacional (Referencia vs Test)
+              </a>
+              <ul>
+                <li>
+                  <a href="08-enriquecimiento.html#tab3-seccion8.2.2.1">
+                    8.2.2.1. Bases de Datos Analizadas (GO y KEGG)
+                  </a>
+                </li>
+                <li>
+                  <a href="08-enriquecimiento.html#tab3-seccion8.2.2.2">
+                    8.2.2.2. Guía de Interpretación de Archivos (ORA y GSEA)
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="08-enriquecimiento.html#tab3-seccion8.3">
+            8.3. Análisis Dirigidos: Comparaciones Personalizadas (Ad-hoc)
+          </a>
+        </li>
+      </ul>
+    </li>
+
+
+
+    <!-- ====================================================================================================================== -->
+    <!-- 9. EXTRA -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="09-extra.html#tab3-seccion9">
+        9<span>.</span> Análisis personalizados y ad hoc
+      </a>
+      <ul>
+        <li>
+          <a href="09-extra.html#tab3-seccion9.1">
+            9.1. Naturaleza de las Peticiones Adicionales
+          </a>
+        </li>
+        <li>
+          <a href="09-extra.html#tab3-seccion9.2">
+            9.2. Repositorio de Exploración Dirigida
+          </a>
+        </li>
+      </ul>
+    </li>
+
+
+
+    <!-- ====================================================================================================================== -->
+    <!-- 10. CONCLUSIONES -->
+    <!-- ====================================================================================================================== -->
+    <li>
+      <a href="10-conclusiones.html#tab3-seccion10">
+        10<span>.</span> Conclusiones y perspectivas
+      </a>
+      <ul>
+        <li>
+          <a href="10-conclusiones.html#tab3-seccion10.1">
+            10.1. Conclusiones Biológicas Fundamentales
+          </a>
+        </li>
+        <li>
+          <a href="10-conclusiones.html#tab3-seccion10.2">
+            10.2. Perspectivas y Direcciones Futuras
+          </a>
+        </li>
+      </ul>
+    </li>
+
+
+
+<!-- ====================================================================================================================== -->
+<!-- CIERRE -->
+<!-- ====================================================================================================================== -->
+  </ul>
+</div>
+')
+
+```
+```
+
+```{=html}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Insertar aquí en el caso de que fuera necesario -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

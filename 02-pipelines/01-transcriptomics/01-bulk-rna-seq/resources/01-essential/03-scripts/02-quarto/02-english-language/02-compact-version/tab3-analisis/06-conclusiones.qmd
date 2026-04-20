@@ -1,0 +1,341 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  experiment_name: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 6. CONCLUSIONES Y PERSPECTIVAS -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Insertar aquí en el caso de que fuera necesario -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatic Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 6</h1>
+  <h2>Conclusions and perspectives</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This final section summarizes the main findings obtained throughout the differential gene expression analysis, 
+    highlighting the <strong>identification of key genes</strong> and their <strong>functional interpretation</strong> in the studied biological context. 
+    Furthermore, <strong>future research directions</strong> are proposed, aimed at experimentally validating the results, exploring gene regulation through 
+    <em>network analyses</em>, and integrating these data with other omics levels to achieve a more comprehensive understanding of the molecular processes involved.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion6">
+        6<span>.</span> Conclusions and perspectives
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion6">
+  6<span>.</span> Conclusions and perspectives
+</div>
+
+<p>
+  Throughout this report, a comprehensive transcriptomic analysis has been conducted, covering all essential stages of the typical RNA-Seq gene expression workflow. 
+  From the <strong>initial review of samples and their metadata</strong>, through <strong>quality control of raw reads</strong>, <strong>sequence alignment to the reference genome</strong>, and <strong>gene expression quantification</strong>, to the <strong>statistical and functional analysis of differentially expressed genes</strong>, each step has been implemented rigorously and reproducibly.
+</p>
+
+<p>
+  The statistical analysis allowed the identification of <strong>genes whose expression is significantly altered</strong> between experimental conditions, providing insights into the molecular mechanisms underlying observed phenotypes. 
+  Through <strong>normalization</strong> procedures and <strong>post-alignment quality assessment</strong>, data reliability was ensured before applying robust inferential methodologies for the <strong>detection of differentially expressed genes (DEGs)</strong>.
+</p>
+
+<p>
+  Finally, <strong>functional and enrichment analyses</strong> based on widely validated databases (GO and KEGG) enabled biological contextualization of the results, revealing <strong>biological processes, molecular functions, cellular components, and metabolic pathways</strong> potentially involved in the observed differential response. 
+  This integration of information layers provides interpretative depth to the study and facilitates prioritization of genes and functions of interest for future experimental work.
+</p>
+
+<p>
+  Overall, this report constitutes a valuable tool both for the <strong>initial exploration of transcriptomic data</strong> and for the <strong>formulation of new biological hypotheses</strong>. 
+  The results obtained can guide decisions in subsequent phases of the project, such as the design of validation experiments or integration with other omics data sources.
+</p>
+
+<p>
+  As a projection toward future directions, it is recommended:
+</p>
+
+<ul>
+  <li>
+    <strong>Experimentally validate</strong> the most relevant genes using techniques such as RT-qPCR, Western blot, or in vitro/in vivo functional assays.
+  </li>
+  <li>
+    Perform <strong>co-expression network analyses</strong> to identify potential key regulatory genes or coordinated functional modules.
+  </li>
+  <li>
+    Explore <strong>multi-omics integration strategies</strong>, combining transcriptomic data with proteomic, epigenomic, or metabolomic information to achieve a more comprehensive view of the biological system.
+  </li>
+  <li>
+    Implement <strong>advanced computational models</strong> (machine learning, Bayesian analysis, network modeling) to extract complex patterns and predict biological phenomena from the generated data.
+  </li>
+</ul>
+
+<p>
+  Overall, this analysis represents a fundamental step toward understanding the molecular mechanisms associated with the evaluated conditions, and lays the foundation for <strong>deeper and more targeted biomedical or biotechnological research</strong>.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-soporte">
+  ➤ Support and Contact
+</div>
+
+<p>
+  Bulk RNA-Seq transcriptomic analysis generates a vast and technically complex data ecosystem. We understand that digesting this information and integrating it with laboratory results is an ongoing process. 
+</p>
+
+<p>
+  Therefore, for any methodological questions, inquiries about result interpretation, or the need to explore the data from new perspectives, the <strong>Bioinformatics Unit</strong> team is at your full disposal. We will be happy to assist you in the optimal use of this resource and in planning your future research directions.
+</p>
+
+<div class='contact-cards' style="margin-top: 30px; margin-bottom: 40px;">
+<div class='contact-card blue'>
+  <i class='fa-solid fa-globe fa-2x'></i>
+  <p><strong>Official website and contact</strong></p>
+  <a href='https://www.ipb.csic.es/servicios/Bioinformatica/index.html' target='_blank'>CSIC Bioinformatics Unit</a>
+</div>
+<div class='contact-card green'>
+  <i class='fa-solid fa-envelope fa-2x'></i>
+  <p><strong>Support email</strong></p>
+  <a href='mailto:bioinformatica@ipb.csic.es'>bioinformatica@ipb.csic.es</a>
+</div>
+<div class='contact-card purple'>
+  <i class='fa-brands fa-github fa-2x'></i>
+  <p><strong>Code repository</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe' target='_blank'>Project GitHub</a>
+</div>
+<div class='contact-card orange'>
+  <i class='fa-solid fa-book fa-2x'></i>
+  <p><strong>Documentation</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe/blob/main/06-info/0101_TRANSCRIPTOMICS_BULK_RNA_SEQ_GUIDE.md' target='_blank'>User manual</a>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

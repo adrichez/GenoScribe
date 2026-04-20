@@ -1,0 +1,98 @@
+project:
+  type: website
+  output-dir: report
+  render:
+    - index_es.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab1-metodologia/metodologia.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab2-resumen/resumen.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/00-contexto.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/01-revision-inicial.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/02-control-calidad.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/03-clustering.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/04-marcadores.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05-anotacion.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/06-agrupacion.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/07-expresion-diferencial.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/08-enriquecimiento.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/09-extra.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/10-conclusiones.qmd
+
+resources:
+  - resources/**
+  - '!resources/01-essential/03-scripts/01-r/'
+  - '!resources/01-essential/03-scripts/05-python/'
+
+format:
+  html:
+    css: resources/01-essential/03-scripts/03-css/styles.css
+    theme: lux
+    toc: false
+    code-fold: false
+    code-tools: false
+    number-sections: false
+    page-layout: custom
+    smooth-scroll: true
+    highlight-style: a11y-dark
+    self-contained: false
+    copy-files: true
+    html: true
+
+include-in-header:
+  text: |-
+    <link rel="shortcut icon" href="resources/01-essential/01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="resources/01-essential/01-images/icons/favicon.ico">
+
+execute:
+  echo: false
+  warning: false
+  message: false
+  freeze: false
+  cache: true
+
+params:
+  project_path: ''
+  report_language: ''
+  report_version: ''
+
+website:
+  navbar:
+    title: |-
+      <img class='brand-logo' src='/resources/01-essential/01-images/icons/ipbln.png'>
+      <a class='brand-text' href='https://www.ipb.csic.es/servicios/Bioinformatica/index.html'>IPBLN</a>
+    right:
+      - text: "Inicio"
+        icon: house
+        href: "index_es.qmd"
+      - text: "Metodología"
+        icon: wrench
+        href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab1-metodologia/metodologia.qmd"
+      - text: "Resumen"
+        icon: clipboard-data
+        href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab2-resumen/resumen.qmd"
+      - text: "Análisis"
+        icon: bar-chart
+        menu:
+          - text: "➤ Introducción contextual"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/00-contexto.qmd"
+          - text: "1. Revisión inicial de muestras y metadatos"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/01-revision-inicial.qmd"
+          - text: "2. Control de calidad y filtrado (QC)"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/02-control-calidad.qmd"
+          - text: "3. Reducción de dimensionalidad y clustering"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/03-clustering.qmd"
+          - text: "4. Identificación de marcadores (clusters ciegos)"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/04-marcadores.qmd"
+          - text: "5. Anotación celular (automática y manual)"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05-anotacion.qmd"
+          - text: "6. Agrupación de poblaciones biológicas"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/06-agrupacion.qmd"
+          - text: "7. Análisis de expresión diferencial"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/07-expresion-diferencial.qmd"
+          - text: "8. Análisis funcional y de enriquecimiento"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/08-enriquecimiento.qmd"
+          - text: "9. Análisis personalizados y ad hoc"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/09-extra.qmd"
+          - text: "10. Conclusiones y perspectivas"
+            href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/10-conclusiones.qmd"
+
+clean: false

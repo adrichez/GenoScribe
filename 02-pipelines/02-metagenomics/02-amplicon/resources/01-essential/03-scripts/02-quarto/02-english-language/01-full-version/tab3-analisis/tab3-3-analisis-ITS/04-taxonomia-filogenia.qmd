@@ -1,0 +1,1666 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  amplicon_type: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS ITS | 4. ASIGNACIÓN TAXONÓMICA Y FILOGENIA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+# Cargar librerías
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_metagenomics_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..", "..")
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Rutas de la carpeta Def
+ruta_Def_ITS <- file.path(params$project_path, "Resultados", "Def_ITS")
+ruta_Def_ITS_relativa <- file.path(ruta_proyecto_relativa, "Resultados", "Def_ITS")
+
+
+# Rutas de la carpeta exported
+ruta_exported <- file.path(ruta_Def_ITS, "exported")
+ruta_exported_relativa <- file.path(ruta_Def_ITS_relativa, "exported")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis (ITS)</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 4</h1>
+  <h2>Taxonomic Assignment and Phylogeny</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    In section <strong>4. Taxonomic Assignment and Phylogeny</strong> we focus on deeply characterizing the representative sequences obtained in <a href="03-generacion-asvs.html#tab3-seccion3" class="normalink">section 3. ASV Generation and Abundance Table</a> and placing them in a biological and evolutionary context. After generating the ASV abundance table (`table.qzv`) and the representative sequences (`my_taxonomy.qzv`), we have identified consistent, high-quality sequence units in our samples. However, knowing the sequences alone does not allow us to determine which microorganisms are present or how they are phylogenetically related. Therefore, this section focuses on two complementary and essential aspects: taxonomic assignment and phylogenetic tree construction.
+  </p>
+
+  <p>
+    In subsection <strong>4.1. Taxonomic Assignment</strong> we aim to determine which organisms our ASVs correspond to. For this, we use reference databases such as SILVA or Greengenes and apply a pre-trained Naive Bayes classifier. Each ASV is compared against reference sequences, being assigned to the most probable taxon at different hierarchical levels, from domain to species. This process transforms our raw sequences into interpretable biological information, showing “who is present” in each sample and each experimental group.
+  </p>
+
+  <p>
+    The results include both data files and graphical visualizations. These include: the taxonomy file (`taxonomy.qza`) and its interactive version (`taxonomy.qzv`), bar plots showing the relative composition of each sample (`taxa-bar-plots.qzv`), and tables exported by taxonomic levels, such as family (`feature-table_l5_export.tsv`) and genus (`feature-table_l6_export.tsv`). Additionally, SVG plots (`level-5-bars.svg` and `level-6-bars.svg`) are generated to allow rapid visual interpretation of taxon abundance. This information is fundamental for interpreting subsequent differential abundance analyses, as it enables identification of families or genera that vary between experimental groups.
+  </p>
+
+  <p>
+    In subsection <strong>4.2. Phylogenetic Tree Construction</strong> we focus on the evolutionary relationships among ASVs. Using multiple sequence alignment tools such as MAFFT and tree construction with FastTree, we generate both an unrooted tree (`unrooted-tree.qza`) and a rooted tree (`rooted-tree.qza`). The unrooted tree shows general relationships among ASVs without assuming a common ancestor, while the rooted tree is necessary for calculating phylogenetic diversity metrics, such as Faith’s Phylogenetic Diversity and UniFrac. Additionally, alignment files (`aligned-my_taxonomy.qza`) and masked versions (`masked-aligned-my_taxonomy.qza`) are generated to minimize noise in highly variable regions.
+  </p>
+
+  <p>
+    Although phylogenetic trees are not directly interpreted to describe sample biology, they are essential for performing alpha and beta diversity analyses and for contextualizing phylogenetically informed comparisons between groups. This ensures that conclusions regarding microbial composition and differences between samples are supported by robust evolutionary evidence.
+  </p>
+
+  <p>
+    Overall, section 4 establishes a critical bridge between ASV generation (<a href="03-generacion-asvs.html#tab3-seccion3" class="normalink">section 3</a>) and differential abundance and microbial diversity analyses (<a href="05-analisis-diferencial.html#tab3-seccion5" class="normalink">section 5</a> and <a href="06-diversidad-funcional.html#tab3-seccion6" class="normalink">section 6</a>). First, we identify “who is present” through taxonomic assignment, and then we provide the phylogenetic framework necessary to contextualize microbial diversity and abundance. This integrated approach ensures that subsequent results are grounded in both taxonomic and phylogenetic evidence, facilitating rigorous and coherent microbiome analysis.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of Contents for This Section
+</div>
+
+```{=html}
+```{r, results="asis"}
+cat('<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion4">
+        4<span>.</span> Taxonomic Assignment and Phylogeny
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion4.1">
+            4.1. Taxonomic Assignment
+          </a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion4.1.1">
+                4.1.1. Main Files
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion4.1.2">
+                4.1.2. Taxonomic Composition Visualization
+              </a>
+              <ul>
+                <li>
+                  <a href="#tab3-seccion4.1.2.1">
+                    4.1.2.1. Interactive Taxonomic Composition Visualization
+                  </a>
+                </li>
+')
+
+# Generar los enlaces para las tablas por nivel taxonómico
+for (nivel in 1:7) {
+  numero_sub <- nivel + 1 # para no colisionar con la visualización interactiva
+  cat(glue('
+                <li>
+                  <a href="#tab3-seccion4.1.2.{numero_sub}">
+                    4.1.2.{numero_sub}. Interactive ASV Abundance Table by Taxonomic Level {nivel}
+                  </a>
+                </li>
+  '))
+}
+
+cat('
+              </ul>
+            </li>
+            <li>
+              <a href="#tab3-seccion4.1.3">
+                4.1.3. Files Exported by Taxonomic Levels
+              </a>
+              <ul>
+                <li>
+                  <a href="#tab3-seccion4.1.3.1">
+                    4.1.3.1. Relative Abundance Table at Taxonomic Level: <strong>Family (L5)</strong>
+                  </a>
+                </li>
+                <li>
+                  <a href="#tab3-seccion4.1.3.2">
+                    4.1.3.2. Relative Abundance Table at Taxonomic Level: <strong>Genus (L6)</strong>
+                  </a>
+                </li>
+                <li>
+                  <a href="#tab3-seccion4.1.3.2">
+                    4.1.3.2. Relative Abundance Table at Taxonomic Level: <strong>Species (L7)</strong>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab3-seccion4.2">
+            4.2. Phylogenetic Tree Construction
+          </a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion4.2.1">
+                4.2.1. Main Files
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion4.2.2">
+                4.2.2. Differences Between Trees
+              </a>
+              <ul>
+                <li>
+                  <a href="#tab3-seccion4.2.2.1">
+                    4.2.2.1. Unrooted Tree
+                  </a>
+                </li>
+                <li>
+                  <a href="#tab3-seccion4.2.2.2">
+                    4.2.2.2. Rooted Tree
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="#tab3-seccion4.2.3">
+                4.2.3. Relation to Subsequent Analyses
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+')
+```
+```
+
+```{=html}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion4">
+  4<span>.</span> Taxonomic Assignment and Phylogeny
+</div>
+
+<p>
+  After generating our representative sequence units (ASVs) in <a href="03-generacion-asvs.html#tab3-seccion3" class="normalink">section 3</a>, we have a set of high-quality sequences reflecting the microbial variations present in each sample. However, these sequences alone do not indicate which organisms are present or how they are evolutionarily related. <strong>Taxonomic assignment</strong> and <strong>phylogenetic construction</strong> are essential steps for biologically contextualizing our ASVs, allowing us to move from simple DNA fragments to meaningful ecological and evolutionary information.
+</p>
+
+<p>
+  Taxonomic assignment involves comparing each ASV against curated reference databases, such as SILVA or Greengenes, using classifiers like a pre-trained Naive Bayes. This allows us to assign each sequence to a taxon across hierarchical levels, from domain to species, generating a detailed profile of the microbial composition of our samples. This step is crucial as it provides the foundation for interpreting differential abundance results and other downstream analyses.
+</p>
+
+<p>
+  On the other hand, <strong>phylogenetic tree construction</strong> organizes all ASVs into an evolutionary structure that reflects their ancestral relationships and divergences. Using multiple sequence alignment tools such as MAFFT and tree-building algorithms like FastTree, both rooted and unrooted trees are generated to calculate phylogenetic diversity metrics (e.g., Faith’s Phylogenetic Diversity or UniFrac). Although these trees are not directly interpreted to describe the biology of each sample, they are essential for contextualizing diversity comparisons between groups in a phylogenetically informed manner.
+</p>
+
+<p>
+  In this section, we will start with <strong>taxonomic assignment</strong> (<a href="#tab3-seccion4.1" class="normalink">subsection 4.1</a>), identifying “who is present” in each sample and visualizing microbial composition at different hierarchical levels through tables and plots. Subsequently, in <a href="#tab3-seccion4.2" class="normalink">subsection 4.2</a>, we will construct and analyze the phylogenetic tree, providing the framework needed for alpha, beta, and other phylogenetically informed diversity metrics. Together, this section establishes the bridge between ASV generation and the differential abundance and diversity analyses that will be addressed in the following sections of the report.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.1">
+  4.1. Taxonomic Assignment
+</div>
+
+<p>
+  Taxonomic assignment is a key step in ITS metagenomic data analysis, as it allows us to identify which organisms correspond to the representative sequences previously obtained in <a href="03-generacion-asvs.html#tab3-seccion3" class="normalink">section 3</a>. Each ASV, representing a consistent biological unit within our samples, is compared against a curated reference database, such as <strong>SILVA</strong> or <strong>Greengenes</strong>, to determine its taxonomy. This classification is performed using a probabilistic classifier, commonly a <strong>Naive Bayes</strong> model, pre-trained on the amplified ITS region (e.g., V3-V4) to ensure precise and region-specific mapping.
+</p>
+
+<p>
+  The result of this process is a hierarchical taxonomic assignment for each ASV, ranging from the most general level (domain) to more specific levels such as family, genus, and even species, depending on the database resolution and the amplified region. This information is essential not only for describing the microbial composition of the samples but also for performing comparisons between experimental groups, differential abundance studies, and diversity analyses.
+</p>
+
+<p>
+  In this subsection, we will start by generating the taxonomic assignment table in QIIME2 format (`my_taxonomy.qza`) and its interactive visualization (`my_taxonomy.qzv`). Later, in the following subsection, we will show how to graphically represent microbial composition per sample or per experimental group using bar plots (`taxa-bar-plots.qzv`) and how to export these tables to TSV files broken down by taxonomic levels (family, genus, and species) for more detailed analysis. 
+</p>
+
+<p>
+  Overall, this introduction establishes the conceptual framework for interpreting which microorganisms are present in our samples and provides the necessary foundation for the next subsection, where visualization and export of taxonomic composition across different hierarchical levels will be explored.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.1.1">
+  4.1.1. Main Generated Files
+</div>
+
+```{r}
+# Definir ruta del archivo .qzv
+ruta_my_taxonomy_qzv_relativa <- file.path(ruta_Def_ITS_relativa, "my_taxonomy.qzv")
+ruta_my_taxonomy_qzv <- file.path(ruta_Def_ITS, "my_taxonomy.qzv")
+
+# Definir ruta del archivo .qza
+ruta_my_taxonomy_qza_relativa <- file.path(ruta_Def_ITS_relativa, "my_taxonomy.qza")
+ruta_my_taxonomy_qza <- file.path(ruta_Def_ITS, "my_taxonomy.qza")
+
+# Definir ruta de salida para el unzip
+ruta_Def_ITS_unzip <- file.path(ruta_Def_ITS_relativa, "unzip")
+ruta_unzip_my_taxonomy <- file.path(ruta_Def_ITS_unzip, "my_taxonomy")
+
+# Crear carpeta de salida si no existe
+if (!dir.exists(ruta_Def_ITS_unzip)) dir.create(ruta_Def_ITS_unzip, recursive = TRUE)
+
+# Solo hacer unzip si el archivo existe
+if (file.exists(ruta_my_taxonomy_qzv_relativa)) {
+  # Usando system2 para llamar a unzip desde R
+  system2("unzip", args = c("-o", shQuote(ruta_my_taxonomy_qzv_relativa),
+                            "-d", shQuote(ruta_unzip_my_taxonomy)))
+} else {
+  message("⚠️ The file my_taxonomy.qzv does not exist. Unzip is skipped.")
+}
+```
+
+```{r}
+# Comprobar que el unzip se ha realizado
+if (dir.exists(ruta_unzip_my_taxonomy)) {
+  
+  # Listar subcarpetas dentro de la carpeta unzip (solo 1er nivel)
+  subcarpetas <- list.dirs(ruta_unzip_my_taxonomy, recursive = FALSE, full.names = TRUE)
+  
+  if (length(subcarpetas) == 0) {
+    stop("No subfolders were found inside ", ruta_unzip_my_taxonomy)
+  }
+  
+  # Tomamos la primera subcarpeta (la aleatoria generada por QIIME2)
+  carpeta_random <- subcarpetas[1]
+  
+  # Ruta a 'data'
+  ruta_data <- file.path(carpeta_random, "data")
+  
+  # Archivos dentro de 'data'
+  ruta_metadata_tsv <- file.path(ruta_data, "metadata.tsv")
+  ruta_index_html <- file.path(ruta_data, "index.html")
+  
+  # Comprobar que existen
+  if (!file.exists(ruta_metadata_tsv)) message("⚠️ metadata.tsv not found")
+  if (!file.exists(ruta_index_html)) message("⚠️ index.html not found")
+  
+} else {
+  message("⚠️ Unzip folder not found. Cannot access files.")
+}
+```
+
+<p>
+  The main files generated during the taxonomic assignment of ASVs are detailed here. These files are essential for interpreting which microorganisms are present in the samples, as well as for performing downstream analyses of differential abundance and diversity. The two key files are:
+</p>
+
+<ul>
+  <li>
+    <strong>my_taxonomy.qza</strong> <strong>&rArr;</strong> a <em>QIIME2 artifact</em> containing the taxonomic assignment table for each ASV, including the <strong>Feature.ID</strong>, the assigned taxon, and the classification confidence value. This file can be read directly in R or Python using <code>read_qza()</code>, allowing access to the data in a structured format via the <code>$data</code> object.
+  </li>
+  <li>
+    <strong>my_taxonomy.qzv</strong> <strong>&rArr;</strong> an interactive visualization file that includes the same data as <code>my_taxonomy.qza</code>, packaged together with the web interface for visual exploration. By unzipping this file (since it is a ZIP), the <code>metadata.tsv</code> file containing the taxonomy table and the elements needed for visualization (<code>index.html</code>, <code>css</code>, <code>js</code>, and <code>q2templateassets</code>) are obtained.
+  </li>
+</ul>
+
+<p>
+  The combination of these files allows both interactive exploration of the taxonomy and programmatic analysis in R or Python. The file paths within the project are listed below:
+</p>
+
+```{r, results="asis"}
+if (file.exists(ruta_my_taxonomy_qzv)) {
+  cat(glue::glue('
+<code>{ruta_my_taxonomy_qzv}</code>
+'), sep = "\n")
+
+} else {
+cat(glue::glue('
+<div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The file <code>my_taxonomy.qzv</code> does not exist at the specified path:<br>
+  <code>{ruta_my_taxonomy_qzv}</code>.
+</div>
+'), sep = "\n")
+}
+```
+
+```{r, results="asis"}
+if (file.exists(ruta_my_taxonomy_qza)) {
+  cat(glue::glue('
+<code>{ruta_my_taxonomy_qza}</code>
+'), sep = "\n")
+
+} else {
+cat(glue::glue('
+<div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The file <code>my_taxonomy.qza</code> does not exist at the specified path:<br>
+  <code>{ruta_my_taxonomy_qza}</code>.
+</div>
+'), sep = "\n")
+}
+```
+
+<p>
+  The taxonomic assignment table can be obtained using two equivalent methods:
+</p>
+
+<ol>
+  <li>Reading the <code>my_taxonomy.qza</code> artifact directly in R or Python using <code>read_qza()</code>, which allows access to the complete ASV data.</li>
+  <li>Unzipping the <code>my_taxonomy.qzv</code> file and reading the <code>metadata.tsv</code> file, which contains the same information in a tabular format ready to be explored in any spreadsheet or data analysis software.</li>
+</ol>
+
+<p>
+  That said, the taxonomy table is displayed below. This interactive visualization facilitates inspection of each ASV, its assigned taxon, and the classification confidence level. Additionally, a link is provided to download the original <code>metadata.tsv</code> file, allowing the user to save and reuse the taxonomy data independently.
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_my_taxonomy_qzv)) {
+  library(readr)
+  metadata <- read_tsv(ruta_metadata_tsv, comment = "#", show_col_types = FALSE)
+
+  # Tabla interactiva
+  library(DT)
+  library(htmltools)
+
+  DT::datatable(
+    metadata,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Solo tabla
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+  
+} else {
+  message(glue::glue('
+    File "{ruta_my_taxonomy_qza}" not found. Check the path.
+  '))
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_metadata_tsv)) {
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_metadata_tsv}" 
+      download="{basename(ruta_metadata_tsv)}"
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download file "metadata.tsv" original
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  For a more comprehensive exploration, the interactive visualization generated by QIIME2 can be displayed directly in the report using an <code>iframe</code>. This allows the table to be inspected and the data to be navigated with all the functionalities of the QIIME2 interface without leaving the document.
+</p>
+
+```{r, results='asis'}
+# Generar iframe para Quarto si existe index.html
+if (file.exists(ruta_index_html)) {
+
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{ruta_index_html}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_index_html}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open report in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  In summary, this subsection provides a comprehensive framework to understand what taxonomic assignment files contain, how they can be visualized and manipulated, and how these results will serve as the basis for subsequent analyses of microbial composition and comparison between experimental groups.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion3.2">
+  4.1.2. Visualization of taxonomic composition
+</div>
+
+```{r}
+# Definir ruta del archivo .qzv
+ruta_taxa_bar_plots_qzv_relativa <- file.path(ruta_Def_ITS_relativa, "taxa-bar-plots.qzv")
+ruta_taxa_bar_plots_qzv <- file.path(ruta_Def_ITS, "taxa-bar-plots.qzv")
+
+# Definir ruta de salida para el unzip
+ruta_Def_ITS_unzip <- file.path(ruta_Def_ITS_relativa, "unzip")
+ruta_unzip_taxa_bar_plots <- file.path(ruta_Def_ITS_unzip, "taxa-bar-plots")
+
+# Crear carpeta de salida si no existe
+if (!dir.exists(ruta_Def_ITS_unzip)) dir.create(ruta_Def_ITS_unzip, recursive = TRUE)
+
+# Solo hacer unzip si el archivo existe
+if (file.exists(ruta_taxa_bar_plots_qzv_relativa)) {
+  # Usando system2 para llamar a unzip desde R
+  system2("unzip", args = c("-o", shQuote(ruta_taxa_bar_plots_qzv_relativa),
+                            "-d", shQuote(ruta_unzip_taxa_bar_plots)))
+} else {
+  message("⚠️ The taxa-bar-plots.qzv file does not exist. The unzip step is skipped.")
+}
+```
+
+```{r}
+# Comprobar que el unzip se ha realizado
+if (dir.exists(ruta_unzip_taxa_bar_plots)) {
+  
+  # Listar subcarpetas dentro de la carpeta unzip (solo 1er nivel)
+  subcarpetas <- list.dirs(ruta_unzip_taxa_bar_plots, recursive = FALSE, full.names = TRUE)
+  
+  if (length(subcarpetas) == 0) {
+    stop("No subfolder was found inside ", ruta_unzip_taxa_bar_plots)
+  }
+  
+  # Tomamos la primera subcarpeta (la aleatoria generada por QIIME2)
+  carpeta_random <- subcarpetas[1]
+  
+  # Ruta a 'data'
+  ruta_data <- file.path(carpeta_random, "data")
+  
+  # Archivos dentro de 'data'
+  ruta_index_html <- file.path(ruta_data, "index.html")
+  
+  # Comprobar que existen
+  if (!file.exists(ruta_index_html)) message("⚠️ index.html not found")
+  
+} else {
+  message("⚠️ Unzip folder not found. Files cannot be accessed.")
+}
+```
+
+<p>
+  Once the taxonomic assignment of the ASVs has been performed, the next step is to explore how the different taxa are distributed across our samples. For this purpose, QIIME2 generates interactive bar plots contained in <code>taxa-bar-plots.qzv</code>. Each bar represents an individual sample or a group of samples, and the segments of the bar reflect the relative proportion of each taxon within that sample. This representation allows the identification of abundance patterns and variability between experimental groups, as well as the detection of dominant or minor taxa at each hierarchical level.
+</p>
+
+<p>
+  The taxonomic levels displayed can range from the most general level, such as <em>phylum</em> or <em>class</em>, to more specific levels such as <em>family</em>, <em>genus</em> or <em>species</em>, depending on the resolution of the database and the amplified region. The interactive visualization allows filtering, sorting, and selecting taxa to analyze microbial composition dynamically.
+</p>
+
+<p>
+  Before embedding the plots, it is useful to know the path where the <code>taxa-bar-plots.qzv</code> file is located within our project:
+</p>
+
+```{r, results="asis"}
+if (file.exists(ruta_taxa_bar_plots_qzv)) {
+  cat(glue::glue('
+<code>{ruta_taxa_bar_plots_qzv}</code>
+'), sep = "\n")
+} else {
+  cat(glue::glue('
+⚠️ The <code>taxa-bar-plots.qzv</code> file does not exist in the specified path: 
+<code>{ruta_taxa_bar_plots_qzv}</code>
+'), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion4.1.2.1">
+  4.1.2.1. Interactive visualization of taxonomic composition
+</div>
+
+<p>
+  The interactive visualization generated by QIIME2 is located in the <code>index.html</code> file within the unzipped folder of the <code>taxa-bar-plots.qzv</code> artifact. This plot allows:
+</p>
+
+<ul>
+  <li>Dynamically exploring the relative abundance of each taxon by sample or experimental group.</li>
+  <li>Filtering or grouping taxa according to hierarchical levels (for example, family or genus).</li>
+  <li>Detecting dominant, minor taxa or variability patterns between samples.</li>
+  <li>Facilitating visual interpretation prior to exporting data for statistical analyses or comparisons between groups.</li>
+</ul>
+
+<p>
+  To integrate it directly into the report, we can embed the <code>index.html</code> within an <code>iframe</code> that will allow interaction with the taxonomic composition without leaving the document:
+</p>
+
+```{r, results='asis'}
+# Generar iframe para Quarto si existe index.html
+if (file.exists(ruta_index_html)) {
+
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{ruta_index_html}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_index_html}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open report in a new tab
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  This section provides an immediate visual exploration of microbial composition, facilitating data interpretation and serving as the basis for the next subsection, where tables exported by taxonomic levels will be presented for more detailed analysis.
+</p>
+
+<p>
+  In addition to the interactive bar plot visualization, QIIME2 allows exporting the underlying taxonomic composition data as CSV files by hierarchical level (<code>level-1.csv</code> through <code>level-7.csv</code>). Each file contains a relative abundance table where rows correspond to the detected taxa and columns to the analyzed samples.
+</p>
+
+<p>
+  These files are particularly useful when it is necessary to:
+</p>
+
+<ul>
+  <li>Explore the data in a more detailed and tabular manner, beyond what is displayed in the interactive plots.</li>
+  <li>Export information for additional statistical analyses, group comparisons, or diversity calculations.</li>
+  <li>Filter or group taxa according to the taxonomic level, allowing the study of abundance patterns at different levels (for example, phylum, family, genus, or species).</li>
+  <li>Automate the generation of reproducible reports, integrating these tables directly into Quarto or R Markdown documents.</li>
+</ul>
+
+<p>
+  The abundance tables corresponding to each taxonomic level are shown below. Each table is interactive, allowing sorting, searching, and horizontal scrolling to explore ASV composition across the samples. The lower levels (e.g., 5, 6, and 7) usually correspond to family, genus, and species, while higher levels display more general categories such as domain, phylum, or class.
+</p>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(htmltools)
+library(DT)
+library(glue)
+
+# Listar los archivos CSV por nivel taxonómico
+archivos_csv <- list.files(ruta_data, pattern="level-[0-9]+\\.csv$", full.names=TRUE)
+
+# 1. Crear una lista vacía donde iremos guardando todo el contenido
+out_html <- tagList()
+
+for (f in archivos_csv) {
+  
+  # Extraer el número de nivel del nombre del archivo
+  nivel <- as.numeric(sub(".*level-([0-9]+)\\.csv$", "\\1", f))
+  nivel_titulo <- nivel + 1 # para no colisionar con la visualización interactiva
+  
+  # 2. Añadir los títulos y descripciones usando HTML() y tagAppendChild()
+  out_html <- tagAppendChild(out_html, HTML(glue::glue('
+    <div style="height: 12px; background-color: transparent;"></div>
+
+    <div class="titulo4" id="tab3-seccion4.1.2.{nivel_titulo}" style="padding-bottom: 8px; line-height: 1.2;">
+      4.1.2.{nivel_titulo}. Interactive ASV abundance table by taxonomic level {nivel}
+    </div>
+
+    <p style="margin-top: 20px; margin-bottom: 18px;">
+      The following table corresponds to <strong>taxonomic level {nivel} of the ASVs</strong>, showing the <strong>relative abundance of each taxon in each sample</strong>. 
+      This tabular representation allows a more detailed analysis of microbial composition and complements the interactive QIIME2 visualization.
+    </p>
+  ')))
+  
+  # 3. Procesar y añadir la Tabla Interactiva
+  if (file.exists(f)) {
+    datos <- read.csv(f, check.names = FALSE)
+    
+    # Creamos la tabla
+    tabla_dt <- DT::datatable(
+          datos,
+          options = list(
+            scrollX = TRUE,
+            scrollY = "500px",
+            scrollCollapse = TRUE,  # Se ajusta si hay pocas filas
+            paging = FALSE,
+            lengthChange = FALSE,
+            info = FALSE,
+            dom = 'ft',  # Solo tabla
+            language = list(
+              url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+            )
+          ),
+          class = "stripe hover compact"
+        )
+    
+    # Añadir el widget de la tabla directamente al tagList
+    out_html <- tagAppendChild(out_html, tabla_dt)
+    
+    # 4. Añadir el botón de descarga
+    out_html <- tagAppendChild(out_html, HTML(glue::glue('
+      <div style="text-align: center; margin-top: 16px; margin-bottom: 30px;">
+        <a href="{f}"
+          download="{basename(f)}"
+          class="boton-file-download">
+          <i class="fa-solid fa-file-arrow-down"></i> Download original "level-{nivel}.csv" file
+        </a>
+      </div>
+    ')))
+    
+  } else {
+    out_html <- tagAppendChild(out_html, HTML(glue::glue('
+      <div class="alert-info alert-box" style="margin-bottom: 30px;">
+        <i class="fa-solid fa-triangle-exclamation"></i> The "level-{nivel}.csv" file was not found in the specified path: {f}
+      </div>
+    ')))
+  }
+}
+
+# 5. Imprimir toda la estructura al final del bloque
+out_html
+```
+
+<p>
+  This provides both the interactive visual exploration of taxonomic composition and the ability to inspect the data in a tabular format for subsequent analyses in R or Python. This approach allows combining the clarity of QIIME2 visualizations with the flexibility of working with the data within the report.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.1.3">
+  4.1.3. Files exported by taxonomic levels
+</div>
+
+```{r}
+# Rutas de los archivos a leer
+ruta_feature_table_l5_export_tsv <- file.path(ruta_exported, "feature-table_l5_export.tsv")
+ruta_feature_table_l5_export_tsv_relativa <- file.path(ruta_exported_relativa, "feature-table_l5_export.tsv")
+
+ruta_feature_table_l6_export_tsv <- file.path(ruta_exported, "feature-table_l6_export.tsv")
+ruta_feature_table_l5_export_tsv_relativa <- file.path(ruta_exported_relativa, "feature-table_l5_export.tsv")
+
+ruta_feature_table_l7_export_tsv <- file.path(ruta_exported, "feature-table_l7_export.tsv")
+ruta_feature_table_l7_export_tsv_relativa <- file.path(ruta_exported_relativa, "feature-table_l7_export.tsv")
+```
+
+<p>
+  After generating the interactive bar plots with <code>taxa-bar-plots.qzv</code>, QIIME2 allows <strong>exporting the underlying relative abundance tables</strong> in text format. 
+  These files contain the distribution of each taxon across all samples and are organized by hierarchical taxonomic levels, from <strong>level 1</strong> to <strong>level 7</strong>. 
+  The most informative levels commonly used for biological interpretation are: <em>family (L5)</em>, <em>genus (L6)</em>, and <em>species (L7)</em>.
+</p>
+
+<p>
+  In this report, we focus on the three main levels of detail:
+</p>
+
+<ul>
+  <li>
+    <code>feature-table_l5_export.tsv</code> → relative abundance at the <strong>family</strong> level, offering an intermediate view of the microbial community.
+  </li>
+  <li>
+    <code>feature-table_l6_export.tsv</code> → relative abundance at the <strong>genus</strong> level, providing finer resolution useful for biological interpretations and differential diversity analyses.
+  </li>
+  <li>
+    <code>feature-table_l7_export.tsv</code> → relative abundance at the <strong>species</strong> level, allowing detailed and precise analysis of microbial composition, ideal for studies requiring maximum taxonomic resolution.
+  </li>
+</ul>
+
+<p>
+  These files are especially useful for subsequent analyses, such as detecting <em>abundance differences</em> between experimental conditions or creating custom visualizations in <code>R</code> or <code>Python</code>. 
+  Their location in the project, preview via interactive tables, and direct download option will be shown below, facilitating detailed exploration and analysis of the data.
+</p>
+
+```{r, results="asis"}
+if (file.exists(ruta_feature_table_l5_export_tsv)) {
+  cat(glue::glue('
+<code>{ruta_feature_table_l5_export_tsv}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The <code>feature-table_l5_export.tsv</code> file does not exist in the specified path:<br>
+    <code>{ruta_feature_table_l5_export_tsv}</code>.
+  </div>
+'), sep = "\n")
+}
+```
+
+```{r, results="asis"}
+if (file.exists(ruta_feature_table_l6_export_tsv)) {
+  cat(glue::glue('
+<code>{ruta_feature_table_l6_export_tsv}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The <code>feature-table_l6_export.tsv</code> file does not exist in the specified path:<br>
+    <code>{ruta_feature_table_l6_export_tsv}</code>.
+  </div>
+'), sep = "\n")
+}
+```
+
+```{r, results="asis"}
+if (file.exists(ruta_feature_table_l7_export_tsv)) {
+  cat(glue::glue('
+<code>{ruta_feature_table_l7_export_tsv}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The <code>feature-table_l7_export.tsv</code> file does not exist in the specified path:<br>
+    <code>{ruta_feature_table_l7_export_tsv}</code>.
+  </div>
+'), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion4.1.3.1">
+  4.1.3.1. Relative abundance table at taxonomic level: <strong>Family (L5)</strong>
+</div>
+
+<p>
+  At this taxonomic level, the results are grouped by <strong>family</strong>, representing an intermediate point in the taxonomic hierarchy between orders and genera. 
+  The relative abundance table shows the proportion of each family across the analyzed samples. 
+  This level is particularly useful for obtaining an overall view of microbial diversity without descending into excessive detail.
+</p>
+
+<p>
+  Thanks to this intermediate resolution, dominant families in the microbial community can be identified and comparisons between samples or experimental conditions can be made. 
+  Additionally, it allows detection of relevant variation patterns that might be overlooked at a higher taxonomic level (such as phylum) or that would be too specific at the genus or species level.
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_feature_table_l5_export_tsv)) {
+  library(readr)
+  table <- read_tsv(ruta_feature_table_l5_export_tsv, comment = "#", show_col_types = FALSE)
+
+  # Tabla interactiva
+  library(DT)
+  library(htmltools)
+
+  DT::datatable(
+    table,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Solo tabla
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+  
+} else {
+  message(glue::glue('
+    File "{ruta_feature_table_l5_export_tsv}" not found. Please check the path.
+  '))
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_feature_table_l5_export_tsv)) {
+
+  cat(glue::glue('
+  <div style="height: 13px; background-color: transparent;"></div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_feature_table_l5_export_tsv}" 
+      download="{basename(ruta_feature_table_l5_export_tsv)}"
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download original "feature-table_l5_export.tsv" file
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion4.1.3.2">
+  4.1.3.2. Relative abundance table at taxonomic level: <strong>Genus (L6)</strong>
+</div>
+
+<p>
+  At this taxonomic level, the results reach a more <strong>precise</strong> resolution, as sequences are grouped based on their assignment to a <strong>microbial genus</strong>. 
+  This level of detail is highly biologically relevant, as it facilitates the interpretation of results in terms of possible ecological functions, associations with environmental conditions, or even with health/disease states in clinical studies.
+</p>
+
+<p>
+  It is common for <strong>differential diversity</strong> analyses to focus on this level, as it allows clear identification of which genera increase or decrease significantly between study groups. 
+  Therefore, abundance tables at the genus level constitute a key tool for the biological interpretation of results.
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_feature_table_l6_export_tsv)) {
+  library(readr)
+  table <- read_tsv(ruta_feature_table_l6_export_tsv, comment = "#", show_col_types = FALSE)
+
+  # Interactive table
+  library(DT)
+  library(htmltools)
+
+  DT::datatable(
+    table,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Only table
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+  
+} else {
+  message(glue::glue('
+    File "{ruta_feature_table_l6_export_tsv}" not found. Please check the path.
+  '))
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_feature_table_l6_export_tsv)) {
+
+  cat(glue::glue('
+  <div style="height: 13px; background-color: transparent;"></div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_feature_table_l6_export_tsv}" 
+      download="{basename(ruta_feature_table_l6_export_tsv)}" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download original "feature-table_l6_export.tsv" file
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  Once the relative abundances by taxonomic levels have been explored, the next step is the <strong>construction of the phylogenetic tree</strong>. 
+  This will allow the representation of evolutionary relationships between the sequences and will serve as the basis for phylogenetic diversity analyses.
+</p>
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion4.1.3.3">
+  4.1.3.3. Relative abundance table at taxonomic level: <strong>Species (L7)</strong>
+</div>
+
+<p>
+  At this taxonomic level, the results reach the highest available resolution, grouping sequences according to their assignment to a <strong>microbial species</strong>. 
+  The relative abundance table shows the proportion of each species across the analyzed samples, providing detailed information about the specific composition of the community.
+</p>
+
+<p>
+  This level is particularly useful for studies requiring a fine analysis of the microbiota, such as identifying dominant species or those potentially associated with specific environmental, clinical, or ecological conditions. 
+  It also allows detection of subtle variations between samples that might be overlooked at higher taxonomic levels such as family or genus.
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_feature_table_l7_export_tsv)) {
+  library(readr)
+  table <- read_tsv(ruta_feature_table_l7_export_tsv, comment = "#", show_col_types = FALSE)
+
+  # Interactive table
+  library(DT)
+  library(htmltools)
+
+  DT::datatable(
+    table,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Only table
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+  
+} else {
+  message(glue::glue('
+    File "{ruta_feature_table_l7_export_tsv}" not found. Please check the path.
+  '))
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_feature_table_l7_export_tsv)) {
+
+  cat(glue::glue('
+  <div style="height: 13px; background-color: transparent;"></div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_feature_table_l7_export_tsv}" 
+      download="{basename(ruta_feature_table_l7_export_tsv)}" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download original "feature-table_l7_export.tsv" file
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  With the exploration of relative abundances completed up to the species level (L7), the next step in the analysis will be the <strong>construction of the phylogenetic tree</strong>. 
+  This tree will allow representation of the evolutionary relationships between the ASVs and will serve as the basis for phylogenetic diversity calculations in the following sections.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.2">
+  4.2. Phylogenetic tree construction
+</div>
+
+<p>
+  After completing the <strong>taxonomic assignment</strong> (Section 4.1), where microbial composition was characterized at different hierarchical levels (<em>family</em>, <em>genus</em>, etc.), the next step is the <strong>construction of a phylogenetic tree</strong> from the <em>representative ASVs</em>. 
+</p>
+
+<p>
+  The purpose of this tree is not to provide an exhaustive interpretation of the evolutionary relationships among the detected taxa, but to establish a <strong>reference phylogenetic structure</strong> connecting the obtained sequences. 
+  This input is crucial because it allows the application of <strong>diversity metrics</strong> that go beyond simply counting taxa, incorporating phylogenetic information contained in the length and arrangement of branches.
+</p>
+
+<p>
+  Among the most commonly used metrics that depend directly on this tree are:
+</p>
+
+<ul>
+  <li>
+    <strong>Faith’s Phylogenetic Diversity (PD)</strong> <strong>&rArr;</strong> quantifies the diversity of a community as the sum of the branch lengths needed to connect all present ASVs. 
+    In this way, it integrates both richness (number of taxa) and their <em>evolutionary depth</em>.
+  </li>
+  <li>
+    <strong>UniFrac (weighted and unweighted)</strong> <strong>&rArr;</strong> measures the distance between communities by comparing their ASVs in the context of the tree. 
+    The <em>unweighted</em> version is based solely on the presence or absence of shared taxa, while the <em>weighted</em> version also incorporates their relative abundances, providing a more comprehensive view of community differences.
+  </li>
+</ul>
+
+<p>
+  In short, the construction of the phylogenetic tree constitutes an <strong>essential methodological step</strong> and preparatory process, whose main utility is to enable robust phylogenetic diversity metrics that will be developed in the following sections. 
+  As a result, microbiota analysis not only considers the abundance and presence of taxa, but also incorporates information about their evolutionary proximity.
+</p>
+
+<p>
+  To facilitate understanding, the <strong>main files</strong> generated in this process are detailed below (Subsection 4.2.2), along with a brief comparison between <strong>unrooted and rooted trees</strong> (Subsection 4.2.3), which will help explain their role in subsequent analyses.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.2.1">
+  4.2.1. Main files
+</div>
+
+```{r}
+# Rutas de los archivos
+ruta_aligned_rep_seqs_qza <- file.path(ruta_Def_ITS, "aligned-rep-seqs.qza")
+ruta_aligned_rep_seqs_qza_relativa <- file.path(ruta_Def_ITS, "aligned-rep-seqs.qza")
+
+ruta_unrooted_tree_qza <- file.path(ruta_Def_ITS, "unrooted-tree.qza")
+ruta_unrooted_tree_qza_relativa <- file.path(ruta_Def_ITS, "unrooted-tree.qza")
+
+ruta_rooted_tree_qza <- file.path(ruta_Def_ITS, "rooted-tree.qza")
+ruta_rooted_tree_qza_relativa <- file.path(ruta_Def_ITS, "rooted-tree.qza")
+```
+
+```{r}
+# Definir ruta del archivo .qzv
+ruta_unrooted_tree_qzv_relativa <- file.path(ruta_Def_ITS_relativa, "unrooted-tree.qzv")
+ruta_unrooted_tree_qzv <- file.path(ruta_Def_ITS, "unrooted-tree.qzv")
+
+# Definir ruta de salida para el unzip
+ruta_Def_ITS_unzip <- file.path(ruta_Def_ITS_relativa, "unzip")
+ruta_unzip_unrooted_tree <- file.path(ruta_Def_ITS_unzip, "unrooted-tree")
+
+# Crear carpeta de salida si no existe
+if (!dir.exists(ruta_Def_ITS_unzip)) dir.create(ruta_Def_ITS_unzip, recursive = TRUE)
+
+# Solo hacer unzip si el archivo existe
+if (file.exists(ruta_unrooted_tree_qzv_relativa)) {
+  # Usando system2 para llamar a unzip desde R
+  system2("unzip", args = c("-o", shQuote(ruta_unrooted_tree_qzv_relativa),
+                            "-d", shQuote(ruta_unzip_unrooted_tree)))
+} else {
+  message("⚠️ The unrooted-tree.qzv file does not exist. The unzip step is skipped.")
+}
+```
+
+```{r}
+# Comprobar que el unzip se ha realizado
+if (dir.exists(ruta_unzip_unrooted_tree)) {
+  
+  # Listar subcarpetas dentro de la carpeta unzip (solo 1er nivel)
+  subcarpetas <- list.dirs(ruta_unzip_unrooted_tree, recursive = FALSE, full.names = TRUE)
+  
+  if (length(subcarpetas) == 0) {
+    stop("No subfolder was found inside ", ruta_unzip_unrooted_tree)
+  }
+  
+  # Tomamos la primera subcarpeta (la aleatoria generada por QIIME2)
+  carpeta_random <- subcarpetas[1]
+
+  # Ruta a 'data'
+  ruta_data <- file.path(carpeta_random, "data")
+  
+  # Archivos dentro de 'data'
+  ruta_unrooted_index_html <- file.path(ruta_data, "index.html")
+  
+  # Comprobar que existen
+  if (!file.exists(ruta_unrooted_index_html)) message("⚠️ index.html not found")
+  
+} else {
+  message("⚠️ Unzip folder not found. Files cannot be accessed.")
+}
+```
+
+```{r}
+# Definir ruta del archivo .qzv
+ruta_rooted_tree_qzv_relativa <- file.path(ruta_Def_ITS_relativa, "rooted-tree.qzv")
+ruta_rooted_tree_qzv <- file.path(ruta_Def_ITS, "rooted-tree.qzv")
+
+# Definir ruta de salida para el unzip
+ruta_Def_ITS_unzip <- file.path(ruta_Def_ITS_relativa, "unzip")
+ruta_unzip_rooted_tree <- file.path(ruta_Def_ITS_unzip, "rooted-tree")
+
+# Crear carpeta de salida si no existe
+if (!dir.exists(ruta_Def_ITS_unzip)) dir.create(ruta_Def_ITS_unzip, recursive = TRUE)
+
+# Solo hacer unzip si el archivo existe
+if (file.exists(ruta_rooted_tree_qzv_relativa)) {
+  # Usando system2 para llamar a unzip desde R
+  system2("unzip", args = c("-o", shQuote(ruta_rooted_tree_qzv_relativa),
+                            "-d", shQuote(ruta_unzip_rooted_tree)))
+} else {
+  message("⚠️ The rooted-tree.qzv file does not exist. The unzip step is skipped.")
+}
+```
+
+```{r}
+# Check that the unzip was performed
+if (dir.exists(ruta_unzip_rooted_tree)) {
+  
+  # List subfolders inside the unzip folder (only first level)
+  subcarpetas <- list.dirs(ruta_unzip_rooted_tree, recursive = FALSE, full.names = TRUE)
+  
+  if (length(subcarpetas) == 0) {
+    stop("No subfolder was found inside ", ruta_unzip_rooted_tree)
+  }
+  
+  # Take the first subfolder (the random one generated by QIIME2)
+  carpeta_random <- subcarpetas[1]
+
+  # Path to 'data'
+  ruta_data <- file.path(carpeta_random, "data")
+  
+  # Files inside 'data'
+  ruta_rooted_index_html <- file.path(ruta_data, "index.html")
+  
+  # Check that it exists
+  if (!file.exists(ruta_rooted_index_html)) message("⚠️ index.html not found")
+  
+} else {
+  message("⚠️ Unzip folder not found. Files cannot be accessed.")
+}
+```
+
+<p>
+  At this stage of the analysis, a series of key files are generated that provide the necessary information for the construction of the phylogenetic tree. 
+  Each of them contributes a crucial input within the workflow:
+</p>
+
+<ul>
+  <li>
+    <code>aligned-rep-seqs.qza</code> <strong>&rArr;</strong> file containing the <strong>multiple sequence alignment</strong> of the representative ASVs, in which sequences are compared position by position.
+  </li>
+  <li>
+    <code>unrooted-tree.qza</code> <strong>&rArr;</strong> stores the <strong>unrooted phylogenetic tree</strong>, the initial representation of relationships among ASVs without assuming a common ancestor.
+  </li>
+  <li>
+    <code>rooted-tree.qza</code> <strong>&rArr;</strong> <strong>rooted version of the phylogenetic tree</strong>, required for the calculation of phylogenetic metrics as it establishes a defined origin point.
+  </li>
+  <li>
+    <code>unrooted-tree.qzv</code> and <code>rooted-tree.qzv</code>: <strong>interactive visualization</strong> files that allow graphical exploration of the trees via the QIIME2 viewer or directly embedded in this report.
+  </li>
+</ul>
+
+<p>
+  These files are located in the following directories:
+</p>
+
+```{r, results="asis"}
+if (file.exists(ruta_aligned_rep_seqs_qza)) {
+  cat(glue::glue('
+<code>{ruta_aligned_rep_seqs_qza}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>aligned-rep-seqs.qza</code> does not exist at the specified path:<br>
+    <code>{ruta_aligned_rep_seqs_qza}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, results="asis"}
+if (file.exists(ruta_unrooted_tree_qza)) {
+  cat(glue::glue('
+<code>{ruta_unrooted_tree_qza}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>unrooted-tree.qza</code> does not exist at the specified path:<br>
+    <code>{ruta_unrooted_tree_qza}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, results="asis"}
+if (file.exists(ruta_rooted_tree_qza)) {
+  cat(glue::glue('
+<code>{ruta_rooted_tree_qza}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>rooted-tree.qza</code> does not exist at the specified path:<br>
+    <code>{ruta_rooted_tree_qza}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, results="asis"}
+if (file.exists(ruta_unrooted_tree_qzv)) {
+  cat(glue::glue('
+<code>{ruta_unrooted_tree_qzv}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>unrooted-tree.qzv</code> does not exist at the specified path:<br>
+    <code>{ruta_unrooted_tree_qzv}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, results="asis"}
+if (file.exists(ruta_rooted_tree_qzv)) {
+  cat(glue::glue('
+<code>{ruta_rooted_tree_qzv}</code>
+'), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>rooted-tree.qzv</code> does not exist at the specified path:<br>
+    <code>{ruta_rooted_tree_qzv}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  Once these files have been identified, the next subsection (<strong>4.2.3 Differences between trees</strong>) will address the 
+  <em>conceptual and visual distinction</em> between the unrooted tree and the rooted tree, also incorporating the <code>index.html</code> files 
+  obtained from the <code>.qzv</code> files for interactive exploration.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.2.2">
+  4.2.2. Differences between trees
+</div>
+
+<p>
+  Once the main files have been generated, the next step is to understand the differences between the two representations of the phylogenetic tree obtained in QIIME2. 
+  Although both originate from the <em>representative ASVs</em>, the way they are structured has direct implications for their use in subsequent analyses.
+</p>
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion4.2.2.1">
+  4.2.2.1. Unrooted tree (<code>unrooted-tree</code>)
+</div>
+
+<p>
+  The <strong>unrooted tree</strong> represents the phylogenetic relationships among the <em>representative ASVs</em> without assuming a common ancestor at a specific point in the tree. 
+  This type of representation is especially useful in the initial phases of phylogenetic analysis, as it allows observation of how sequences cluster according to their similarity, without imposing a specific evolutionary direction.
+</p>
+
+<p>
+  The main utility of this tree is to serve as an <strong>intermediate reference</strong> before generating a rooted tree. 
+  It provides an overview of the phylogenetic structure of the ASVs, which is essential for subsequent calculations of diversity metrics that require a rooted tree.
+</p>
+
+<p>
+  Below, the unrooted tree is displayed interactively via a <strong>iframe</strong>, generated by unzipping the <code>unrooted-tree.qzv</code> file in the corresponding folder. 
+  This allows exploration of the tree structure directly in the report, with the option to open it in a new tab for a more detailed view.
+</p>
+
+```{r, results='asis'}
+# Generate iframe for Quarto if index.html exists
+if (file.exists(ruta_unzip_unrooted_tree)) {
+
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{ruta_unrooted_index_html}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_unrooted_index_html}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open report in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+
+} else {
+
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    The unrooted tree is not available.<br>
+    The corresponding <code>index.html</code> file was not found.<br>
+    Ensure that the <code>unrooted-tree.qzv</code> file has been generated and unzipped.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion4.2.2.2">
+  4.2.2.2. Rooted tree (<code>rooted-tree</code>)
+</div>
+
+<p>
+  After exploring the <strong>unrooted tree</strong>, the next step is to analyze the <strong>rooted tree</strong>, which incorporates a <em>starting point (root)</em>. 
+  The root provides directional meaning to the branches, which is crucial for interpreting phylogenetic distances among ASVs and microbial communities.
+</p>
+
+<p>
+  This structure is essential for calculating phylogenetic metrics such as <strong>Faith’s Phylogenetic Diversity (PD)</strong> and <strong>UniFrac</strong>, as the root allows consistent quantification of branch lengths and evolutionary connections between sequences. 
+  In other words, the rooted tree not only reflects relationships among ASVs but also enables precise quantitative comparisons between samples.
+</p>
+
+<p>
+  Below, the rooted tree is displayed interactively via a <strong>iframe</strong>, generated from the previously unzipped <code>rooted-tree.qzv</code> file. 
+  This allows exploration of the tree structure directly in the report and the option to open it in a new tab for more detailed analysis.
+</p>
+
+```{r, results='asis'}
+# Generate iframe for Quarto if index.html exists
+if (file.exists(ruta_unzip_rooted_tree)) {
+
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{ruta_rooted_index_html}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_rooted_index_html}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open report in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+
+} else {
+
+  cat(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    The rooted tree is not available.<br>
+    The corresponding <code>index.html</code> file was not found.<br>
+      Ensure that the <code>rooted-tree.qzv</code> file has been generated and unzipped.
+  </div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  After visualizing and comparing both trees, the final subsection (<strong>4.2.4 Relationship with Subsequent Analyses</strong>) 
+  will focus on explaining how these files are integrated into diversity metric calculations, thus setting the stage for the analyses in Section 5.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../../04-javascript/script.js"></script>

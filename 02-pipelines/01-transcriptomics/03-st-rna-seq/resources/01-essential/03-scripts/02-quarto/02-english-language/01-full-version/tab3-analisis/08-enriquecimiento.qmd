@@ -1,0 +1,1005 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 8. ANÁLISIS FUNCIONAL Y DE ENRIQUECIMIENTO -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+ruta_archives_tmp_enriquecimiento <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "08-enriquecimiento")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_enriquecimiento, recursive = TRUE, showWarnings = FALSE)
+
+
+
+
+
+
+#===================================================================================================================================================
+# DIRECTORIO "ANALYSIS"
+#===================================================================================================================================================
+
+# Rutas de la carpeta "analysis" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "analysis")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "analysis")
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "ENRICHMENT" EN "ANALYSIS"
+#-------------------------------------------------------------------------------------------------------------------------------
+
+ruta_enrichment <- file.path(ruta_analysis, "08_enrichment")
+ruta_enrichment_relativa <- file.path(ruta_analysis_relativa, "08_enrichment")
+
+# Dataframe para almacenar las carpetas principales (Seurat, Automáticas, Manual)
+enrichment_root_dirs_df <- NULL
+
+if (dir.exists(ruta_enrichment)) {
+  subdirs_root <- list.dirs(ruta_enrichment, recursive = FALSE, full.names = FALSE)
+  if (length(subdirs_root) > 0) {
+    # Ordenar alfabéticamente
+    subdirs_root <- sort(subdirs_root)
+    enrichment_root_dirs_df <- data.frame(
+      folder_name = subdirs_root,
+      ruta_absoluta = file.path(ruta_enrichment, subdirs_root),
+      ruta_relativa = file.path(ruta_enrichment_relativa, subdirs_root),
+      stringsAsFactors = FALSE
+    )
+  }
+}
+
+
+
+#--------------------------------------------------------------------------------------------------------------
+# DIRECTORIO 1: "COMPARACIONES ESTÁNDAR" 
+#--------------------------------------------------------------------------------------------------------------
+
+# Rutas al directorio "01_standard_comparisons" dentro de "08_enrichment"
+ruta_std_comparisons <- file.path(ruta_enrichment, "01_standard_comparisons")
+ruta_std_comparisons_relativa <- file.path(ruta_enrichment_relativa, "01_standard_comparisons")
+
+# Dataframe para almacenar las carpetas principales (Seurat, Automáticas, Manual)
+std_comparisons_root_dirs_df <- NULL
+
+if (dir.exists(ruta_std_comparisons)) {
+  subdirs_root <- list.dirs(ruta_std_comparisons, recursive = FALSE, full.names = FALSE)
+  if (length(subdirs_root) > 0) {
+    # Ordenar alfabéticamente
+    subdirs_root <- sort(subdirs_root)
+    std_comparisons_root_dirs_df <- data.frame(
+      folder_name = subdirs_root,
+      ruta_absoluta = file.path(ruta_std_comparisons, subdirs_root),
+      ruta_relativa = file.path(ruta_std_comparisons_relativa, subdirs_root),
+      stringsAsFactors = FALSE
+    )
+  }
+}
+
+
+#------------------------------------------------------------------------
+# DIRECTORIO "ENRICHMENT MANUAL AGGREGATED" (EL NÚCLEO BIOLÓGICO)
+#------------------------------------------------------------------------
+
+ruta_enrich_agg <- file.path(ruta_std_comparisons, "03_manual_aggregated_named_clusters")
+ruta_enrich_agg_relativa <- file.path(ruta_std_comparisons_relativa, "03_manual_aggregated_named_clusters")
+
+versiones_enrich_agg_df <- NULL
+ultima_version_enrich_nombre <- NULL
+ult_ver_enrich_within_df <- NULL
+ult_ver_enrich_reference_between_df <- NULL
+ult_ver_enrich_test_between_df <- NULL
+
+if (dir.exists(ruta_enrich_agg)) {
+  subcarpetas_versiones <- list.dirs(ruta_enrich_agg, recursive = FALSE, full.names = FALSE)
+
+  if (length(subcarpetas_versiones) > 0) {
+    
+    # Ordenar y detectar la última versión
+    subcarpetas_versiones <- sort(subcarpetas_versiones)
+    ultima_version_enrich_nombre <- subcarpetas_versiones[length(subcarpetas_versiones)]
+
+    versiones_enrich_agg_df <- data.frame(
+      folder_name = subcarpetas_versiones,
+      is_latest = (subcarpetas_versiones == ultima_version_enrich_nombre),
+      ruta_absoluta = file.path(ruta_enrich_agg, subcarpetas_versiones),
+      ruta_relativa = file.path(ruta_enrich_agg_relativa, subcarpetas_versiones),
+      stringsAsFactors = FALSE
+    )
+
+    # ESCRUTINIO DE LA ÚLTIMA VERSIÓN
+    ruta_ult_abs <- file.path(ruta_enrich_agg, ultima_version_enrich_nombre)
+    ruta_ult_rel <- file.path(ruta_enrich_agg_relativa, ultima_version_enrich_nombre)
+
+    # 1. within_cluster (Donde encontraremos ORA y GSEA)
+    dir_within_abs <- file.path(ruta_ult_abs, "01_reference_vs_test_within_cluster")
+    dir_within_rel <- file.path(ruta_ult_rel, "01_reference_vs_test_within_cluster")
+
+    if (dir.exists(dir_within_abs)) {
+      # Aquí listamos los directorios (01_ora, 02_gsea) en lugar de archivos
+      carpetas_within <- list.dirs(dir_within_abs, recursive = FALSE, full.names = FALSE)
+      if (length(carpetas_within) > 0) {
+        carpetas_within <- sort(carpetas_within)
+        ult_ver_enrich_within_df <- data.frame(
+          folder_name = carpetas_within,
+          ruta_absoluta = file.path(dir_within_abs, carpetas_within),
+          ruta_relativa = file.path(ruta_ult_rel, "01_reference_vs_test_within_cluster", carpetas_within),
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+
+    # 2. reference_between_clusters
+    dir_reference_bet_abs <- file.path(ruta_ult_abs, "02_reference_between_clusters_pairwise")
+    dir_reference_bet_rel <- file.path(ruta_ult_rel, "02_reference_between_clusters_pairwise")
+
+    if (dir.exists(dir_reference_bet_abs)) {
+      carpetas_reference <- list.dirs(dir_reference_bet_abs, recursive = FALSE, full.names = FALSE)
+      if (length(carpetas_reference) > 0) {
+        carpetas_reference <- sort(carpetas_reference)
+        ult_ver_enrich_reference_between_df <- data.frame(
+          folder_name = carpetas_reference,
+          ruta_absoluta = file.path(dir_reference_bet_abs, carpetas_reference),
+          ruta_relativa = file.path(ruta_ult_rel, "02_reference_between_clusters_pairwise", carpetas_reference),
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+
+    # 3. test_between_clusters
+    dir_test_bet_abs <- file.path(ruta_ult_abs, "03_test_between_clusters_pairwise")
+    dir_test_bet_rel <- file.path(ruta_ult_rel, "03_test_between_clusters_pairwise")
+
+    if (dir.exists(dir_test_bet_abs)) {
+      carpetas_test <- list.dirs(dir_test_bet_abs, recursive = FALSE, full.names = FALSE)
+      if (length(carpetas_test) > 0) {
+        carpetas_test <- sort(carpetas_test)
+        ult_ver_enrich_test_between_df <- data.frame(
+          folder_name = carpetas_test,
+          ruta_absoluta = file.path(dir_test_bet_abs, carpetas_test),
+          ruta_relativa = file.path(ruta_ult_rel, "03_test_between_clusters_pairwise", carpetas_test),
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+  }
+}
+
+
+
+#--------------------------------------------------------------------------------------------------------------
+# DIRECTORIO 2: "COMPARACIONES PERSONALIZADAS 
+#--------------------------------------------------------------------------------------------------------------
+
+# Rutas al directorio "02_custom_comparisons" dentro de "08_enrichment"
+ruta_custom_comparisons <- file.path(ruta_enrichment, "02_custom_comparisons")
+ruta_custom_comparisons_relativa <- file.path(ruta_enrichment_relativa, "02_custom_comparisons")
+
+# Dataframe para almacenar las carpetas principales y lista para sus archivos
+custom_comparisons_root_dirs_df <- NULL
+custom_comparisons_files_list <- list() # Aquí guardaremos los archivos de cada carpeta
+
+if (dir.exists(ruta_custom_comparisons)) {
+  subdirs_root <- list.dirs(ruta_custom_comparisons, recursive = FALSE, full.names = FALSE)
+  subdirs_root <- subdirs_root[subdirs_root != ""] # <--- FIX: Evitar el directorio fantasma
+
+  if (length(subdirs_root) > 0) {
+    # Ordenar alfabéticamente
+    subdirs_root <- sort(subdirs_root)
+
+    # Crear dataframe con las carpetas
+    custom_comparisons_root_dirs_df <- data.frame(
+      folder_name = subdirs_root,
+      ruta_absoluta = file.path(ruta_custom_comparisons, subdirs_root),
+      ruta_relativa = file.path(ruta_custom_comparisons_relativa, subdirs_root),
+      stringsAsFactors = FALSE
+    )
+    
+    # BUCLE PARA EXPLORAR QUÉ ARCHIVOS HAY DENTRO DE CADA SUBCARPETA
+    for (i in 1:nrow(custom_comparisons_root_dirs_df)) {
+      carpeta <- custom_comparisons_root_dirs_df$folder_name[i]
+      ruta_abs_carpeta <- custom_comparisons_root_dirs_df$ruta_absoluta[i]
+      ruta_rel_carpeta <- custom_comparisons_root_dirs_df$ruta_relativa[i]
+      
+      # Listar archivos de esta carpeta
+      archivos_dentro <- list.files(ruta_abs_carpeta, full.names = FALSE)
+      
+      if (length(archivos_dentro) > 0) {
+        custom_comparisons_files_list[[carpeta]] <- data.frame(
+          file_name = archivos_dentro,
+          ruta_absoluta = file.path(ruta_abs_carpeta, archivos_dentro),
+          ruta_relativa = file.path(ruta_rel_carpeta, archivos_dentro),
+          stringsAsFactors = FALSE
+        )
+      } else {
+        # Si la carpeta está creada pero vacía, almacenamos un df vacío para que no falle
+        custom_comparisons_files_list[[carpeta]] <- data.frame()
+      }
+    }
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 8</h1>
+  <h2>Functional and Enrichment Analysis</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    In the previous module (<strong><a href="07-expresion-diferencial.html" class="normalink">Differential Expression Analysis</a></strong>), the exact statistical catalog of genes that are overexpressed or repressed (DEGs) in each cell population in response to the study variable was precisely identified (typically the direct contrast between a <strong>Reference</strong> condition and a <strong>Test</strong> or <em>Test</em> condition). However, deriving physiological conclusions from an isolated list of hundreds of individual genes is analytically unmanageable.
+  </p>
+
+  <p>
+    The goal of this eighth section is to perform the <strong>"functional translation"</strong> of those quantitative data. To achieve this, the altered transcriptional signatures of each cell lineage are projected onto globally standardized biological knowledge bases, such as <em>Gene Ontology (GO)</em> and <em>KEGG Pathways</em>. This systemic approach allows us to move away from a "gene-by-gene" view and instead understand the cellular response as a whole, revealing whether genes act in a coordinated manner to induce pathological stress, halt the cell cycle, or dysregulate specific metabolic cascades.
+  </p>
+
+  <p>
+    To ensure maximum fluidity and coherence, <strong>this functional module inherits exactly the same architecture and navigation logic as the previous section</strong>, organizing the vast volume of ontological data along the two already known axes:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Standard Pipeline &rArr;</strong> Performs the systematic functional translation of the main experimental design comparison. It deploys the same "analytical funnel", computing enrichment first on numerical clusters and automatic annotations as a technical audit, culminating in the definitive functional assessment of the manually curated population model.
+    </li>
+    <li>
+      <strong>Targeted Analyses (Ad-hoc) &rArr;</strong> Applies the pathway extraction engine to any contrast that goes beyond the traditional binary workflow. This dynamic space integrates both complex experimental designs (e.g. time series or multiple crossed conditions) and the "surgical" stratifications defined in <a href="07-expresion-diferencial.html#tab3-seccion7.3" class="normalink">Section 7.3</a>, allowing us to decipher which physiological pathways govern highly specific biological scenarios.
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion8">8<span>.</span> Functional and Enrichment Analysis</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion8.1">8.1. Foundations of Pathway Analysis</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion8.2">8.2. Standard Pipeline: Experimental Design Contrasts</a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion8.2.1">8.2.1. Global Overview: Standard Enrichment Architecture</a>
+            </li>
+            <li>
+              <a href="#tab3-seccion8.2.2">8.2.2. Definitive Analysis: Intra-population Enrichment (Reference vs Test)</a>
+              <ul>
+                <li><a href="#tab3-seccion8.2.2.1">8.2.2.1. Analyzed Databases (GO and KEGG)</a></li>
+                <li><a href="#tab3-seccion8.2.2.2">8.2.2.2. File Interpretation Guide (ORA and GSEA)</a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab3-seccion8.3">8.3. Targeted Analyses: Custom Comparisons (Ad-hoc)</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion8">
+  8<span>.</span> Functional and Enrichment Analysis
+</div>
+
+<p>
+  In the previous stages of this bioinformatics workflow, we managed to distill the complex tissue transcriptome down to the specific molecular signatures of experimental impact, generating precise catalogs of differentially expressed genes (DEGs). However, a tabular matrix full of <code>genes</code>, log fold changes (<code>avg_log2FC</code>), and <code>p-values</code> represents only the disordered pieces of a biological puzzle.
+</p>
+
+<p>
+  To visualize the complete picture and understand the phenotypic impact of the evaluated <strong>biological variables or states</strong>, it is essential to raise the level of abstraction: we must move from the individual gene to the system. Functional and enrichment analysis is the bioinformatics engine that enables this leap, crossing our empirical findings against vast curated knowledge libraries to reveal which cellular mechanisms have been modulated during the experiment.
+</p>
+
+<p>
+  Given the computational magnitude of this process — which multiplies each cell population by different statistical methods and ontological databases — this section has been designed to guide exploration from methodological theory to biological detail, maintaining structural symmetry with the differential expression section:
+</p>
+
+<ul>
+  <li>
+    <strong>8.1. Foundations of Pathway Analysis &rArr;</strong> An essential theoretical block to establish the underlying statistical concepts. It details the mechanistic differences between the two enrichment philosophies used (ORA vs GSEA) and introduces the ontological knowledge databases (such as GO and KEGG) onto which the data has been projected.
+  </li>
+  <li>
+    <strong>8.2. Standard Pipeline (Experimental Design Contrasts) &rArr;</strong> Represents the systematic functional evaluation of the main analytical axis of the project. Although this block is optimized for the most common two-condition design (<strong>Reference vs Test</strong>), its purpose is to ensure technical traceability by evaluating enrichment from initial numeric clusters to the final manually curated population model.
+  </li>
+  <li>
+    <strong>8.3. Targeted Analyses (Custom Comparisons) &rArr;</strong> A dynamic space reserved for functional contrasts that go beyond the standard workflow. It integrates both <strong>complex experimental designs</strong> (e.g. time series or multiple groups compared simultaneously) and "surgical" exploratory questions (such as the functional effect of a single target marker), providing resolution independent of the general workflow of the report.
+  </li>
+</ul>
+
+<p>
+  Next, we will begin this journey by establishing the methodological foundations that govern pathway extraction.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion8.1">
+  8.1. Foundations of Pathway Analysis
+</div>
+
+<p>
+  Functional enrichment analysis acts as the definitive interpretative bridge between raw statistics and systems biology. Its fundamental premise is that genes do not act in isolation, but rather dynamically cooperate in complex networks and cascades to execute cellular functions. To decode this interaction network, this study implements the two most robust algorithmic methodologies in the field of transcriptomics:
+</p>
+
+<ul>
+  <li>
+    <strong>ORA (Over-Representation Analysis) &rArr;</strong> This classical statistical approach uses exclusively the list of genes that have passed the strict significance threshold (i.e., the subset of DEGs with <code>p_val_adj < 0.05</code>). The algorithm mathematically evaluates (using hypergeometric tests or Fisher’s exact tests) whether this filtered list contains a frequency of genes associated with a specific biological pathway that is significantly higher than expected by pure chance against a reference background universe. <br>
+    <em style="color: #0e59a8">Methodological note in Single-Cell:</em> ORA is highly dependent on the size of the input list. Due to the intrinsically noisy nature of single-cell technology (with high dropout rates or signal loss), a perturbation (Test condition, e.g. KO) may have a real but subtle biological impact in a cluster, generating very few genes that pass the strict individual statistical threshold. In these scenarios, it is completely normal for ORA to lack statistical power and return empty results for certain lineages.
+  </li>
+  <li>
+    <strong>GSEA (Gene Set Enrichment Analysis) &rArr;</strong> Unlike ORA, this method does not impose an arbitrary p-value cutoff, and therefore does not discard any data. It uses <em>all</em> genes detected in the cell population, ordering them into a continuous ranking based on their magnitude and direction of change (typically from highest to lowest <code>avg_log2FC</code>). GSEA traverses this ranking evaluating whether genes belonging to a specific biological pathway tend to accumulate coordinately at the extremes of the list. <strong>Given the capture limitations of single-cell transcriptomics, GSEA is usually a much more robust and relevant approach than ORA.</strong> By bypassing the need for gene-level significance, it can detect pathological shifts where dozens of genes within the same metabolic cascade are subtly but synergistically altered; a critical biological phenomenon that ORA’s strict filtering would completely miss.
+  </li>
+</ul>
+
+<p>
+  Regardless of the statistical strategy chosen, the biological accuracy of the analysis depends on the quality of the dictionaries or controlled vocabularies used for the comparison. In this project, transcriptional signatures have been systematically projected against the two major global reference ontologies:
+</p>
+
+<ul>
+  <li>
+    <strong>Gene Ontology (GO) &rArr;</strong> This is the most extensive and essential ontological database worldwide. Its architecture structures biological knowledge through a rigorous hierarchical network (a directed acyclic graph), where general concepts branch into highly specific subcategories. To achieve exhaustive and standardized annotation, GO classifies gene properties into three orthogonal and complementary domains. First, <strong>Biological Process (GO-BP)</strong> groups broad biological processes or “cellular programs” that require coordination of multiple molecular activities, providing general physiological context (e.g. <em>immune response regulation, angiogenesis, or apoptosis</em>). In parallel, <strong>Cellular Component (GO-CC)</strong> defines the precise subcellular anatomy, indicating the physical structure or compartment where the gene product exerts its function, a crucial detail for identifying which specific organelles are affected by the mutation (such as <em>the outer mitochondrial membrane, nucleoplasm, or ribosome</em>). Finally, <strong>Molecular Function (GO-MF)</strong> describes the basic and direct biochemical activities that a gene or its protein performs at a strictly individual level, regardless of the larger process in which it participates (such as <em>protein kinase activity, transcription factor binding, or enzymatic catalytic activity</em>).
+  </li>
+  <li>
+    <strong>KEGG (Kyoto Encyclopedia of Genes and Genomes) &rArr;</strong> Unlike the complex semantic hierarchy of GO, KEGG stands out as a repository focused entirely on high-level interaction networks. This resource provides exhaustive, structured, and manually curated visual maps representing complete metabolic pathways, intricate intracellular signaling mechanisms, and the underlying pathogenesis of numerous human diseases. Its use is absolutely essential for tracing and visually representing the cascade or “domino effect” triggered by an experimental perturbation (for example, illustrating how silencing a single gene can destabilize the entire Krebs cycle or completely block the p53 tumor suppressor signaling pathway).
+  </li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion8.2">
+  8.2. Standard Pipeline: Experimental Design Contrasts
+</div>
+
+<p>
+  This section constitutes the functional evaluation framework of the project’s base design. Following the philosophy of traceability and rigor applied in the differential expression module, the enrichment system is designed to replicate exactly the same directory architecture. This ensures a one-to-one and direct correspondence between the previously computed gene catalogs (DEGs) and their subsequent translation into cellular processes.
+</p>
+
+<p>
+  To maintain this structural order, the <em>Standard Pipeline</em> systematically groups the functional projections corresponding to the three evolutionary layers of the analysis: pure mathematical clustering (<strong>Seurat</strong>), algorithmic projections (<strong>automatic databases</strong>), and the definitive biological model (<strong>manual populations</strong>).
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion8.2.1">
+  8.2.1. Global Exploration: Architecture of Standard Enrichment
+</div>
+
+<p>
+  Upon accessing the main repository of standard contrasts (directory <code>01_standard_comparisons</code>), you will notice that the folder structure acts as an exact mirror of the DEGs module. However, it is important to make a methodological clarification to avoid confusion during navigation: given the immense computational load required to cross thousands of genes against multiple ontologies, <strong>it is not strictly necessary nor efficient to compute functional enrichment for all preliminary levels of the study</strong>.
+</p>
+
+<p>
+  In standard single-cell analytical practice, biological interpretation effort is almost exclusively focused on the highest-resolution model: the intra-population contrast (<strong>Reference vs Test</strong>) performed on manually curated clusters.
+</p>
+
+<p>
+  Therefore, although the folders corresponding to the earlier, more raw stages (<code>01_seurat_numeric_clusters</code> and <code>02_automatic_dbs_clusters</code>) are generated by default to preserve the structural integrity of the <em>pipeline</em>, they often function as a "latent container". It is completely normal for them to remain empty unless the research team has explicitly requested functional pathway auditing of non-specific lineages as a quality control measure.
+</p>
+
+<p>
+  Through the following interactive panel, you can access the root of this standard repository. This explorer will allow you to quickly verify which analytical branches (numeric, automatic, or manual) have been enriched with functional results in the current version of this project:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# SHOW BOX-FILES FROM ENRICHMENT ROOT (Seurat, Automatic, Manual)
+if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(std_comparisons_root_dirs_df)) {
+    folder <- std_comparisons_root_dirs_df$folder_name[i]
+    ruta <- std_comparisons_root_dirs_df$ruta_relativa[i]
+    cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', ruta, folder))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_std_comparisons_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore directory "01_standard_comparisons"
+    </a>
+  </p>
+  '), sep = "\n")
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Empty directory</b><br>
+    No subdirectories have been detected in the "01_standard_comparisons" folder.
+  </div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  <em style="color: #666;"><i class="fa-solid fa-circle-info"></i> <strong>Local navigation notice:</strong> Depending on your web browser’s security policies, you may encounter an error message (such as <code>ERR_FILE_NOT_FOUND</code> or "File not found") when attempting to open any of these folders. This does not indicate a failure in the report or a broken link; it simply means that the corresponding directory is currently completely empty (either because the analysis is still in progress or because the database did not yield results for those parameters), which causes the browser to block the local directory view.</em>
+</p>
+
+<p>
+  <strong>Methodological note:</strong> It is essential to emphasize that automatic and numeric analysis folders act exclusively as a passive repository for consultation. Although their evaluation may be useful for auditing the behavior of extremely generic lineages, their biological reliability is limited. The true translational value and analytical rigor of this study lie entirely in the population model consolidated by the research team. Therefore, the interactive scrutiny will move away from these preliminary approaches to focus on the <code>03_enrichment_manual_aggregated_named_clusters</code> branch from the next subsection onwards.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion8.2.2">
+  8.2.2. Definitive Analysis: Intrapopulation Enrichment (Reference vs Test)
+</div>
+
+<p>
+  Leaving behind preliminary projections, we now delve into what usually constitutes the true biological core of the study. The results shown below correspond exclusively to the path <code>03_manual_aggregated_named_clusters</code> (in its latest curated version) and, more specifically, to the subdirectory <code>01_reference_vs_test_within_cluster</code>.
+</p>
+
+<p>
+  In this location, for each lineage individually, we evaluate which physiological and metabolic alterations reflect the impact of the <strong>main study variable</strong> (functionally comparing the <strong>Test</strong> condition against its baseline or <strong>Reference</strong> state). Depending on the statistical suitability of each cell population (the amount and robustness of detected DEGs), the evaluation branches into the two algorithmic strategies detailed in the fundamentals section: <strong>ORA</strong> and <strong>GSEA</strong>.
+</p>
+
+<p>
+  It is important to note that the availability of reports in this section depends both on the nature of the experimental design and on the statistical performance of the sample itself. In scenarios where the project follows a more complex design that is not compatible with this standard binary comparison, or when transcriptomic differences do not reach the volume required to feed the ontology engine, these repositories will act as passive containers.
+</p>
+
+<p>
+  In cases where viable data have been generated for this comparison, you can access the main directories of both functional engines through the following interactive explorer:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# 1. SHOW BOX-FILES FROM THE SPECIFIC DIRECTORY 01_reference_vs_test_within_cluster FOR THE LATEST VERSION OF MANUAL CLUSTERS
+if (!is.null(ult_ver_enrich_within_df) && nrow(ult_ver_enrich_within_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(ult_ver_enrich_within_df)) {
+    folder <- ult_ver_enrich_within_df$folder_name[i]
+    ruta <- ult_ver_enrich_within_df$ruta_relativa[i]
+    cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', ruta, folder))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{dir_within_rel}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore directory "01_reference_vs_test_within_cluster"
+    </a>
+  </p>
+  '), sep = "\n")
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Empty directory</b><br>
+    No subdirectories have been detected in the folder "01_reference_vs_test_within_cluster".
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion8.2.2.1">
+  8.2.2.1. Internal Architecture: Analyzed Databases
+</div>
+
+<p>
+  When accessing either of the two previous methodologies (whether <code>01_ora</code> or <code>02_gsea</code>), you will find that the information has been neatly segmented into four subdirectories corresponding to the evaluated ontologies. To facilitate navigation, each one contains a specific level of knowledge:
+</p>
+
+<ul>
+  <li>
+    <strong><code>01_go_bp</code> (Biological Process) &rArr;</strong> This represents the highest level of functional abstraction and, frequently, the one with the greatest phenotypic relevance. This folder contains results associated with the "large programs" that the cell executes to interact with its environment or maintain homeostasis. When exploring it, the researcher can determine whether the experimental perturbation is pushing the cell population toward pathways such as <em>apoptosis</em>, altering its <em>proliferation cycle</em>, or triggering an acute <em>inflammatory response</em>.
+  </li>
+  <li>
+    <strong><code>02_go_cc</code> (Cellular Component) &rArr;</strong> Contains the purely spatial and anatomical mapping of transcriptional impact. Unlike abstract processes, this folder answers "where" the alteration is physically localized. Its review is essential to discover whether the mutant phenotype compromises the integrity of macromolecular complexes or specific cellular compartments, revealing, for example, pathological stress in the <em>endoplasmic reticulum</em>, disorganization of the <em>actin cytoskeleton</em>, or structural alterations in the <em>inner mitochondrial membrane</em>.
+  </li>
+  <li>
+    <strong><code>03_go_mf</code> (Molecular Function) &rArr;</strong> It descends to the strictest and most mechanistic biochemical level. It groups findings exclusively based on the catalytic, sensing, or binding activity physically performed by gene products at the nanomolecular scale. It allows the dissection of the intrinsic activity of altered genes, answering whether the cell population has reduced <em>protein kinase activity</em>, diminished capacity for <em>transmembrane ion transport</em>, or altered affinity for binding specific <em>transcription factors</em>.
+  </li>
+  <li>
+    <strong><code>04_kegg</code> (Metabolic and Signaling Pathways) &rArr;</strong> Acts as the ultimate repository of cellular "wiring circuits." Unlike GO conceptual classification, KEGG maps genes onto standardized topological diagrams. Here, real interconnected networks are visualized, allowing tracking of the domino effect caused by mutations on basal metabolism (e.g. <em>glycolysis</em> or <em>oxidative phosphorylation</em>), on complex signal transduction networks (e.g. <em>PI3K-Akt cascades or Notch signaling</em>), or even on specific pathways associated with human diseases.
+  </li>
+</ul>
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion8.2.2.2">
+  8.2.2.2. File Interpretation Guide
+</div>
+
+<p>
+  When entering any of the four ontological subdirectories, you will find individualized results for each curated cell type. The delivery format systematically consists of a statistical tabular component and a visual validation component. Below we provide the analytical keys to correctly interpret both formats:
+</p>
+
+<ul>
+  <li>
+    <strong>Enrichment Catalogs (Files <code>.tsv</code> / <code>.csv</code> / <code>.xlsx</code>) &rArr;</strong> These constitute the central mathematical matrix of the analysis, where each row represents a specific biological pathway or cellular process. For a correct phenotypic interpretation, it is critical to consider several key columns that will vary slightly depending on the method used: <strong><code>Description</code></strong> indicates the descriptive biological name of the pathway; <strong><code>p.adjust</code></strong> or <strong><code>qvalue</code></strong> act as the statistical validity filter (typically, pathways with values below 0.05 are considered biologically significant); and the directionality or magnitude of change is assessed through <strong><code>GeneRatio</code></strong> in ORA analysis (which shows the proportion of differential genes belonging to that pathway) or through <strong><code>NES</code></strong> in GSEA (where positive values indicate global activation in the Test condition, and negative values indicate repression relative to the Reference). Finally, the <strong><code>geneID</code></strong> (in ORA) or <strong><code>core_enrichment</code></strong> (in GSEA) columns provide the most translationally valuable finding, as they list the exact gene symbols from our experiment that drive the statistics, allowing us to determine not only which cellular machinery changes, but also which specific molecular effectors are responsible.
+  </li>
+  <li>
+    <strong>Graphical Validation Reports (Files <code>.pdf</code>) &rArr;</strong> These multi-page documents translate tabular metrics into quickly interpretable visualizations. They typically begin with a <strong>Bar Plot</strong>, which ranks the most impacted pathways according to their gene count <em>(Count)</em>. Next, they present the <strong>Dot Plot</strong>, considered the flagship representation of enrichment. In this plot, the color intensity of each bubble reflects the strength of statistical significance <em>(p.adjust)</em>, while its diameter represents the total number of genes from our sample involved in the cascade. Additionally, exclusively within the KEGG directory, it is possible to find <strong>Topological Metabolic Maps</strong>. These diagrams illustrate the actual cellular circuits, coloring enzyme and receptor boxes (typically to indicate overexpression or repression), allowing visual tracking of where a biochemical cycle is interrupted or accelerated.
+  </li>
+  <li>
+    <strong>Physiological Consideration for Empty Folders &rArr;</strong> We again emphasize a fundamental peculiarity of single-cell analyses. It is completely normal and biologically expected that, when exploring certain folders, you may find them empty (without <code>.csv</code> or <code>.pdf</code> files) for a given cell type. This does not constitute a pipeline execution error. It simply indicates that, for that specific cluster, the Knock-Out mutation did not alter the transcriptome with sufficient magnitude or statistical density to coordinately and significantly perturb an entire biological pathway.
+  </li>
+</ul>
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion8.3">
+  8.3. Directed Analyses: Custom Comparisons (Ad-hoc)
+</div>
+
+<p>
+  Finally, we reach the last section of this functional module: the <strong>Directed Analyses</strong> or <em>ad hoc</em> comparisons. While the <em>Standard Pipeline</em> (<a href="#tab3-seccion8.2" class="normalink">Section 8.2</a>) is an essential tool for validating the central hypothesis of the study by evaluating pathways in a global contrast (Reference vs Test), the intrinsic biology of a tissue is rarely limited to a perfect binary comparison. Often, the most subtle and interesting alterations in metabolic and signaling pathways can be diluted or masked when the heterogeneity of the sample is evaluated as a whole.
+</p>
+
+<p>
+  This section represents the "surgical" exploratory path of the report. It is methodologically designed to host customized functional evaluations that answer highly specific biological questions arising during the course of the research. One of the most powerful applications of this approach is <strong>intrinsic stratification</strong>: grouping cells not by their sample origin, but by their behavior. A classic example would be isolating a single cell population and dividing it into two groups based on the expression levels of a target marker (for example, comparing <em>CtsD<sup>High</sup></em> versus <em>CtsD<sup>Low</sup></em> cells). This allows the identification of which physiological cascades or ontological processes are exclusively regulated by that gene, isolating its pure functional effect.
+</p>
+
+<p>
+  In addition, this dynamic environment is the system's architectural response for handling <strong>complex experimental designs</strong>. Since the main standardized workflow is optimized for two global conditions, any project involving multiple variables — such as time series (e.g. <em>Day 0 vs Day 7 vs Day 14</em>), cohorts with more than two phenotypic groups, or the evaluation of specific crossed sub-treatments — will find the detailed breakdown of its enrichment in this section. In this way, the report goes beyond the rigidity of a standard template and adapts to capture the full depth of the experiment.
+</p>
+
+<p>
+  Below is the structure of the <code>02_custom_comparisons</code> directory, which acts as the master container for all these additional functional analytical requests. From the following interactive panel you can access the root of the repository and obtain a global overview of the generated folders (each one representing the enrichment of an independent comparison required for this project):
+</p>
+
+```{r, echo=FALSE, results="asis"}
+if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_dirs_df) > 0) {
+  
+  # 1. SHOW PARENT DIRECTORY (02_custom_comparisons)
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(custom_comparisons_root_dirs_df)) {
+    folder <- custom_comparisons_root_dirs_df$folder_name[i]
+    # Clean path and force trailing slash to open as directory
+    ruta_html <- utils::URLencode(gsub("\\\\", "/", paste0(custom_comparisons_root_dirs_df$ruta_relativa[i], "/")))
+    cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', ruta_html, folder))
+  }
+  cat('</ul>\n</div>\n')
+  
+  # Button to explore root
+  ruta_custom_comparisons_html <- utils::URLencode(gsub("\\\\", "/", ruta_custom_comparisons_relativa))
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_custom_comparisons_html}/" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore root directory of ad hoc analyses
+    </a>
+  </p>
+  '), sep = "\n")
+  
+  
+  # 2. DYNAMIC CONTEXTUALIZATION (Count and list folders)
+  num_carpetas <- nrow(custom_comparisons_root_dirs_df)
+  texto_conteo <- ifelse(num_carpetas == 1, 
+                          "<strong>1 custom exploration subdirectory</strong>", 
+                          paste0("<strong>", num_carpetas, " custom exploration subdirectories</strong>"))
+  
+  lista_nombres <- paste0("<em>", custom_comparisons_root_dirs_df$folder_name, "</em>", collapse = ", ")
+  
+  cat(glue::glue('
+  <p>
+    In the current version of this project, the system has detected and processed {texto_conteo} ({lista_nombres}). Below, we will break down the content of each of these individual sections, directly showing the graphical and/or tabular reports ready for inspection.
+  </p>
+  '), sep = "\n")
+  
+
+  # 3. DETAILED LOOP FOR EACH SUBFOLDER
+  for (i in 1:nrow(custom_comparisons_root_dirs_df)) {
+    
+    carpeta_cruda <- custom_comparisons_root_dirs_df$folder_name[i]
+    ruta_carpeta_rel <- custom_comparisons_root_dirs_df$ruta_relativa[i]
+    
+    # GENERATE DYNAMIC TITLE (Remove numeric prefix, clean hyphens and capitalize)
+    # 1. Remove leading numbers and underscore (e.g. "01_" -> "")
+    carpeta_sin_numeros <- sub("^\\d+_+", "", carpeta_cruda)
+    
+    # 2. Replace remaining underscores with spaces and capitalize
+    titulo_limpio <- stringr::str_to_title(gsub("_", " ", carpeta_sin_numeros))
+    
+    # Add sequential numbering 8.3.i. to title (FIXED FOR SECTION 8)
+    cat(sprintf('<div class="titulo3" style="margin-top: 50px; margin-bottom: 6px; padding-bottom: 8px; line-height: 1.2;">8.3.%d. %s</div>\n', i, titulo_limpio))
+
+    # Dynamic introduction to the folder adapted to Enrichment
+    cat(glue::glue('
+    <p>
+      This section details the enrichment results corresponding to the exploratory comparison defined as <strong>{titulo_limpio}</strong>. This focused analysis has been executed in parallel with the standard workflow, with the aim of characterizing the biological processes and metabolic pathways that govern this particular condition without interference or masking from the rest of the tissue populations.
+    </p>
+    
+    <p>
+      Through the following interactive panel, linked to the directory <code>{carpeta_cruda}</code>, you can access the analytical artifacts (such as ORA or GSEA) generated specifically for this contrast. If any pathways exceed statistical significance thresholds, the repository will display the complete tabular catalogs (<code>.tsv</code>, <code>.csv</code>, or <code>.xlsx</code>) and the graphical network and ontology reports (<code>.pdf</code>) ready for inspection and download.
+    </p>
+    '), sep = "\n")
+    
+    # Extraer los archivos asociados a esta carpeta
+    files_df <- custom_comparisons_files_list[[carpeta_cruda]]
+    
+    if (!is.null(files_df) && nrow(files_df) > 0) {
+      
+      files_df <- files_df[order(files_df$file_name), ]
+      cat('<div class="box-files">\n<ul>\n')
+      
+      for (j in 1:nrow(files_df)) {
+        f <- files_df$file_name[j]
+        ruta_f <- files_df$ruta_relativa[j]
+        ruta_f_html <- utils::URLencode(gsub("\\\\", "/", ruta_f))
+        
+        # Assign icon dynamically based on extension
+        clase <- if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+          "file-pdf"
+        } else if (grepl("\\.csv$|\\.tsv$|\\.xlsx?$", f, ignore.case = TRUE)) {
+          "file-csv"
+        } else {
+          "file-default"
+        }
+        
+        cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta_f_html, f))
+      }
+      
+      cat('</ul>\n</div>\n')
+      
+    } else {
+      cat(glue::glue('
+      <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+        <i class="fa-solid fa-folder-open"></i>
+        <b>Directory without results</b><br>
+        The container <code>{carpeta_cruda}</code> has been initialized, but no corresponding files (pathway reports or tables) have currently been generated for this comparison.
+      </div>
+      '), sep = "\n")
+    }
+    
+    # NAVIGATION BUTTON TO THAT SUBFOLDER
+    ruta_carpeta_html <- utils::URLencode(gsub("\\\\", "/", ruta_carpeta_rel))
+    
+    cat(glue::glue('
+    <p class="text-center">
+      <a href="{ruta_carpeta_html}/" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explore directory "{carpeta_cruda}"
+      </a>
+    </p>
+    '), sep = "\n")
+  }
+  
+} else {
+  # SCENARIO B: NO AD HOC REQUESTS (NO FOLDERS)
+  cat(glue::glue('
+  <div class="alert-info alert-box" style="margin-top: 25px; margin-bottom: 20px;">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Passive repository</b><br>
+    Currently there are no custom functional analyses or additional requests for this project.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  With the functional characterization of transcriptional signatures and the biological translation of cellular expression profiles, we conclude the standardized bioinformatics workflow for single-cell RNA sequencing (<em>Single-Cell RNA-Seq</em>) analysis in this project.
+</p>
+
+<p>
+  However, cutting-edge biological research is inherently dynamic and often raises highly specific questions that go beyond conventional automation. For this reason, this report includes a final complementary module: <strong><a href="09-extra.html" class="normalink">9. Custom and ad hoc analyses</a></strong>.
+</p>
+
+<p>
+  This next (and final) section is designed as a tailored analytical space intended to host all additional requests explicitly made by the research team. From graphical exploration of specific gene targets or generation of dedicated <em>FeaturePlots</em>, to the export of atypical data matrices; all supplementary material that complements this general study will reside in this repository.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

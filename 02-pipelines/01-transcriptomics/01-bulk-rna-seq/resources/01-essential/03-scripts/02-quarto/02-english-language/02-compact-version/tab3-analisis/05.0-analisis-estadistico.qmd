@@ -1,0 +1,641 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  experiment_name: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 5. ANÁLISIS ESTADÍSTICO DE LA EXPRESIÓN GENÉTICA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+library(stringr)
+library(glue)
+library(fs)
+library(dplyr)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_bulk_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_bulk_rna_seq_pipeline_absoluta <- normalizePath(ruta_bulk_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+nombre_experimento <- basename(params$experiment_name)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta donde están los resultados de DEG y volcano
+ruta_resultados_experimento <- file.path(params$project_path, "Resultados", nombre_experimento)
+ruta_resultados_experimento_relativa <- file.path(params$project_path_relativa, "Resultados", nombre_experimento)
+
+
+# Buscar archivos .xlsx y .pdf
+archivos_deg <- list.files(ruta_resultados_experimento, pattern = "^DEG_.*\\.xlsx$", full.names = TRUE)
+archivos_volcano <- list.files(ruta_resultados_experimento, pattern = "^Volcano_plot_.*\\.pdf$", full.names = TRUE)
+
+
+# Extraer nombres base de comparación
+comparaciones <- gsub("^DEG_(.*)\\.xlsx$", "\\1", basename(archivos_deg))
+comparaciones <- gsub("_", " ", comparaciones)
+
+
+# Ruta donde están los resultados de enriquecimiento
+ruta_enrichment <- file.path(params$project_path, "Resultados", nombre_experimento, "Enrichment")
+ruta_enrichment_relativa <- file.path(ruta_proyecto_relativa, "Resultados", nombre_experimento, "Enrichment")
+
+
+# Archivos
+archivos_enrichment <- list.files(ruta_enrichment, pattern = "^Enrichment_.*\\.(pdf|xls)$", full.names = TRUE)
+archivos_enrichment_relativa <- list.files(ruta_enrichment_relativa, pattern = "^Enrichment_.*\\.(pdf|xls)$", full.names = TRUE)
+
+
+# Extraer categoría funcional y comparación
+info_archivos <- str_match(
+  basename(archivos_enrichment_relativa),
+  "^Enrichment_((?:GO_(?:BP|CC|MF)|KEGG))_([^_]+_vs_[^_]+)_"
+)
+
+
+# Crear un data.frame con columnas útiles
+df_info <- data.frame(
+  ruta_archivo = archivos_enrichment_relativa,
+  categoria_funcional = info_archivos[,2],
+  comparacion = info_archivos[,3],
+  tipo = tools::file_ext(archivos_enrichment_relativa),
+  stringsAsFactors = FALSE
+)
+
+
+# Reemplazar "_" por ":" en la columna 'categoria_funcional'
+df_info$categoria_funcional <- str_replace_all(df_info$categoria_funcional, "_", ":")
+
+
+# Reemplazar "_" por " " en la columna 'comparacion'
+df_info$comparacion <- str_replace_all(df_info$comparacion, "_", " ")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 5</h1>
+  <h2>Statistical analysis of gene expression</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This section represents the core of the transcriptomic analysis, focused on the <strong>statistical treatment of gene expression data</strong> to ensure its <em>reliability</em>, <em>quality</em>, and <em>biological interpretative value</em>. It spans from <strong>normalization</strong> of expression counts to the <strong>identification of differentially expressed genes</strong> and their subsequent <strong>functional interpretation</strong>. Each of these steps is implemented sequentially and with justification, ensuring that the final results are based on rigorously processed and validated data.
+  </p>
+
+  <p>
+    Given the large volume of information, interactive visualizations, and tables included in this section, a <em>modular structure</em> has been adopted, where each subsection is embedded via an <code>&lt;iframe&gt;</code> and accompanied by a direct access button. This allows for <strong>efficient, segmented content loading</strong>, improving navigation and preventing performance issues that could affect the user experience.
+  </p>
+
+  <p>
+    In the first part of the analysis, a process of <strong>gene expression normalization</strong> is applied, which is crucial to remove technical biases arising from library size or gene length. Measures such as <strong>RPKM</strong> are used to standardize the data, and a <em>visual and quantitative evaluation</em> of the transformation is performed to ensure its effectiveness before proceeding.
+  </p>
+
+  <p>
+    Subsequently, a <strong>quality control assessment</strong> is performed on the normalized data through <em>exploratory analyses</em> such as PCA, hierarchical clustering, or heatmaps, which allow verification of the <em>internal consistency of the dataset</em> and detection of potential outlier samples that could compromise result interpretation.
+  </p>
+
+  <p>
+    Once data quality is ensured, a <strong>differential expression analysis</strong> is conducted, comparing pairs of experimental conditions to identify <strong>differentially regulated genes</strong>. This step provides detailed gene lists with relevant statistical metrics and multiple visual representations that facilitate interpretation and prioritization.
+  </p>
+
+  <p>
+    Finally, these results are integrated into a <strong>functional and enrichment analysis</strong>, examining the <em>overrepresentation of biological functions</em> (through GO ontologies and KEGG pathways) among the differentially expressed genes. This stage links observed expression changes with <strong>relevant cellular or molecular processes</strong>, providing biological context to the study.
+  </p>
+
+  <p>
+    Overall, this section consolidates all previous work in the pipeline, transforming high-throughput sequencing data into <strong>statistically and biologically robust findings</strong>. It constitutes a key step for <em>generating functional hypotheses</em> and the <strong>exploration of molecular mechanisms</strong> involved in the analyzed experimental conditions.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+```{=html}
+```{r, results="asis"}
+cat('
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion5">
+        5<span>.</span> Statistical analysis of gene expression
+      </a>
+      <ul>
+        <li>
+          <a href="05.1-normalizacion.html#tab3-seccion5.1">
+            5.1. Normalization of expression data
+          </a>
+          <ul>
+            <li>
+              <a href="05.1-normalizacion.html#tab3-seccion5.1.1">
+                5.1.1. Visualization of the normalized matrix
+              </a>
+            </li>
+            <li>
+              <a href="05.1-normalizacion.html#tab3-seccion5.1.2">
+                5.1.2. Total reads per sample (RPKM)
+              </a>
+            </li>
+            <li>
+              <a href="05.1-normalizacion.html#tab3-seccion5.1.3">
+                5.1.3. Number of expressed genes per sample (RPKM)
+              </a>
+            </li>
+            <li>
+              <a href="05.1-normalizacion.html#tab3-seccion5.1.4">
+                5.1.4. Genes with highest total expression (RPKM)
+              </a>
+            </li>
+            <li>
+            <a href="05.1-normalizacion.html#tab3-seccion5.1.5">
+              5.1.5. Expression distribution per sample (log10 RPKM boxplot)
+            </a>
+            </li>
+            <li>
+              <a href="05.1-normalizacion.html#tab3-seccion5.1.6">
+                5.1.6. Comparison between raw counts and normalized data
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="05.2-evaluacion-calidad-normalizacion.html#tab3-seccion5.2">
+            5.2. Quality control assessment after normalization
+          </a>
+        </li>
+        <li>
+          <a href="05.3-analisis-expresion.html#tab3-seccion5.3">
+            5.3. Differential expression analysis
+          </a>
+          <ul>
+')
+
+# Subapartados generados automáticamente
+for (i in seq_along(comparaciones)) {
+  cat(glue::glue('
+            <li>
+              <a href="05.3-analisis-expresion.html#tab3-seccion5.3.{i}">
+                5.3.{i}. Comparison: {comparaciones[i]}
+              </a>
+            </li>
+\n'))
+}
+
+cat('
+          </ul>
+        </li>
+        <li>
+          <a href="05.4-analisis-funcional.html#tab3-seccion5.4">
+            5.4. Functional and enrichment analysis
+          </a>
+          <ul>
+')
+
+comparaciones <- unique(df_info$comparacion)
+for (i in seq_along(comparaciones)) {
+  comp <- comparaciones[i]
+  cat(glue::glue('
+            <li>
+              <a href="05.4-analisis-funcional.html#tab3-seccion-5.4.{i}">
+                5.4.{i}. Comparison: {comp}
+              </a>
+              <ul>
+  '))
+
+  subset_comp <- df_info[df_info$comparacion == comp, ]
+  categorias <- unique(subset_comp$categoria_funcional)
+
+  for (j in seq_along(categorias)) {
+    categ <- categorias[j]
+    cat(glue::glue('
+                <li>
+                  <a href="05.4-analisis-funcional.html#tab3-seccion-5.4.{i}.{j}">
+                    5.4.{i}.{j}. Functional category: {categ}
+                  </a>
+                </li>
+    '))
+  }
+
+  cat('
+              </ul>
+            </li>
+  ')
+}
+
+cat('
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+')
+```
+```
+
+```{=html}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion5">
+  5<span>.</span> Statistical analysis of gene expression
+</div>
+
+<p>
+  After generating the <em>gene expression matrix</em>, the analysis now focuses on extracting biologically relevant insights from the quantitative data obtained. This section emphasizes the <strong>statistical treatment of gene expression</strong> to detect differential patterns that reflect <strong>alterations in transcriptional regulation</strong> between the studied conditions or groups.
+</p>
+
+<p>
+  First, a process of <strong>normalization</strong> is applied to correct <em>technical biases</em> arising, for example, from differences in <em>sequencing depth</em> or <em>gene length</em>. Next, the <strong>overall structure of the sample set</strong> is examined using exploratory techniques that allow assessment of homogeneity and the potential presence of natural groupings. Subsequently, <strong>differentially expressed genes (DEGs)</strong> are identified using <em>statistical inference</em> methods adapted to the nature of RNA-Seq data. Finally, specific visualizations are presented and <strong>functional and enrichment analysis</strong> is introduced, allowing interpretation of results within a broader biological context.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.1">
+  5.1. Normalization of expression data
+</div>
+
+<p>
+  In this section, <strong>normalization of gene expression data</strong> is performed, an essential step to ensure <em>comparability between samples</em> and minimize technical biases arising from <em>sequencing library size</em> or <em>gene length</em>. The raw count matrix is transformed into normalized measures, such as <strong>RPKM (Reads Per Kilobase per Million)</strong>, which allow more robust and comparable interpretation of expression levels across genes and samples.
+</p>
+
+<p>
+  Throughout the analysis, the <strong>normalized matrix is visualized</strong> and key metrics such as <em>total expression per sample</em> or <em>number of expressed genes</em> are evaluated, enabling detection of potential <strong>anomalies or deviations</strong> after transformation. Genes with the highest overall expression are also identified, and the <em>expression distribution</em> is studied using boxplots, comparing it with the original data to assess the effect of normalization.
+</p>
+
+<p>
+  This phase prepares the ground for subsequent analyses, where data must be correctly adjusted to apply <strong>reliable statistical models</strong>. Therefore, normalization constitutes a fundamental step prior to <em>post-normalization quality assessment</em> and analyses of <strong>differential expression</strong> and <strong>functional enrichment</strong>, which are key to extracting biologically relevant insights from the studied transcriptomic profile.
+</p>
+
+<div class="iframe-container-subsection">
+  <iframe src="05.1-normalizacion.html#" frameborder="0" style="height: 750px;"></iframe>
+</div>
+
+<p style="text-align:center;">
+  <a href="05.1-normalizacion.html#" class="boton-subseccion">
+    <i class="fa-solid fa-file-lines"></i> Open subsection 5.1 in a new tab
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.1">
+  5.2. Quality control assessment after normalization
+</div>
+
+<p>
+  In this section, a <strong>comprehensive quality control assessment</strong> is performed following the normalization of gene expression data. This step is crucial to ensure that normalization has properly corrected for <em>technical variations</em> inherent to the experimental process, without affecting the <em>actual biological structure</em> of the analyzed samples.
+</p>
+
+<p>
+  To achieve this, various exploratory techniques and statistical visualizations are applied to evaluate the homogeneity and consistency of the normalized data. These techniques include <strong>Principal Component Analysis (PCA)</strong>, which facilitates identification of clusters and potential outliers; calculation of the <strong>correlation matrix</strong> between samples, quantifying global similarities; and <strong>hierarchical clustering</strong>, which organizes samples according to common expression patterns.
+</p>
+
+<p>
+  Additionally, <strong>heatmaps</strong> and distribution plots such as <em>boxplots</em> and <em>density plots</em> are generated, providing a comprehensive view of the variability and consistency of gene expression after adjustment. These tools facilitate the detection of potential problematic samples or residual artifacts that could affect biological interpretation.
+</p>
+
+<p>
+  All these analyses and visualizations are compiled into a <strong>consolidated PDF report</strong>, available for review and download at the specified path, serving as a valuable guide to validate dataset quality and ensure the reliability of subsequent differential expression and functional enrichment analyses.
+</p>
+
+<div class="iframe-container-subsection">
+  <iframe src="05.2-evaluacion-calidad-normalizacion.html#" frameborder="0" style="height: 750px;"></iframe>
+</div>
+
+<p style="text-align:center;">
+  <a href="05.2-evaluacion-calidad-normalizacion.html#" class="boton-subseccion">
+    <i class="fa-solid fa-file-lines"></i> Open subsection 5.2 in a new tab
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.3">
+  5.3. Differential expression analysis
+</div>
+
+<p>
+  In this section, <strong>differential expression analysis</strong> is performed, a central stage in transcriptomic studies aimed at identifying <em>genes whose expression varies significantly</em> between different <strong>experimental conditions</strong>. Using data that have been previously <em>normalized</em> and quality-validated, pairwise comparisons are established between groups defined in the experimental design.
+</p>
+
+<p>
+  For each of these comparisons, the <strong>expression change</strong> of each gene and its <em>statistical significance</em> are calculated, allowing detection of genes <strong>upregulated or downregulated</strong> in response to a specific condition. The results are summarized in <code>.xlsx files</code> that include key metrics such as <em>log2 fold-change (logFC)</em>, <em>average expression level (logCPM)</em>, <em>p-value</em>, and its correction by <strong>FDR</strong> (false discovery rate). Each gene is classified as <strong>Differentially Expressed (DEG)</strong> or not, based on these criteria.
+</p>
+
+<p>
+  Additionally, <strong>volcano plots</strong> are generated, providing a clear visual representation of the results, allowing rapid identification of the most relevant genes based on magnitude of change and significance. These plots are complemented with <strong>other interactive visualizations</strong> such as histograms, MA plots, DEG/non-DEG proportion analyses, and lists of the most significant genes, facilitating a <em>visual and comparative exploration</em> of each contrast performed.
+</p>
+
+<p>
+  This differential analysis constitutes a <strong>fundamental starting point</strong> for subsequent biological interpretation studies, as genes identified as DEGs may be involved in relevant functional processes, serve as potential biomarkers, or provide hypotheses for further research. The following sections will address this interpretation through <em>functional and enrichment analyses</em>.
+</p>
+
+<div class="iframe-container-subsection">
+  <iframe src="05.3-analisis-expresion.html#" frameborder="0" style="height: 750px;"></iframe>
+</div>
+
+<p style="text-align:center;">
+  <a href="05.3-analisis-expresion.html#" class="boton-subseccion">
+    <i class="fa-solid fa-file-lines"></i> Open subsection 5.3 in a new tab
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.4">
+  5.4. Functional and enrichment analysis
+</div>
+
+<p>
+  This section aims to interpret the results of the differential expression analysis from a <strong>biological functional perspective</strong>, using <strong>enrichment analysis</strong> tools. Once the <strong>differentially expressed genes (DEGs)</strong> between experimental conditions are identified, it is assessed whether specific <em>biological functions</em>, <em>cellular processes</em>, or <em>metabolic pathways</em> are overrepresented among these genes.
+</p>
+
+<p>
+  Well-established databases such as <strong>Gene Ontology</strong> (covering <em>Biological Process</em>, <em>Molecular Function</em>, and <em>Cellular Component</em>) and <strong>KEGG</strong> are employed to link genes with known functions in model organisms. The analysis is performed individually for each <em>pairwise comparison</em> between conditions, allowing the effects of each experimental contrast to be contextualized within specific functional frameworks.
+</p>
+
+<p>
+  Each result set includes an interactive table listing the <strong>enriched terms</strong> and their associated statistics (adjusted <em>p-values</em> and the number of genes involved), as well as <strong>graphical representations</strong> (barplots or dotplots) that visually summarize the most relevant findings. This facilitates prioritization of pathways and processes potentially involved in the observed differences, offering interpretable biological hypotheses.
+</p>
+
+<p>
+  Overall, this analysis is key to connecting transcriptional changes with underlying functional mechanisms, providing <strong>biological insight</strong> and <strong>mechanistic context</strong> to the data obtained in previous stages of the gene expression pipeline.
+</p>
+
+<div class="iframe-container-subsection">
+  <iframe src="05.4-analisis-funcional.html#" frameborder="0" style="height: 750px;"></iframe>
+</div>
+
+<p style="text-align:center;">
+  <a href="05.4-analisis-funcional.html#" class="boton-subseccion">
+    <i class="fa-solid fa-file-lines"></i> Open subsection 5.4 in a new tab
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  With this <strong>functional and enrichment analysis</strong>, the complete gene expression analysis workflow is concluded, from initial read quality assessment to the biological interpretation of differentially expressed genes. Throughout this process, <strong>raw sequencing data have been transformed into biologically meaningful information</strong>, enabling not only the identification of genes with relevant expression patterns but also their contextualization within key pathways and cellular processes. This systematic approach provides deeper insight into the molecular mechanisms underlying the studied conditions and lays the foundation for future experimental hypotheses, functional validations, or therapeutic strategies.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

@@ -1,0 +1,1285 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 5. ANOTACIÓN CELULAR (AUTOMÁTICA Y MANUAL) -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        ¡Hola! Soy <strong>Geni</strong>, el asistente inteligente de <strong>GenoScribe</strong>.  
+        Estoy aquí para ayudarte a explorar de forma interactiva el contenido de este informe bioinformático.
+      </p>
+
+      <p>
+        Cuando me haces una pregunta, primero intento reconocer si coincide con alguno de los patrones o expresiones que conozco.  
+        Si encuentro una coincidencia, te responderé directamente con una respuesta predefinida, diseñada para ser rápida, clara e incluso un poco ingeniosa.  
+        Si no reconozco el patrón, entonces activo mis herramientas de búsqueda: genero representaciones vectoriales (embeddings) y busco los fragmentos más relevantes entre varios documentos —incluyendo el propio informe, archivos PDF y HTML externos, y sesiones de preguntas y respuestas (QA).  
+        A partir de esa información, creo un resumen que intenta ofrecerte una respuesta coherente y útil basada en el contenido existente.
+      </p>
+
+      <p>
+        Se debe tener en cuenta que este entorno es experimental. No utilizo grandes modelos de lenguaje, por lo que algunas respuestas pueden ser aproximadas o incompletas.  
+        El objetivo principal es facilitar una visualización rápida, comprensible y reproducible de la información contenida en los documentos, permitiendo una exploración más dinámica del informe.
+      </p>
+
+      <p>
+        Actualmente, los resultados pueden variar en precisión, ya que empleo modelos ligeros y locales para asegurar que la aplicación funcione en cualquier entorno sin necesidad de servidores externos.  
+        Sin embargo, la estructura del sistema está preparada para mejorar notablemente su rendimiento en el futuro mediante la integración con modelos más avanzados o APIs externas.  
+        Para comenzar, simplemente escribe tu pregunta en el campo inferior y deja que yo me encargue del resto. ¡Prometo poner todo mi código en ello!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+ruta_archives_tmp_anotacion <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "05-anotacion")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_anotacion)
+
+
+
+
+
+
+#===================================================================================================================================================
+# DIRECTORIO "ANALYSIS"
+#===================================================================================================================================================
+
+# Rutas de la carpeta "analysis" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "analysis")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "analysis")
+
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "ANNOTATION" EN "ANALYSIS"
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "05_cell_annotation" dentro de "analysis"
+ruta_cell_annotation <- file.path(ruta_analysis, "05_cell_annotation")
+ruta_cell_annotation_relativa <- file.path(ruta_analysis_relativa, "05_cell_annotation")
+
+
+# Inicializamos el dataframe para evitar errores de objeto no encontrado
+cell_annotation_subdirs_df <- NULL
+
+if (dir.exists(ruta_cell_annotation)) {
+  # Listamos solo las carpetas de primer nivel (01_automatic_dbs_annotation, 02_manual_annotation)
+  subdirs_found <- list.dirs(ruta_cell_annotation, full.names = FALSE, recursive = FALSE)
+  
+  if (length(subdirs_found) > 0) {
+    cell_annotation_subdirs_df <- data.frame(
+      dir_name = subdirs_found,
+      ruta_absoluta = file.path(ruta_cell_annotation, subdirs_found),
+      ruta_relativa = file.path(ruta_cell_annotation_relativa, subdirs_found),
+      stringsAsFactors = FALSE
+    )
+  }
+}
+
+
+
+
+#--------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "AUTOMATIC" EN "ANNOTATION"
+#--------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "01_automatic_dbs_annotation" dentro de "05_cell_annotation"
+ruta_cell_annotation_auto <- file.path(ruta_cell_annotation, "01_automatic_dbs_annotation")
+ruta_cell_annotation_auto_relativa <- file.path(ruta_cell_annotation_relativa, "01_automatic_dbs_annotation")
+
+# Escaneo de archivos en Anotación Automática
+cell_annotation_auto_df <- NULL
+if (dir.exists(ruta_cell_annotation_auto)) {
+  cell_annotation_auto_archives <- list.files(ruta_cell_annotation_auto, full.names = FALSE, recursive = FALSE)
+
+  if (length(cell_annotation_auto_archives) > 0) {
+    cell_annotation_auto_df <- data.frame(
+      file_name = cell_annotation_auto_archives,
+      ruta_absoluta = file.path(ruta_cell_annotation_auto, cell_annotation_auto_archives),
+      ruta_relativa = file.path(ruta_cell_annotation_auto_relativa, cell_annotation_auto_archives),
+      stringsAsFactors = FALSE
+    )
+  }
+}
+
+
+
+
+#--------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "MANUAL" EN "ANNOTATION"
+#--------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "02_manual_annotation" dentro de "05_cell_annotation"
+ruta_cell_annotation_manual <- file.path(ruta_cell_annotation, "02_manual_annotation")
+ruta_cell_annotation_manual_relativa <- file.path(ruta_cell_annotation_relativa, "02_manual_annotation")
+
+# Escaneo de Anotación Manual (Buscando subcarpetas como 01_etapa, 02_big_etapa)
+cell_annotation_manual_df <- NULL
+if (dir.exists(ruta_cell_annotation_manual)) {
+  # Solo buscamos directorios dentro de manual_annotation
+  cell_annotation_manual_dirs <- list.dirs(ruta_cell_annotation_manual, full.names = FALSE, recursive = FALSE)
+  
+  if (length(cell_annotation_manual_dirs) > 0) {
+    cell_annotation_manual_df <- data.frame(
+      dir_name = cell_annotation_manual_dirs,
+      ruta_absoluta = file.path(ruta_cell_annotation_manual, cell_annotation_manual_dirs),
+      ruta_relativa = file.path(ruta_cell_annotation_manual_relativa, cell_annotation_manual_dirs),
+      stringsAsFactors = FALSE
+    )
+  }
+}
+
+
+
+#------------------------------------------------------------------------
+# DIRECTORIO "ULT_VERSION" EN "MANUAL"
+#------------------------------------------------------------------------
+
+ruta_cell_annotation_manual_ult_version <- NULL
+ruta_cell_annotation_manual_ult_version_relativa <- NULL
+cell_annotation_manual_ult_version_df <- NULL
+ultima_version_nombre <- NULL
+
+if (!is.null(cell_annotation_manual_df) && nrow(cell_annotation_manual_df) > 0) {
+  
+  # Extraemos la última versión (ordenamos por si acaso y cogemos el último)
+  cell_annotation_manual_df <- cell_annotation_manual_df[order(cell_annotation_manual_df$dir_name), ]
+  ultima_version_nombre <- tail(cell_annotation_manual_df$dir_name, n = 1)
+  
+  # Nuevas rutas apuntando a la última versión
+  ruta_cell_annotation_manual_ult_version <- file.path(ruta_cell_annotation_manual, ultima_version_nombre)
+  ruta_cell_annotation_manual_ult_version_relativa <- file.path(ruta_cell_annotation_manual_relativa, ultima_version_nombre)
+
+  # Escaneo de la última versión (Buscando subcarpetas como 01_etapa, 02_big_etapa)
+  if (dir.exists(ruta_cell_annotation_manual_ult_version)) {
+    cell_annotation_manual_ult_version_dirs <- list.dirs(ruta_cell_annotation_manual_ult_version, full.names = FALSE, recursive = FALSE)
+    
+    if (length(cell_annotation_manual_ult_version_dirs) > 0) {
+      cell_annotation_manual_ult_version_df <- data.frame(
+        dir_name = cell_annotation_manual_ult_version_dirs,
+        ruta_absoluta = file.path(ruta_cell_annotation_manual_ult_version, cell_annotation_manual_ult_version_dirs),
+        ruta_relativa = file.path(ruta_cell_annotation_manual_ult_version_relativa, cell_annotation_manual_ult_version_dirs),
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+}
+
+
+
+# DIRECTORIO "ETAPA" EN "ULT_VERSION"
+#------------------------------------------------------------------------
+
+cell_annotation_manual_etapa_df <- NULL
+
+if (!is.null(ruta_cell_annotation_manual_ult_version)) {
+  # Rutas de la carpeta "01_etapa" dentro de la última versión
+  ruta_cell_annotation_manual_etapa <- file.path(ruta_cell_annotation_manual_ult_version, "01_etapa")
+  ruta_cell_annotation_manual_etapa_relativa <- file.path(ruta_cell_annotation_manual_ult_version_relativa, "01_etapa")
+
+  # Escaneo de Anotación Manual - Etapa
+  if (dir.exists(ruta_cell_annotation_manual_etapa)) {
+    cell_annotation_manual_etapa_archives <- list.files(ruta_cell_annotation_manual_etapa)
+
+    if (length(cell_annotation_manual_etapa_archives) > 0) {
+      cell_annotation_manual_etapa_df <- data.frame(
+        file_name = cell_annotation_manual_etapa_archives,
+        ruta_absoluta = file.path(ruta_cell_annotation_manual_etapa, cell_annotation_manual_etapa_archives),
+        ruta_relativa = file.path(ruta_cell_annotation_manual_etapa_relativa, cell_annotation_manual_etapa_archives),
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+}
+
+
+
+# DIRECTORIO "BIG ETAPA" EN "ULT_VERSION"
+#------------------------------------------------------------------------
+
+cell_annotation_manual_big_etapa_df <- NULL
+
+if (!is.null(ruta_cell_annotation_manual_ult_version)) {
+  # Rutas de la carpeta "02_big_etapa" dentro de la última versión
+  ruta_cell_annotation_manual_big_etapa <- file.path(ruta_cell_annotation_manual_ult_version, "02_big_etapa")
+  ruta_cell_annotation_manual_big_etapa_relativa <- file.path(ruta_cell_annotation_manual_ult_version_relativa, "02_big_etapa")
+
+  # Escaneo de Anotación Manual - Big Etapa
+  if (dir.exists(ruta_cell_annotation_manual_big_etapa)) {
+    cell_annotation_manual_big_etapa_archives <- list.files(ruta_cell_annotation_manual_big_etapa)
+    
+    if (length(cell_annotation_manual_big_etapa_archives) > 0) {
+      cell_annotation_manual_big_etapa_df <- data.frame(
+        file_name = cell_annotation_manual_big_etapa_archives,
+        ruta_absoluta = file.path(ruta_cell_annotation_manual_big_etapa, cell_annotation_manual_big_etapa_archives),
+        ruta_relativa = file.path(ruta_cell_annotation_manual_big_etapa_relativa, cell_annotation_manual_big_etapa_archives),
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+}
+
+
+
+
+
+
+#===================================================================================================================================================
+# DIRECTORIO "DATA"
+#===================================================================================================================================================
+
+# Rutas de la carpeta "data" dentro del directorio del proyecto
+ruta_data <- file.path(ruta_proyecto, "data")
+ruta_data_relativa <- file.path(ruta_proyecto_relativa, "data")
+
+# Rutas de la carpeta "04_resources" dentro "data"
+ruta_resources <- file.path(ruta_data, "04_resources")
+ruta_resources_relativa <- file.path(ruta_data_relativa, "04_resources")
+
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "ANNOTATIONS" EN "DATA/RESOURCES"
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "02_annotations" dentro "04_resources"
+ruta_data_annotations <- file.path(ruta_resources, "02_annotations")
+ruta_data_annotations_relativa <- file.path(ruta_resources_relativa, "02_annotations")
+
+
+# Escaneo de Data Annotations (Buscando subcarpetas dentro de 02_annotations)
+data_annotations_df <- NULL
+if (dir.exists(ruta_data_annotations)) {
+  # Solo buscamos directorios dentro de annotations
+  data_annotations_dirs <- list.dirs(ruta_data_annotations, full.names = FALSE, recursive = FALSE)
+  
+  if (length(data_annotations_dirs) > 0) {
+    data_annotations_df <- data.frame(
+      dir_name = data_annotations_dirs,
+      ruta_absoluta = file.path(ruta_data_annotations, data_annotations_dirs),
+      ruta_relativa = file.path(ruta_data_annotations_relativa, data_annotations_dirs),
+      stringsAsFactors = FALSE
+    )
+  }
+}
+
+
+
+
+#--------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "MANUAL" EN "ANNOTATIONS"
+#--------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "manual" dentro "02_annotations"
+ruta_data_annotations_manual <- file.path(ruta_data_annotations, "manual")
+ruta_data_annotations_manual_relativa <- file.path(ruta_data_annotations, "manual")
+
+# Escaneo de Data Annotations Manual
+data_annotations_manual_df <- NULL
+
+if (dir.exists(ruta_data_annotations_manual)) {
+  # Usamos list.files para capturar los diccionarios (.tsv, .csv, .txt)
+  ruta_data_annotations_archives <- list.files(ruta_data_annotations_manual, full.names = FALSE, recursive = FALSE)
+
+  if (length(ruta_data_annotations_archives) > 0) {
+    data_annotations_manual_df <- data.frame(
+      file_name = ruta_data_annotations_archives,  # Usamos dir_name para que tu HTML lo reconozca
+      ruta_absoluta = file.path(ruta_data_annotations_manual, ruta_data_annotations_archives),
+      ruta_relativa = file.path(ruta_data_annotations_manual_relativa, ruta_data_annotations_archives),
+      stringsAsFactors = FALSE
+    )
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis Bioinformático Completo</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Sección 5</h1>
+  <h2>Anotación Celular (Automática y Manual)</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    En esta sección se documenta la fase culminante del análisis topológico preliminar: la <strong>Anotación Celular</strong>. Tras haber definido las agrupaciones numéricas y haber extraído sus firmas génicas en el módulo precedente, el objetivo bioinformático central consiste en traducir esta segmentación matemática abstracta en identidades biológicas validadas (linajes principales, subtipos celulares y estadios de maduración).
+  </p>
+
+  <p>
+    Para garantizar la máxima precisión y mitigar posibles sesgos en la asignación de fenotipos, este proceso de inferencia se ha ejecutado aplicando una metodología dual que combina potencia algorítmica y supervisión experta:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Anotación Automática (<em>Data-driven</em>) &rArr;</strong> Como primera aproximación, se emplean algoritmos predictivos para proyectar el transcriptoma global de la muestra contra atlas de referencia internacionales. Esta estrategia proporciona un mapeo inicial estandarizado e imparcial de los grandes compartimentos biológicos presentes en el tejido.
+    </li>
+    <li>
+      <strong>Anotación Manual Curada (<em>Expert-driven</em>) &rArr;</strong> Dado que el diseño experimental exige a menudo identificar estados ontogénicos transitorios o nichos de alta complejidad, se realiza una curación experta basada en marcadores canónicos y literatura científica. Esta fase es intrínsecamente iterativa, por lo que el sistema organiza los resultados en un <strong>histórico de versiones</strong> para asegurar la trazabilidad del modelo biológico.
+    </li>
+  </ul>
+
+  <p>
+    Para adaptarse a las necesidades de interpretación, la anotación manual se estructura en una <strong>arquitectura jerárquica</strong> que permite explorar el tejido en dos planos: una <em>Resolución Fina (Etapa)</em> para el análisis de máxima granularidad, y una <em>Resolución Agrupada (Big Etapa)</em> para una visión macroscópica y funcional. 
+  </p>
+
+  <p>
+    A lo largo de este documento interactivo es posible auditar la progresión de estas identidades. Sin embargo, para mantener la coherencia del flujo de trabajo, el escrutinio detallado y los análisis posteriores se centran exclusivamente en la <strong>última versión consolidada</strong>, la cual actúa como el cimiento definitivo para los estudios de expresión diferencial y enriquecimiento funcional.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta sección
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion5">5<span>.</span> Anotación celular (automática y manual)</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion5.1">5.1. Fundamentos de la Inferencia Fenotípica</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion5.2">5.2. Anotación Automática basada en Atlas de Referencia</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion5.3">5.3. Anotación Manual Curada (Resolución Específica)</a>
+          <ul>
+            <li><a href="#tab3-seccion5.3.1">5.3.1. Resolución Fina: Nivel de "Etapa"</a></li>
+            <li><a href="#tab3-seccion5.3.2">5.3.2. Resolución Agrupada: Nivel de "Big Etapa"</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion5">
+  5<span>.</span> Anotación Celular (Automática y Manual)
+</div>
+
+<p> 
+  Habiendo superado las etapas topológicas y estadísticas del <em>pipeline</em>, nos encontramos ante el desafío biológico más trascendental del estudio. Hasta este punto hemos trabajado con entidades abstractas, como clústeres numéricos y listas de genes diferenciales. Ahora, la misión consiste en cruzar esa frontera analítica para asignar a cada agrupación una identidad fenotípica real y validada. Es el momento en que el modelo matemático se convierte definitivamente en un tejido biológico interpretable.
+</p>
+
+<p>
+  La arquitectura de esta sección está diseñada para guiar al investigador a través de este proceso de descubrimiento escalonado. Antes de sumergirnos en la exploración de las proyecciones interactivas y las tablas de resultados empíricos, resulta imperativo establecer el marco conceptual que sostiene estas asignaciones. 
+</p>
+
+<p>
+  Por ello, el documento se inicia abordando las bases metodológicas que permiten a los algoritmos y a los expertos dialogar con los datos transcriptómicos. Esta fundamentación, detallada a continuación en la primera subsección, es la clave para interpretar correctamente con qué nivel de confianza y resolución se ha "bautizado" a cada una de las células de nuestra muestra.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.1">
+  5.1. Fundamentos de la Inferencia Fenotípica
+</div>
+
+<p>
+  La anotación celular es el proceso mediante el cual transformamos agrupaciones puramente matemáticas en entidades biológicas con significado fisiológico. En la sección anterior, logramos extraer el "código de barras molecular" de cada clúster mediante el análisis de expresión diferencial. Ahora, el objetivo es utilizar esas listas de genes marcadores para descubrir a qué linaje celular o estadio de maduración corresponden.
+</p>
+
+<p>
+  Dado que la biología de los tejidos suele ser extremadamente compleja, asignar un nombre a un clúster rara vez es un proceso directo. Por ello, la bioinformática de célula única moderna emplea un flujo de trabajo en dos fases que combina la potencia computacional con el rigor del conocimiento experto humano:
+</p>
+
+<ul>
+    <li><strong>1. Anotación Automática (La Brújula Inicial) &rArr;</strong> En una primera aproximación, se emplean algoritmos (como <em>SingleR</em>) que cruzan automáticamente el perfil transcripcional de nuestras células con bases de datos públicas y atlas de referencia masivos (como <em>Human Primary Cell Atlas</em>, <em>Monaco Immune Data</em> o atlas genéricos murinos). Esta fase automatizada sirve como una <strong>ayuda u orientación fundamental</strong>. Nos permite trazar un mapa general rápido e imparcial, identificando a grandes rasgos dónde se ubican los linajes principales (ej. células epiteliales, linfocitos T, células estromales). Sin embargo, estas bases de datos estandarizadas a menudo son "miopes" ante estadios de desarrollo muy específicos, poblaciones transitorias o fenotipos alterados por condiciones experimentales concretas (como un modelo <em>Knock-Out</em>).</li>
+    <li><strong>2. Anotación Manual Curada (La Clasificación Definitiva) &rArr;</strong> Para alcanzar la verdadera resolución biológica que demanda la investigación, la anotación automática debe ser refinada y validada manualmente. Es en esta fase donde el análisis bioinformático converge con el conocimiento de los investigadores. A través de reuniones de trabajo, se analizan minuciosamente los marcadores top descubiertos en la <strong><a href="04-marcadores.html" class="normalink">Sección 4</a></strong> (los <code>avg_log2FC</code> y genes canónicos específicos del tejido) y se contrastan con la literatura científica.</li>
+  </ul>
+
+<p>
+  Fruto de este consenso experto, se generan diccionarios de metadatos personalizados (típicamente archivos <code>.tsv</code> de anotaciones, como los empleados en este proyecto). Estos archivos actúan como la "piedra roseta" del experimento, dictando instrucciones precisas para reclasificar y agrupar los clústeres originales en identidades ultra-específicas (por ejemplo, dividiendo genéricamente "Linfocitos T" en estadios tímicos hiperdetallados como DN, DPbla, DPre o CD4sp). 
+</p>
+
+<p>
+  Con estos fundamentos teóricos establecidos, el presente módulo documenta los resultados empíricos de ambas fases del proceso. A continuación, el documento se bifurca en las siguientes subsecciones para su exploración en detalle:
+</p>
+
+<ul>
+  <li><strong><a href="#tab3-seccion5.2" class="normalink">5.2. Anotación Automática basada en Atlas de Referencia:</a></strong> Donde exploraremos las proyecciones y tablas generadas por el cruce con las bases de datos públicas.</li>
+  <li><strong><a href="#tab3-seccion5.3" class="normalink">5.3. Anotación Manual Curada (Resolución Específica):</a></strong> Donde visualizaremos el mapa biológico definitivo y de alta resolución, fruto del consenso experto y los archivos de metadatos personalizados.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.2">
+  5.2. Anotación Automática basada en Atlas de Referencia
+</div>
+
+<p>
+  La primera fase de la inferencia fenotípica consiste en proyectar el transcriptoma de nuestros datos contra bases de datos públicas mediante algoritmos predictivos (como <em>SingleR</em> o métodos de transferencia de etiquetas). Esta estrategia "guiada por datos" (<em>data-driven</em>) compara el perfil de expresión de nuestras células con atlas curados de transcriptómica masiva (<em>bulk RNA-seq</em>) o de célula única, asignando a cada agrupación la etiqueta celular que presenta mayor correlación estadística.
+</p>
+
+<p>
+  En este proyecto, se ha interrogado el conjunto de datos empleando múltiples referencias (por ejemplo, <em>Human Primary Cell Atlas</em>, <em>Monaco Immune Data</em> o atlas genéricos murinos). Los resultados de este análisis masivo se documentan a través de dos tipos de evidencias complementarias:
+</p>
+
+<ul>
+  <li><strong>Mapas de predicción y expresión (PDF) &rArr;</strong> Documentos gráficos multipágina. En cada página, se presenta a la izquierda una proyección topológica (UMAP) destacando la localización del tipo celular inferido, y a la derecha, la distribución de expresión de sus genes marcadores más representativos.</li>
+  <li><strong>Marcadores de validación (TSV) &rArr;</strong> Tablas estadísticas individuales para cada tipo celular predicho (ej. Astrocitos, Células T, Monocitos), detallando el catálogo completo de genes diferenciales que sustentan matemáticamente dicha predicción frente al resto de la población.</li>
+</ul>
+
+<p>
+  A continuación, se despliega de forma iterativa el escrutinio completo para cada base de datos. Para mantener un flujo de trabajo óptimo, se visualiza en primer lugar el reporte gráfico en formato PDF, seguido de las tablas interactivas correspondientes a cada linaje celular identificado. Si lo desea, también puede explorar y descargar todos los archivos originales desde el siguiente cajón de descarga general:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# 1. GENERAR BOX-FILES GLOBAL DE ANOTACIÓN AUTOMÁTICA
+if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
+  
+  # Extraer posibles números o forzar orden alfabético estricto
+  df_sorted <- cell_annotation_auto_df[order(cell_annotation_auto_df$file_name), ]
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(df_sorted)) {
+    f <- df_sorted$file_name[i]
+    ruta <- df_sorted$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else if (grepl("\\.csv$|\\.tsv$", f, ignore.case = TRUE)) {
+      "file-csv"
+    } else if (grepl("\\.xlsx$", f, ignore.case = TRUE)) {
+      "file-excel"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_cell_annotation_auto_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explorar directorio de Anotación Automática
+    </a>
+  </p>
+  '), sep = "\n")
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota Metodológica</b><br>
+    No se detectaron archivos de anotación automática en este proyecto. Las subsecciones correspondientes se mostrarán vacías.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 2. BUCLE DINÁMICO PARA MOSTRAR PDFs Y TABLAS POR BASE DE DATOS
+if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
+  
+  # Filtrar los PDFs globales (que actúan como informe maestro para cada base de datos)
+  # Asumimos que los PDFs resumen suelen contener "mergeSeurat" o no contienen "_vs_"
+  pdf_globales <- cell_annotation_auto_df[grepl("\\.pdf$", cell_annotation_auto_df$file_name, ignore.case = TRUE) & 
+                                !grepl("_vs_", cell_annotation_auto_df$file_name, ignore.case = TRUE), ]
+  
+  if (nrow(pdf_globales) > 0) {
+    out_auto <- tagList()
+    
+    # Ordenar los PDFs alfabéticamente
+    pdf_globales <- pdf_globales[order(pdf_globales$file_name), ]
+    
+    for (i in 1:nrow(pdf_globales)) {
+      
+      nombre_pdf <- pdf_globales$file_name[i]
+      ruta_rel_pdf <- pdf_globales$ruta_relativa[i]
+      
+      # Extraer el prefijo de la base de datos (Ej: de "GeneralCell_HPCA_mergeSeurat.filter.pdf" -> "GeneralCell_HPCA")
+      db_prefix <- gsub("_mergeSeurat.*\\.pdf|\\.pdf$", "", nombre_pdf, ignore.case = TRUE)
+      db_clean_name <- gsub("_", " ", db_prefix) # Para que quede bonito en el título
+      
+      out_auto <- tagAppendChild(out_auto, HTML(glue::glue('
+        <div style="height: 12px; background-color: transparent;"></div>
+
+        <div class="titulo3" id="tab3-seccion5.2.{i}" style="padding-bottom: 8px; line-height: 1.2;">
+          5.2.{i}. Atlas de Referencia: {db_clean_name}
+        </div>
+
+        <p style="margin-top: 20px; margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>Reporte Gráfico de Predicción:</strong> <code>{nombre_pdf}</code>
+        </p>
+        
+        <p style="margin-bottom: 18px;">
+          El siguiente documento expone la localización espacial de las etiquetas inferidas empleando la base de datos <strong>{db_clean_name}</strong>, acompañadas de la distribución de expresión de sus marcadores canónicos.
+        </p>
+
+        <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+          <iframe src="{ruta_rel_pdf}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+          <a href="{ruta_rel_pdf}"
+            target="_blank" 
+            class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Mapa en pestaña nueva
+          </a>
+
+          <a href="{ruta_rel_pdf}"
+            download="{nombre_pdf}"
+            class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF
+          </a>
+        </div>
+      ')))
+      
+      # SUBLOQUE DE TABLAS TSV ASOCIADAS A ESTA BASE DE DATOS
+      
+      # Buscar archivos TSV que comiencen con el prefijo exacto de esta base de datos
+      tsvs_db <- cell_annotation_auto_df[grepl(paste0("^", db_prefix), cell_annotation_auto_df$file_name, ignore.case = TRUE) & 
+                              grepl("\\.tsv$|\\.csv$", cell_annotation_auto_df$file_name, ignore.case = TRUE), ]
+                              
+      if (nrow(tsvs_db) > 0) {
+        # Ordenar alfabéticamente los tipos celulares
+        tsvs_db <- tsvs_db[order(tsvs_db$file_name), ]
+        
+        for (j in 1:nrow(tsvs_db)) {
+          nombre_tsv <- tsvs_db$file_name[j]
+          ruta_abs_tsv <- tsvs_db$ruta_absoluta[j]
+          ruta_rel_tsv <- tsvs_db$ruta_relativa[j]
+          
+          # Extraer el nombre del tipo celular (ej. de "GeneralCell_HPCA_Astrocyte_vs_allother.tsv" -> "Astrocyte")
+          cell_type_name <- sub(paste0("^", db_prefix, "_?"), "", nombre_tsv)
+          cell_type_name <- sub("_vs_allother\\.tsv$|_vs_all\\.tsv$|\\.tsv$|\\.csv$", "", cell_type_name, ignore.case = TRUE)
+          cell_type_name <- gsub("_", " ", cell_type_name)
+          
+          out_auto <- tagAppendChild(out_auto, HTML(glue::glue('
+            <div style="border-top: 1px solid #276DC3; margin-top: 35px; padding-top: 25px;"></div>
+
+            <p style="margin-top: 12px; margin-bottom: 16px;">
+              <i class="fa-solid fa-microscope" style="color: #276DC3;"></i> 
+              <strong>Tipo Celular Inferido: <span style="color: #05bab4;">{cell_type_name}</span></strong>
+              <br><span style="font-size: 0.85em; color: #777;">Archivo: <code>{nombre_tsv}</code></span>
+            </p>
+          ')))
+          
+          sep_char <- ifelse(grepl("\\.csv$", nombre_tsv, ignore.case=T), ",", "\t")
+          
+          tryCatch({
+            datos_tsv <- read.table(ruta_abs_tsv, sep=sep_char, header=TRUE, stringsAsFactors=FALSE, fill=TRUE)
+            
+            # Renombrar primera columna si no tiene nombre
+            if(colnames(datos_tsv)[1] == "X" || colnames(datos_tsv)[1] == "") {
+                colnames(datos_tsv)[1] <- "Gene"
+            }
+            
+            # Formateo numérico
+            if("avg_log2FC" %in% colnames(datos_tsv)) datos_tsv$avg_log2FC <- round(as.numeric(datos_tsv$avg_log2FC), 4)
+            if("p_val_adj" %in% colnames(datos_tsv)) datos_tsv$p_val_adj <- signif(as.numeric(datos_tsv$p_val_adj), 4)
+            if("p_val" %in% colnames(datos_tsv)) datos_tsv$p_val <- signif(as.numeric(datos_tsv$p_val), 4)
+            
+            # Bloque datatable con estilos idénticos a los de marcadores
+            out_auto <- tagAppendChild(out_auto, 
+              DT::datatable(
+                datos_tsv,
+                options = list(
+                  scrollX = TRUE,
+                  scrollY = "500px", 
+                  scrollCollapse = TRUE,
+                  paging = FALSE,
+                  lengthChange = FALSE,
+                  info = FALSE,
+                  dom = 't', 
+                  language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+                ),
+                class = 'stripe hover row-border order-column compact',
+                rownames = FALSE
+              )
+            )
+            
+            # Botón de descarga de la tabla
+            out_auto <- tagAppendChild(out_auto, HTML(glue::glue('
+              <div style="text-align: center; margin-top: 16px; margin-bottom: 30px;">
+                <a href="{ruta_rel_tsv}" 
+                  download="{nombre_tsv}" 
+                  class="boton-file-download">
+                  <i class="fa-solid fa-file-arrow-down"></i> Descargar marcadores (.tsv)
+                </a>
+              </div>
+            ')))
+            
+          }, error = function(e) {
+              out_auto <<- tagAppendChild(out_auto, HTML(glue::glue('
+                <div class="alert-info alert-box" style="margin-bottom: 30px;">
+                  <i class="fa-solid fa-triangle-exclamation"></i> Error al leer la tabla {nombre_tsv}. Formato inesperado.
+                </div>
+              '), sep = "\n"))
+          })
+        }
+      }
+    }
+    
+    out_auto
+    
+  } else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box" style="margin-top: 20px;">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Nota</b><br>
+      No se han encontrado archivos PDF consolidados para las bases de datos de anotación automática.
+    </div>
+    '), sep = "\n")
+  }
+}
+```
+
+
+<div class="divider"></div>
+
+<p>
+  Aunque la anotación basada en atlas de referencia proporciona un mapeo imparcial de los linajes principales (ej. distinguiendo de forma global Células T de Células Epiteliales o Estromales), estas bases de datos estandarizadas a menudo son ciegas ante la complejidad de estadios transitorios o fenotipos madurativos hiperespecíficos del tejido.
+</p>
+
+<p>
+  Para superar este límite de resolución algorítmica, el análisis se complementa y culmina con la fase de curación experta. En la siguiente sección se detallan las etiquetas definitivas impuestas mediante el estudio meticuloso de la literatura, el mapeo de metadatos y el escrutinio de los marcadores canónicos.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.3">
+  5.3. Anotación Manual Curada (Resolución Específica)
+</div>
+
+<p>
+  Como se ha introducido anteriormente, la biología intrínseca de ciertos tejidos —tales como nichos celulares especializados, microambientes patológicos o estadios de desarrollo transitorios— presenta una complejidad que a menudo escapa a la resolución de las bases de datos algorítmicas estandarizadas. Para superar esta limitación analítica, la asignación fenotípica definitiva del proyecto se fundamenta en un riguroso proceso de curación manual.
+</p>
+
+<p>
+  Esta fase representa la convergencia entre la minería de datos bioinformática y el conocimiento biológico experto. A partir de la evaluación sistemática de los marcadores transcripcionales (<code>avg_log2FC</code>) identificados en la <strong><a href="04-marcadores.html" class="normalink">Sección 4</a></strong>, se contrasta la expresión diferencial de genes canónicos y específicos de linaje con la literatura científica vigente. Fruto de este escrutinio empírico, se elaboran los <strong>diccionarios de anotación manual</strong> (archivos de metadatos <code>.tsv</code> y <code>.txt</code>), los cuales actúan como mapas de instrucciones definitivos para reclasificar los clústeres numéricos preliminares en identidades biológicas de alta resolución.
+</p>
+
+<p>
+  A través del siguiente directorio general, es posible acceder a los diccionarios de metadatos que han servido como plantilla maestra para ejecutar esta asignación poblacional:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# LISTAR DICCIONARIOS DE ANOTACIÓN
+if (!is.null(data_annotations_manual_df) && nrow(data_annotations_manual_df) > 0) {
+  
+  data_annotations_manual_df <- data_annotations_manual_df[order(data_annotations_manual_df$file_name), ]
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(data_annotations_manual_df)) {
+    f <- data_annotations_manual_df$file_name[i]
+    ruta <- data_annotations_manual_df$ruta_relativa[i]
+    clase <- ifelse(grepl("\\.pdf$", f, ignore.case = TRUE), "file-pdf",
+              ifelse(grepl("\\.(csv|tsv|txt)$", f, ignore.case = TRUE), "file-csv",
+              ifelse(grepl("\\.(xls|xlsx)$", f, ignore.case = TRUE), "file-xls", "file-default")))
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_data_annotations_manual_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explorar directorio de diccionarios
+    </a>
+  </p>
+  '))
+
+} else {
+  # Message if the folder is empty
+  cat(glue::glue('
+  <div class="alert-info alert-box" style="margin-top: 20px;">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No se han detectado diccionarios en el directorio requerido (data/04_resources/02_annotations/manual).
+  </div>
+  '))
+}
+```
+
+<div style="height: 10px; background-color: transparent;"></div>
+
+<p>
+  Dada la naturaleza iterativa de la curación biológica, es habitual que el modelo fenotípico evolucione a través de distintas fases de refinamiento. Por este motivo, el sistema organiza los resultados en un <strong>histórico de versiones</strong>, permitiendo auditar la progresión del análisis desde las primeras propuestas topológicas hasta el consenso definitivo.
+</p>
+
+<p>
+  A continuación, se listan los directorios correspondientes a las versiones de anotación detectadas en el repositorio del proyecto:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# MOSTRAR BOX-FILES DE TODAS LAS VERSIONES ENCONTRADAS
+if (!is.null(cell_annotation_manual_df) && nrow(cell_annotation_manual_df) > 0) {
+  
+  # 1. Definir el texto dinámico del conteo
+  num_versiones <- nrow(cell_annotation_manual_df)
+  texto_conteo <- ifelse(num_versiones == 1, 
+                          "<strong>1 versión</strong> de anotación manual", 
+                          paste0("<strong>", num_versiones, " versiones</strong> de anotación manual"))
+  
+  # 2. Imprimir el párrafo integrando el conteo de forma natural
+  cat(glue::glue('
+  <p>
+    En el repositorio de este proyecto, el sistema ha detectado un total de {texto_conteo}. A continuación, se listan los directorios correspondientes a este historial evolutivo para su consulta:
+  </p>
+  '))
+  
+  # 3. Imprimir el listado de carpetas
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(cell_annotation_manual_df)) {
+    d <- cell_annotation_manual_df$dir_name[i]
+    ruta <- cell_annotation_manual_df$ruta_relativa[i]
+    cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', ruta, d))
+  }
+  cat('</ul>\n</div>\n')
+  
+} else {
+  # Mensaje de respaldo por si no hay versiones
+  cat('
+  <p>
+    Actualmente no se han detectado versiones de anotación manual consolidadas en el directorio del proyecto.
+  </p>
+  ')
+}
+```
+
+<p>
+  Independientemente de la versión consultada, los datos se estructuran preferiblemente bajo una <strong>arquitectura de resolución jerárquica</strong>. Esta organización, aunque flexible, permite separar el análisis en dos niveles conceptuales:
+</p>
+
+<ul>
+  <li><strong>Resolución Fina (<em>Etapa</em>):</strong> El nivel de máxima granularidad biológica. Está diseñado para distinguir subestadios celulares muy específicos o estados transitorios (por ejemplo, subdividir una población de linfocitos o células estromales en sus respectivos estadios de maduración ontogénica).</li>
+  <li><strong>Resolución Agrupada (<em>Big Etapa</em>):</strong> Un nivel macroscópico que colapsa la granularidad anterior en sus compartimentos biológicos principales, facilitando una visión panorámica y funcional de las poblaciones globales.</li>
+</ul>
+
+<p>
+  Cabe destacar que esta subestructuración es opcional y adaptativa: el sistema es capaz de procesar archivos depositados directamente en la raíz de la versión o integrarlos en las carpetas de resolución mencionadas para una mayor limpieza organizativa.
+</p>
+
+<p>
+  Para el despliegue interactivo de este informe, el escrutinio se centrará exclusivamente en la <strong>última versión generada</strong>, la cual representa el modelo biológico consolidado. A continuación, se presenta de forma interactiva, el contenido de dicho directorio:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# MOSTRAR BOX-FILES DEL CONTENIDO DE LA ÚLTIMA VERSIÓN
+if (!is.null(cell_annotation_manual_ult_version_df) && nrow(cell_annotation_manual_ult_version_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(cell_annotation_manual_ult_version_df)) {
+    d <- cell_annotation_manual_ult_version_df$dir_name[i]
+    ruta <- cell_annotation_manual_ult_version_df$ruta_relativa[i]
+    cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', ruta, d))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_cell_annotation_manual_ult_version_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explorar última versión de Anotación Manual
+    </a>
+  </p>
+  '))
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota Metodológica</b><br>
+    No se detectaron subdirectorios o archivos en la versión definitiva de anotación manual.
+  </div>
+  '))
+}
+```
+
+<p>
+  Dicho esto, en las siguientes subsecciones se procederá a desglosar el contenido visual albergado en esta última versión consolidada. Siempre que el proyecto haya hecho uso de la arquitectura jerárquica mencionada, se explorarán de forma individualizada las proyecciones espaciales correspondientes a la <strong>Resolución Fina (<em>Etapa</em>)</strong> y a la <strong>Resolución Agrupada (<em>Big Etapa</em>)</strong>. De no haberse optado por este nivel de subestructuración, el sistema omitirá la carga de documentos y desplegará una notificación metodológica informativa, garantizando así la integridad y adaptabilidad del informe.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion5.3.1">
+  5.3.1. Resolución Fina: Nivel de "Etapa"
+</div>
+
+<p>
+  En esta subsección se desglosan las proyecciones correspondientes a la nomenclatura de máxima resolución biológica (<strong>Etapa</strong>). Las visualizaciones que se exponen a continuación corresponden <strong>exclusivamente a la última versión de curación detectada</strong>, asumiendo que representa el modelo fenotípico más maduro, robusto y definitivo del estudio. Si los requerimientos del proyecto exigieran auditar o recuperar iteraciones previas, estas pueden ser consultadas libremente desde el explorador de directorios general proporcionado en el apartado anterior.
+</p>
+
+<p>
+  A continuación, se presenta de forma individualizada el mapa topológico (UMAP) para cada subpoblación específica identificada en el tejido. Este nivel de granularidad permite evaluar con extremada precisión la localización espacial, la prevalencia y la distribución de cada fenotipo frente al resto del ecosistema celular.
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# 1. MOSTRAR BOX-FILES LOCAL (Requiere results="asis")
+if (!is.null(cell_annotation_manual_etapa_df) && nrow(cell_annotation_manual_etapa_df) > 0) {
+  
+  # Asegurar orden natural/alfabético
+  cell_annotation_manual_etapa_df <- cell_annotation_manual_etapa_df[order(cell_annotation_manual_etapa_df$file_name), ]
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(cell_annotation_manual_etapa_df)) {
+    f <- cell_annotation_manual_etapa_df$file_name[i]
+    ruta <- cell_annotation_manual_etapa_df$ruta_relativa[i]
+    clase <- ifelse(grepl("\\.pdf$", f, ignore.case = TRUE), "file-pdf", "file-default")
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_cell_annotation_manual_etapa_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explorar directorio "Etapa" de la última versión
+    </a>
+  </p>
+  '), sep = "\n")
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box" style="margin-top: 20px;">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Directorio no detectado o vacío</b><br>
+    No se han detectado archivos organizados bajo el nivel jerárquico <code>01_etapa</code> en la última versión. Es posible que el proyecto no requiera este nivel de granularidad o que los archivos de validación se hayan depositado directamente en el directorio raíz de la versión.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 2. GENERAR IFRAMES CON TAGLIST (NO requiere results="asis")
+if (!is.null(cell_annotation_manual_etapa_df) && nrow(cell_annotation_manual_etapa_df) > 0) {
+  
+  out_etapa <- tagList()
+  pdf_etapa_df <- cell_annotation_manual_etapa_df[grepl("\\.pdf$", cell_annotation_manual_etapa_df$file_name, ignore.case = TRUE), ]
+  
+  if(nrow(pdf_etapa_df) > 0) {
+    for (i in 1:nrow(pdf_etapa_df)) {
+      nombre_pdf <- pdf_etapa_df$file_name[i]
+      ruta_rel_pdf <- pdf_etapa_df$ruta_relativa[i]
+      
+      # Limpiar el nombre para el título (ej: "Cell_type_DPbla1_manual.pdf" -> "DPbla1")
+      cell_clean <- gsub("^Cell_type_|_manual_etapa\\.pdf$|\\.pdf$", "", nombre_pdf, ignore.case = TRUE)
+      cell_clean <- gsub("_", " ", cell_clean)
+      
+      out_etapa <- tagAppendChild(out_etapa, HTML(glue::glue('
+        <div style="height: 12px; background-color: transparent;"></div>
+
+        <div class="titulo4" id="tab3-seccion5.3.1.{i}" style="padding-bottom: 8px; line-height: 1.2;">
+          5.3.1.{i}. Fenotipo: {cell_clean}
+        </div>
+
+        <p style="margin-top: 20px; margin-bottom: 18px;">
+          <i class="fa-solid fa-microscope" style="color: #276DC3;"></i> 
+          <strong>Proyección Espacial Curada:</strong> <code>{nombre_pdf}</code>
+        </p>
+
+        <div class="iframe-container" style="margin-top: 15px; margin-bottom: 10px;">
+          <iframe src="{ruta_rel_pdf}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+          <a href="{ruta_rel_pdf}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir UMAP en pestaña nueva
+          </a>
+          <a href="{ruta_rel_pdf}" download="{nombre_pdf}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF
+          </a>
+        </div>
+      ')))
+    }
+    out_etapa
+  }
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion5.3.2">
+  5.3.2. Resolución Agrupada: Nivel de "Big Etapa"
+</div>
+
+<p>
+  Como contraparte a la granularidad extrema mostrada en la sección anterior, aquí se exponen las proyecciones correspondientes a la nomenclatura jerárquica macroscópica (<strong>Big Etapa</strong>). Al igual que en el apartado precedente, los resultados visualizados a continuación derivan exclusivamente de la <strong>última versión de curación detectada</strong> en el repositorio. 
+</p>
+
+<p>
+  Al agrupar subestadios afines o transitorios en clústeres conceptuales mayores, este nivel de anotación resulta idóneo para analizar el tejido desde una perspectiva más holística. Permite evaluar de forma clara y directa las proporciones poblacionales de los compartimentos biológicos globales, mitigando el ruido visual de las subdivisiones ultra-específicas.
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# 1. MOSTRAR BOX-FILES LOCAL (Requiere results="asis")
+if (!is.null(cell_annotation_manual_big_etapa_df) && nrow(cell_annotation_manual_big_etapa_df) > 0) {
+  
+  # Asegurar orden natural/alfabético
+  cell_annotation_manual_big_etapa_df <- cell_annotation_manual_big_etapa_df[order(cell_annotation_manual_big_etapa_df$file_name), ]
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(cell_annotation_manual_big_etapa_df)) {
+    f <- cell_annotation_manual_big_etapa_df$file_name[i]
+    ruta <- cell_annotation_manual_big_etapa_df$ruta_relativa[i]
+    clase <- ifelse(grepl("\\.pdf$", f, ignore.case = TRUE), "file-pdf", "file-default")
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_cell_annotation_manual_big_etapa_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explorar directorio "Big Etapa" de la última versión
+    </a>
+  </p>
+  '), sep = "\n")
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box" style="margin-top: 20px;">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Directorio no detectado o vacío</b><br>
+    No se han detectado archivos organizados bajo el nivel jerárquico <code>02_big_etapa</code> en la última versión. Es posible que el proyecto no requiera una agrupación macroscópica de las poblaciones o que los archivos se hayan depositado directamente en la raíz de la versión.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 2. GENERAR IFRAMES CON TAGLIST (NO requiere results="asis")
+if (!is.null(cell_annotation_manual_big_etapa_df) && nrow(cell_annotation_manual_big_etapa_df) > 0) {
+  
+  out_big_etapa <- tagList()
+  pdf_big_etapa_df <- cell_annotation_manual_big_etapa_df[grepl("\\.pdf$", cell_annotation_manual_big_etapa_df$file_name, ignore.case = TRUE), ]
+  
+  if(nrow(pdf_big_etapa_df) > 0) {
+    for (i in 1:nrow(pdf_big_etapa_df)) {
+      nombre_pdf <- pdf_big_etapa_df$file_name[i]
+      ruta_rel_pdf <- pdf_big_etapa_df$ruta_relativa[i]
+      
+      # Limpiar el nombre para el título
+      cell_clean <- gsub("^Cell_type_|_manual_big_etapa\\.pdf$|\\.pdf$", "", nombre_pdf, ignore.case = TRUE)
+      cell_clean <- gsub("_", " ", cell_clean)
+      
+      out_big_etapa <- tagAppendChild(out_big_etapa, HTML(glue::glue('
+        <div style="height: 15px; background-color: transparent;"></div>
+
+        <div class="titulo4" id="tab3-seccion5.3.2.{i}" style="padding-bottom: 8px; line-height: 1.2;">
+          5.3.2.{i}. Compartimento Macro: {cell_clean}
+        </div>
+
+        <p style="margin-top: 20px; margin-bottom: 18px;">
+          <i class="fa-solid fa-layer-group" style="color: #276DC3;"></i> 
+          <strong>Proyección Espacial Agrupada:</strong> <code>{nombre_pdf}</code>
+        </p>
+
+        <div class="iframe-container" style="margin-top: 15px; margin-bottom: 10px;">
+          <iframe src="{ruta_rel_pdf}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+          <a href="{ruta_rel_pdf}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir UMAP Macro en pestaña nueva
+          </a>
+          <a href="{ruta_rel_pdf}" download="{nombre_pdf}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF
+          </a>
+        </div>
+      ')))
+    }
+    out_big_etapa
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  Habiendo culminado la inferencia fenotípica —desde la aproximación global automatizada hasta la curación experta de alta resolución—, el mapa celular ha dejado de ser un compendio de entidades matemáticas abstractas para convertirse en un ecosistema biológico completamente caracterizado. Disponemos ahora de un catálogo celular con identidades precisas, linajes definidos y estadios madurativos concretos.
+</p>
+
+<p>
+  No obstante, para garantizar la robustez estadística y la interpretabilidad de los análisis comparativos posteriores (como la evaluación del impacto de la variable experimental principal o el contraste transversal entre condiciones), a menudo resulta imperativo consolidar estas anotaciones de extrema granularidad. Es en esta fase de transición donde las resoluciones más finas se unifican o agrupan estratégicamente en compartimentos biológicos globales y definitivos, depurando el modelo espacial para representar la estructura final del experimento.
+</p>
+
+<p>
+  Esta consolidación de identidades y la generación de los mapas topológicos (UMAP) definitivos —tanto a nivel global como segregados por condición experimental— actúan como el cimiento sólido sobre el cual se edificarán los inminentes estudios de expresión diferencial cruzada y enriquecimiento funcional. Todo este proceso de unificación poblacional se detalla en el siguiente módulo del informe: <strong><a href="06-agrupacion.html" class="normalink">6. Agrupación de poblaciones biológicas</a></strong>.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

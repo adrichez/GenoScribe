@@ -1,0 +1,849 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 1. REVISIÓN INICIAL DE MUESTRAS Y METADATOS -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        ¡Hola! Soy <strong>Geni</strong>, el asistente inteligente de <strong>GenoScribe</strong>.  
+        Estoy aquí para ayudarte a explorar de forma interactiva el contenido de este informe bioinformático.
+      </p>
+
+      <p>
+        Cuando me haces una pregunta, primero intento reconocer si coincide con alguno de los patrones o expresiones que conozco.  
+        Si encuentro una coincidencia, te responderé directamente con una respuesta predefinida, diseñada para ser rápida, clara e incluso un poco ingeniosa.  
+        Si no reconozco el patrón, entonces activo mis herramientas de búsqueda: genero representaciones vectoriales (embeddings) y busco los fragmentos más relevantes entre varios documentos —incluyendo el propio informe, archivos PDF y HTML externos, y sesiones de preguntas y respuestas (QA).  
+        A partir de esa información, creo un resumen que intenta ofrecerte una respuesta coherente y útil basada en el contenido existente.
+      </p>
+
+      <p>
+        Se debe tener en cuenta que este entorno es experimental. No utilizo grandes modelos de lenguaje, por lo que algunas respuestas pueden ser aproximadas o incompletas.  
+        El objetivo principal es facilitar una visualización rápida, comprensible y reproducible de la información contenida en los documentos, permitiendo una exploración más dinámica del informe.
+      </p>
+
+      <p>
+        Actualmente, los resultados pueden variar en precisión, ya que empleo modelos ligeros y locales para asegurar que la aplicación funcione en cualquier entorno sin necesidad de servidores externos.  
+        Sin embargo, la estructura del sistema está preparada para mejorar notablemente su rendimiento en el futuro mediante la integración con modelos más avanzados o APIs externas.  
+        Para comenzar, simplemente escribe tu pregunta en el campo inferior y deja que yo me encargue del resto. ¡Prometo poner todo mi código en ello!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+ruta_archives_tmp_revision_inicial <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "01-revision-inicial")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_revision_inicial)
+
+
+
+
+#===================================================================================================================================================
+# METADATA Y DISEÑO EXPERIMENTAL
+#===================================================================================================================================================
+
+# Ruta a los metadatos del proyecto
+ruta_metadata <- file.path(params$project_path, "data", "04_resources", "01_metadata")
+ruta_metadata_relativa <- file.path(ruta_proyecto_relativa, "data", "04_resources", "01_metadata")
+
+
+# Listar archivos .tsv en la carpeta
+ruta_metadata_relativa_list <- list.files(ruta_metadata_relativa, pattern = "\\.tsv$", full.names = TRUE)
+
+# Extraer solo el nombre del archivo sin ruta
+names_metadata_list <- basename(ruta_metadata_relativa_list)
+
+# Leer archivos y guardarlos en una lista con nombre
+archives_metadata_list <- setNames(
+  lapply(ruta_metadata_relativa_list, read.delim, stringsAsFactors = FALSE),
+  names_metadata_list
+)
+
+
+
+
+#===================================================================================================================================================
+# FASTQ Y MÉTRICAS DE CELL RANGER
+#===================================================================================================================================================
+
+# Carpeta donde están los FASTQ / resultados de Cell Ranger
+ruta_cellranger <- file.path(params$project_path, "data", "02_fastq_cellranger")
+ruta_cellranger_relativa <- file.path(ruta_proyecto_relativa, "data", "02_fastq_cellranger")
+
+
+# Listar todos los archivos FASTQ.gz dentro de la carpeta
+fastq_files <- list.files(
+  ruta_cellranger, 
+  pattern = "\\.fastq\\.gz$", 
+  full.names = TRUE
+)
+
+# Crear data.frame con nombre y ruta
+fastq_df <- data.frame(
+  file_name = basename(fastq_files),
+  ruta_absoluta = fastq_files,
+  stringsAsFactors = FALSE
+)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis Bioinformático Completo</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Sección 1</h1>
+  <h2>Revisión Inicial de Muestras y Metadatos</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+<p>
+    Esta primera sección tiene como objetivo establecer el <strong>contexto fundacional</strong> del análisis de <strong>Single-Cell RNA-Seq (scRNA-Seq)</strong>. Antes de proceder con el riguroso filtrado de calidad y el modelado matemático de las células, es imprescindible comprender la arquitectura de los datos de partida. Para ello, en primer lugar, se presenta una exploración interactiva de la <strong>organización y estructura de directorios</strong> del proyecto. Esto no solo garantiza la <strong>reproducibilidad</strong> del estudio, sino que permite al investigador localizar de forma rápida e intuitiva todos los recursos generados durante cada fase del <em>pipeline</em>, desde los datos crudos hasta los gráficos finales.
+  </p>
+
+  <p>
+    En segundo lugar, se inspeccionan en detalle los documentos que dictan el <strong>diseño experimental</strong>. Se revisan a fondo los <strong>metadatos clínicos y fenotípicos</strong> asociados a cada muestra (como el genotipo, la condición, el tejido o el lote de procesamiento). Este "diccionario biológico" es una pieza fundamental, ya que guiará los pasos computacionales posteriores, permitiendo agrupar las células correctamente, corregir posibles sesgos técnicos (<em>batch effects</em>) y definir los contrastes estadísticos para el cálculo de la expresión diferencial.
+  </p>
+
+  <p>
+    Finalmente, se detalla el <strong>trazado de secuenciación</strong>, estableciendo el mapeo informático exacto entre los identificadores biológicos de las muestras y sus correspondientes archivos binarios crudos (<strong>archivos FASTQ</strong>). Esta rigurosa trazabilidad asegura un flujo de trabajo transparente desde la salida de la plataforma Illumina y el procesamiento primario con <strong>Cell Ranger</strong>, hasta la obtención de la <strong>matriz de expresión</strong> final sobre la que operan las herramientas de análisis downstream como <em>Seurat</em>.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta sección
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion1">1<span>.</span> Revisión Inicial de muestras y metadatos</a>
+      <ul>
+        <li><a href="#tab3-seccion1.1">1.1. Organización y estructura del directorio del proyecto</a></li>
+        <li><a href="#tab3-seccion1.2">1.2. Diseño experimental y metadatos clínicos</a></li>
+        <li><a href="#tab3-seccion1.3">1.3. Trazado de secuenciación y datos crudos</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion1">
+  1<span>.</span> Revisión Inicial de muestras y metadatos
+</div>
+
+<p>
+  La transición desde el procesamiento de muestras en el laboratorio (<em>wet lab</em>) hasta la interpretación puramente computacional (<em>dry lab</em>) exige un control sumamente estricto de la información. A diferencia de las aproximaciones transcriptómicas tradicionales en <em>bulk</em>, un experimento de célula única desglosa la expresión génica en miles o decenas de miles de entidades independientes, lo que multiplica exponencialmente el volumen de archivos generados y la complejidad de su gestión operativa.
+</p>
+
+<p>
+  Abordar este vasto ecosistema de datos requiere, como primer paso lógico, realizar un ejercicio de reconocimiento del terreno. Antes de aplicar cualquier modelo matemático de filtrado, reducción de dimensionalidad o <em>clustering</em>, resulta vital confirmar que los cimientos documentales que soportan el estudio son sólidos y exactos. Por ello, iniciaremos esta fase desplegando el mapa visual de nuestro entorno de trabajo, una visión global que nos permitirá ubicar cada recurso técnico antes de descender al detalle biológico de las muestras.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion1.1">
+  1.1. Organización y estructura del directorio del proyecto
+</div>
+
+<p>
+  El ecosistema de archivos que conforma un proyecto de <strong>Single-Cell RNA-Seq</strong> es el resultado directo de todo el análisis bioinformático previo a la generación de este informe interactivo. Este complejo flujo computacional se articula fundamentalmente en dos grandes etapas. En primer lugar, el <strong>procesamiento primario</strong> mediante pipelines estandarizados como <strong>Cell Ranger</strong> (10x Genomics), encargado de demultiplexar y transformar la señal binaria del secuenciador (archivos BCL) en lecturas interpretables (archivos FASTQ), mapearlas contra el genoma de referencia, construir las matrices de conteo iniciales y generar los reportes de calidad técnica primarios (como el <code>web_summary.html</code>).
+</p>
+
+<p>
+  En segundo lugar, tiene lugar el <strong>análisis bioinformático <em>downstream</em></strong> utilizando paquetes matemáticos especializados como <strong>Seurat</strong>. Es en esta fase estadística donde las matrices en bruto cobran verdadero sentido biológico: se ejecuta el control de calidad celular, la normalización, la reducción de dimensionalidad, el agrupamiento de poblaciones (<em>clustering</em>) y los contrastes de expresión diferencial clínica.
+</p>
+
+<p>
+  Para gestionar de forma eficiente la ingente cantidad de datos y metadatos que producen ambas fases, todos los elementos se consolidan en una <strong>estructura de directorios centralizada</strong> y coherente. El propósito de este apartado es proporcionar un mapa claro e intuitivo de dicha arquitectura. Concebido como una guía directa para el investigador, permite comprender cómo se vertebran las salidas del proyecto para ganar autonomía, de modo que pueda <strong>localizar y extraer rápidamente los resultados</strong> de mayor interés —como figuras de alta resolución, tablas Excel de marcadores o metadatos— sin necesidad de poseer conocimientos técnicos de programación ni depender de accesos complejos al servidor.
+</p>
+
+<p>
+  A continuación se muestra la ruta del directorio principal donde se encuentran almacenados los datos y resultados generados para este proyecto:
+</p>
+
+```{r, results="asis"}
+cat(glue::glue('
+  <code>{params$project_path}</code>'
+), sep = "\n\n")
+```
+
+<p>
+  A continuación se muestra la estructura completa de dicho directorio. Esta representación permite visualizar los archivos y subcarpetas generados durante el análisis de Single-Cell RNA-Seq y que se emplearon como base para la construcción de este informe:
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_proyecto_relativa)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_proyecto_relativa))
+} else {
+  # Listar todos los archivos, sin filtros
+  files <- list.files(ruta_proyecto_relativa, full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+  } else {
+    enlace <- ruta_proyecto_relativa
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Asignar clase según la extensión
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else if (grepl("\\.html$", f)) {
+        "file-html"
+      } else if (grepl("\\.zip$", f)) {
+        "file-zip"
+      } else if (grepl("\\.fastq\\.gz$", f)) {
+        "file-fastqgz"
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Para que funcione con rutas absolutas
+enlace <- ruta_proyecto_relativa
+
+# Imprimir el enlace
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{enlace}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{nombre_proyecto}" aquí
+  </a>
+</p>
+\n\n'))
+```
+
+```{r, results="asis"}
+cat(glue::glue('
+<p>
+  Tras visualizar la estructura de forma interactiva, se presenta a continuación un desglose detallado de las carpetas generadas durante el análisis de Single-Cell RNA-Seq para el proyecto <code>{nombre_proyecto}</code>.
+  Esta organización estandarizada no es casual; está diseñada para <strong>mapear directamente el flujo biológico del análisis</strong>. De este modo, funciona como un índice visual que le permitirá localizar rápidamente gráficos, tablas de Excel o archivos de código sin necesidad de ser un experto en bioinformática.
+</p>
+
+<div class="items">
+<ul>
+  <li>
+    <strong><code>{nombre_proyecto}/data/</code></strong> <strong>&rArr;</strong> Es el "almacén" del proyecto. Directorio raíz que aloja todos los datos crudos, matrices de expresión, objetos matemáticos y recursos externos empleados. Aquí no suele haber resultados gráficos, sino los cimientos del estudio.
+    <ul>
+      <li><strong><code>01_raw_blc/</code></strong> <strong>&rarr;</strong> Archivos binarios directos del secuenciador (Illumina). Representan la señal óptica en bruto y se conservan principalmente como copia de seguridad a largo plazo.</li>
+      <li><strong><code>02_fastq_cellranger/</code></strong> <strong>&rarr;</strong> Resultados del procesamiento primario (ej. 10x Genomics). Contiene las secuencias genéticas legibles (FASTQ), las primeras matrices de conteo (cuántas veces se detecta cada gen en cada célula, formato <code>.h5</code>) y los reportes interactivos HTML (<em>web summaries</em>) que resumen la calidad de la secuenciación.</li>
+      <li><strong><code>03_processed_objects/</code></strong> <strong>&rarr;</strong> Archivos RDS (<em>R Data Structure</em>). Estos son los "puntos de guardado" del proyecto. Contienen los objetos de Seurat con toda la información de las células (expresión, coordenadas, metadatos) tras ser filtradas y anotadas. Si un investigador desea cargar los datos en R para hacer sus propias exploraciones interactivas en el futuro, utilizará estos archivos.</li>
+      <li><strong><code>04_resources/</code></strong> <strong>&rarr;</strong> El diccionario biológico. Incluye metadatos adicionales, bases de datos públicas de referencia (como HPCA o Tabula Muris) y las listas de genes (marcadores) seleccionadas manualmente por los investigadores para ayudar a identificar los tipos celulares.</li>
+    </ul>
+  </li>
+
+  <li>
+    <strong><code>{nombre_proyecto}/scripts/</code></strong> <strong>&rArr;</strong> Repositorio del código fuente (las "recetas"). Aunque está dirigido a perfiles técnicos, su presencia aquí es vital para garantizar la transparencia y permitir que cualquier otro bioinformático pueda reproducir exactamente el mismo análisis en el futuro.
+    <ul>
+      <li><strong><code>01_main/</code></strong> <strong>&rarr;</strong> Scripts principales de ejecución que dirigen el flujo completo de Seurat (procesamiento, <em>clustering</em> y contrastes de expresión diferencial).</li>
+      <li><strong><code>02_functions/</code></strong> <strong>&rarr;</strong> Archivos con funciones matemáticas auxiliares, personalizadas para cálculos estadísticos complejos o visualizaciones muy específicas de este proyecto.</li>
+      <li><strong><code>03_extra/</code></strong> <strong>&rarr;</strong> Scripts complementarios o pruebas de concepto exploratorias no incluidas en el documento final.</li>
+    </ul>
+  </li>
+
+  <li>
+    <strong><code>{nombre_proyecto}/analysis/</code></strong> <strong>&rArr;</strong> La carpeta principal de resultados biológicos. Es la sección de mayor interés para el investigador, ya que contiene todos los gráficos (PDFs, PNGs), tablas de Excel y contrastes estadísticos generados etapa por etapa.
+    <ul>
+      <li><strong><code>01_qc/</code></strong> <strong>&rarr;</strong> Control de calidad. Se divide en <code>01_reads_qc/</code> (si aplica, evalúa la calidad pura de las lecturas) y <code>02_cells_qc/</code>. En esta última encontrará los gráficos de violín que justifican qué células se conservan y cuáles se descartan por ser células muertas (alto porcentaje mitocondrial), gotas vacías o dobletes.</li>
+      <li><strong><code>02_dim_reduction/</code></strong> <strong>&rarr;</strong> Gráficos matemáticos (PCA, <em>Elbow plots</em>) que muestran cómo se ha simplificado la inmensa complejidad de miles de genes para poder agrupar las células correctamente.</li>
+      <li><strong><code>03_clustering/</code></strong> <strong>&rarr;</strong> Los mapas celulares. Aquí encontrará los famosos gráficos bidimensionales (UMAP/t-SNE) donde las células forman "islas" por similitud, además de gráficos de barras con proporciones celulares. Se divide en agrupaciones simples (<code>01_seurat_merged_clusters/</code>) y aquellas donde se han corregido efectos técnicos o de lote computacionalmente (<code>02_seurat_integrated_clusters/</code>).</li>
+      <li><strong><code>04_markers/</code></strong> <strong>&rarr;</strong> Tablas Excel detalladas con los genes constitutivos (<em>Top Markers</em>) que definen de forma única a cada "isla" o cluster numérico, cuando aún no sabemos qué identidad biológica tienen.</li>
+      <li><strong><code>05_cell_annotation/</code></strong> <strong>&rarr;</strong> Fase de identidad biológica. Resultados del proceso donde se bautiza a los clusters ciegos con nombres reales (ej. "Macrófagos", "Células T"). Contiene las predicciones de bases de datos automáticas (<code>01_automatic_dbs_annotation/</code>) y los mapas definitivos tras la revisión manual experta (<code>02_manual_annotation/</code>).</li>
+      <li><strong><code>06_population_aggregation/</code></strong> <strong>&rarr;</strong> Justificación visual y mapas generados tras agrupar subtipos celulares muy similares en macro-poblaciones más generales, con el fin de obtener mayor potencia estadística en los análisis posteriores.</li>
+      <li><strong><code>07_deg_conditions/</code></strong> <strong>&rarr;</strong> El núcleo estadístico del estudio clínico. Contiene los análisis comparativos (ej. Condición WT frente a KO). Aquí encontrará las listas Excel con los genes que suben o bajan significativamente, junto con gráficos interpretativos como <em>Volcano plots</em> y <em>DotPlots</em>.</li>
+      <li><strong><code>08_enrichment/</code></strong> <strong>&rarr;</strong> Análisis de significado funcional. Gráficos de barras y redes que traducen las listas de genes diferencialmente expresados en rutas biológicas concretas (ej. vías de inflamación, ciclo celular) usando bases de datos como GO o KEGG.</li>
+      <li><strong><code>09_extra/</code></strong> <strong>&rarr;</strong> Resultados a la carta. Gráficos aislados solicitados específicamente por el equipo investigador, como mapas de expresión detallados para genes individuales de alto interés (<code>01_specific_genes_of_interest/</code>).</li>
+    </ul>
+  </li>
+</ul>
+</div>
+
+<p>
+  Esta estructura modular y transparente no solo permite automatizar los pasos clave del análisis bioinformático, sino que otorga total independencia al investigador para explorar sus hallazgos. Al estandarizar la localización de cada resultado, se garantiza la trazabilidad del dato, la reproducibilidad técnica y se facilita enormemente la colaboración a largo plazo o la futura publicación de los datos.
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Comprendida la topografía general del proyecto, el siguiente paso es inspeccionar los documentos que dotan de sentido biológico a todos estos archivos. En el siguiente apartado, se analizarán las tablas que vinculan los identificadores técnicos de las muestras con sus respectivas condiciones experimentales.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion1.2">
+  1.2. Diseño experimental y metadatos clínicos
+</div>
+
+<p>
+  Un experimento de Single-Cell RNA-Seq carece de valor analítico si no está rigurosamente contextualizado. Mientras que las matrices de conteo nos indican <em>qué</em> genes están activos en cada célula, son los <strong>metadatos clínicos y experimentales</strong> los que nos permiten entender <em>por qué</em> y <em>bajo qué condiciones</em> ocurren dichos cambios transcripcionales. En este directorio se centralizan los archivos que definen el <strong>diseño experimental</strong>, estableciendo el puente crítico entre la realidad clínica de las muestras (paciente, modelo animal, tratamiento) y los algoritmos bioinformáticos posteriores.
+</p>
+
+<p>
+  A continuación se detallan los archivos de metadatos disponibles y asociados a este proyecto:
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_metadata_relativa)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_metadata_relativa))
+
+} else {
+  # Listar todos los archivos
+  files <- list.files(ruta_metadata_relativa, full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+  } else {
+    enlace <- ruta_metadata_relativa
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Asignar clase según la extensión
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else if (grepl("\\.tsv$", f, ignore.case = TRUE)) {
+        "file-tsv" 
+      } else if (grepl("\\.csv$", f, ignore.case = TRUE)) {
+        "file-csv"
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Imprimir el botón para explorar la carpeta
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_metadata_relativa}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de metadatos aquí
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Tras ubicar estos documentos en la estructura del directorio, procedemos a explorar detalladamente el contenido de la tabla de metadatos clínicos. El siguiente visor interactivo le permite revisar de forma rápida y cómoda las asignaciones experimentales, ordenar los pacientes o muestras según variables de interés y comprobar la integridad del diseño antes de adentrarse en la interpretación de los resultados analíticos.
+</p>
+
+<div class="divider"></div>
+
+```{r, results="asis"}
+if ("sample_metadata.tsv" %in% names_metadata_list) {
+  cat(glue::glue('
+    <p>
+      <i class="fa-solid fa-flask" style="color: #4a86e8;"></i> 
+      <strong>Archivo:</strong> <code>sample_metadata.tsv</code>
+    </p>
+
+    <p>
+      Este archivo actúa como el <strong>diccionario biológico</strong> fundamental del análisis. Su función principal es asignar a cada identificador único de muestra (<code>Sample_ID</code>) su contexto fenotípico correspondiente. Esto incluye <strong>variables experimentales primarias</strong> (como la condición clínica: e.g., WT vs KO, Sano vs Enfermo, Tratado vs Control), <strong>variables biológicas</strong> (tejido de origen, sexo, edad del donante) y <strong>variables técnicas</strong> (réplicas, investigador responsable o lote de secuenciación).
+    </p>
+
+    <p>
+      La exactitud de estos parámetros es absolutamente crítica para el correcto funcionamiento de etapas computacionales avanzadas, ejecutadas mediante herramientas como <em>Seurat</em>. Gracias a la información contenida en esta tabla, el software es capaz de agrupar células provenientes de muestras biológicamente afines, aplicar algoritmos matemáticos para mitigar el ruido técnico (<em>batch effect correction</em>) y, lo más importante, definir los grupos exactos sobre los cuales se realizarán los contrastes estadísticos para hallar los <strong>genes diferencialmente expresados (DEGs)</strong>.
+    </p>
+  '), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Advertencia</b><br>
+    No se ha encontrado el archivo <code>sample_metadata.tsv</code> en el directorio especificado:<br>
+    <code>{ruta_metadata_relativa}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r}
+if ("sample_metadata.tsv" %in% names_metadata_list) {
+  df_sample <- archives_metadata_list[["sample_metadata.tsv"]]
+  
+  DT::datatable(
+    df_sample,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "300px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft',
+      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+    ),
+    class = 'stripe hover compact',
+    rownames = FALSE
+  )
+}
+```
+
+```{r, results='asis'}
+if ("sample_metadata.tsv" %in% names_metadata_list) {
+  ruta_file <- file.path(ruta_metadata_relativa, "sample_metadata.tsv")
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_file}" 
+      download="sample_metadata.tsv" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Descargar archivo "sample_metadata.tsv"
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  Con el diseño biológico perfectamente definido y validado en la tabla anterior, resulta imperativo conectarlo con su contraparte técnica. Es decir, <strong>¿cómo sabe el pipeline bioinformático qué archivo físico salido del secuenciador corresponde a cada muestra clínica?</strong> Para resolver este solapamiento entre la biología y la informática, recurrimos al segundo archivo clave de este directorio.
+</p>
+
+<div class="divider"></div>
+
+```{r, results="asis"}
+if ("fastq_mapping.tsv" %in% names_metadata_list) {
+  cat(glue::glue('
+    <p>
+      <i class="fa-solid fa-server" style="color: #4a86e8;"></i> 
+      <strong>Archivo:</strong> <code>fastq_mapping.tsv</code>
+    </p>
+
+    <p>
+      Este documento representa el <strong>trazado informático y de secuenciación</strong> del proyecto. Establece la correspondencia directa y sin ambigüedades entre los nombres de muestra estandarizados (los definidos en el diccionario biológico) y los archivos binarios crudos <code>.fastq.gz</code> (R1 y R2) generados por el secuenciador Illumina.
+    </p>
+
+    <p>
+      Esta trazabilidad garantiza una transparencia total del proceso computacional. Es el "mapa de instrucciones" que asegura que los pipelines de procesamiento primario (como <em>Cell Ranger</em>) identifiquen, asignen y ensamblen correctamente la estructura de códigos de barras celulares (<em>Cell Barcodes</em>), identificadores moleculares (UMIs) y lecturas transcriptómicas (<em>Reads</em>) provenientes de cada carril de secuenciación (<em>Lane</em>).
+    </p>
+  '), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Advertencia</b><br>
+    No se ha encontrado el archivo <code>fastq_mapping.tsv</code> en el directorio especificado:<br>
+    <code>{ruta_metadata_relativa}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+if ("fastq_mapping.tsv" %in% names_metadata_list) {
+  df_fastq <- archives_metadata_list[["fastq_mapping.tsv"]]
+  
+  DT::datatable(
+    df_fastq,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "300px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft',
+      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+    ),
+    class = 'stripe hover compact',
+    rownames = FALSE
+  )
+}
+```
+
+```{r, results='asis'}
+if ("fastq_mapping.tsv" %in% names_metadata_list) {
+  ruta_file <- file.path(ruta_metadata_relativa, "fastq_mapping.tsv")
+
+  cat(glue::glue('
+  <p style="text-align:center; margin-top: 15px;">
+    <a href="{ruta_file}" 
+      download="fastq_mapping.tsv" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Descargar archivo "fastq_mapping.tsv"
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  Una vez completado el "mapa" documental que rige el experimento —tanto a nivel clínico como de trazabilidad técnica— estamos listos para explorar los archivos de datos reales. En el siguiente apartado, se revisará el punto de partida físico del procesamiento: las secuencias puras obtenidas tras la secuenciación y los informes primarios generados por el software <code>Cell Ranger</code>, los cuales constituyen los cimientos matemáticos del estudio.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion1.3">
+  1.3. Trazado de secuenciación y datos crudos
+</div>
+
+<p>
+  Una vez completado el mapa documental que rige el experimento (tanto a nivel clínico como de trazabilidad técnica), el siguiente paso es inspeccionar los <strong>datos físicos reales</strong> de los que parte este estudio computacional.
+</p>
+
+<p>
+  En el flujo de trabajo de Single-Cell RNA-Seq (como el implementado por 10x Genomics), la señal capturada por el secuenciador Illumina se almacena inicialmente en un formato binario en bruto (archivos <strong>BCL</strong>). A partir de este punto, el software <strong>Cell Ranger</strong> entra en acción ejecutando un procesamiento en dos fases principales. En primer lugar, demultiplexa y transforma esos archivos BCL en los archivos de lectura estándar en formato <strong>FASTQ</strong> (<code>.fastq.gz</code>). A continuación, el mismo pipeline procesa estos FASTQ: alinea las secuencias contra el genoma de referencia, colapsa los identificadores moleculares (UMIs) y asigna cada lectura a una célula específica (mediante los <em>Cell Barcodes</em>).
+</p>
+
+<p>
+  El producto final de esta ejecución es un directorio que contiene tanto los FASTQ generados como una compleja estructura de subcarpetas por muestra con los resultados analíticos primarios (matrices de expresión, reportes de calidad, etc.). A continuación, se muestra la ruta absoluta del sistema donde se aloja este directorio:
+</p>
+
+```{r, results="asis"}
+cat(glue::glue('
+  <code>{ruta_cellranger}</code>
+'), sep = "\n\n")
+```
+
+<p>
+  <em style="color: #666;"><i class="fa-solid fa-circle-info"></i> <strong>Aviso sobre la accesibilidad de los datos crudos:</strong> Debido al tamaño excepcional de los archivos de secuenciación (<code>.fastq.gz</code>) y las matrices primarias generadas, estos no se han copiado físicamente junto a este informe interactivo para garantizar un rendimiento óptimo y la portabilidad del documento. Por ello, el siguiente visor enlaza directamente con la carpeta original utilizando las rutas absolutas del sistema. Si intenta hacer clic en estos enlaces desde un equipo externo local (ajeno al servidor o clúster donde se ejecutó el análisis), es normal que reciba un mensaje de error (como <code>ERR_FILE_NOT_FOUND</code> o ruta inaccesible). En tal caso, este panel interactivo cumplirá una función puramente descriptiva, permitiéndole confirmar de manera visual la integridad, existencia y nomenclatura de los datos de partida.</em>
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_cellranger)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible en este sistema.</em></p>\n', ruta_cellranger))
+
+} else {
+  # Listar todos los archivos y carpetas del directorio
+  files <- list.files(ruta_cellranger, full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+  
+  } else {
+    enlace <- ruta_cellranger
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Asignar clase según la extensión o si es carpeta
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else if (grepl("\\.fastq\\.gz$", f, ignore.case = TRUE)) {
+        "file-fastqgz"
+      } else if (grepl("\\.html$", f, ignore.case = TRUE)) {
+        "file-html"
+      } else if (grepl("\\.h5$", f, ignore.case = TRUE)) {
+        "file-default" # O una clase específica como file-h5 si la tienes en tu CSS
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Imprimir el botón para explorar la carpeta
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_cellranger_relativa}/" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explorar los datos crudos y resultados de Cell Ranger aquí
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Como se puede observar en la estructura superior, para cada muestra listada en nuestro diccionario biológico existe un par (o varios pares) de archivos <code>.fastq.gz</code> (R1 y R2) correspondientes a las lecturas directas del secuenciador. Junto a ellos, se generan carpetas individuales (con el nombre de la muestra) que albergan el volcado completo de resultados de <em>Cell Ranger</em>, incluyendo la vital carpeta <code>outs/</code> donde residen las matrices de expresión filtradas.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  Habiendo validado la correcta estructuración del proyecto, la coherencia de los metadatos biológicos y la disponibilidad física de los datos crudos, hemos consolidado la base sobre la que se asienta todo el estudio. El siguiente paso ineludible en el flujo de trabajo es garantizar la <strong>fiabilidad técnica e integridad</strong> de estos datos antes de inferir cualquier conclusión biológica.
+</p>
+
+<p>
+  En la próxima etapa del informe, accesible a través de la sección de <strong><a href="02-control-calidad.html" class="normalink">Control de calidad y filtrado (QC)</a></strong>, llevaremos a cabo una evaluación rigurosa de las métricas a dos niveles. Por un lado, examinaremos la calidad primaria de las lecturas de secuenciación (apoyándonos en los reportes de <code>Cell Ranger</code> y en herramientas complementarias como <code>Fastp</code> o <code>MultiQC</code>). Por otro lado, ejecutaremos un estricto <strong>control de calidad a nivel celular</strong> mediante <code>Seurat</code>, filtrando eventos anómalos —como células muertas, dobletes o gotas vacías— en base al porcentaje de transcritos mitocondriales, la diversidad de genes detectados y el volumen de conteos totales. Este doble cribado resulta absolutamente crítico antes de poder avanzar de forma segura hacia las fases de reducción de dimensionalidad y <em>clustering</em>.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

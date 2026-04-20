@@ -1,0 +1,394 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  experiment_name: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 5.2. EVALUACIÓN DEL CONTROL DE CALIDAD TRAS LA NORMALIZACIÓN -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+library(stringr)
+library(glue)
+library(fs)
+library(dplyr)
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_bulk_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_bulk_rna_seq_pipeline_absoluta <- normalizePath(ruta_bulk_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+nombre_experimento <- basename(params$experiment_name)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Rutas de informe de control de calidad tras la normalización
+ruta_experimento_QC <- file.path(params$project_path, "Resultados", nombre_experimento, paste0(nombre_experimento, "_QC.pdf"))
+ruta_experimento_QC_relativa <- file.path(ruta_proyecto_relativa, "Resultados", nombre_experimento, paste0(nombre_experimento, "_QC.pdf"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion">
+  <h1>Section 5</h1>
+  <h2>Statistical Analysis of Gene Expression</h2>
+</div>
+
+<div class="informe-titulo-subseccion-unique">
+  <h1>Subsection 5.2</h1>
+  <h2>Post-Normalization Quality Control Assessment</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This section provides a <strong>comprehensive assessment of quality control</strong> after the normalization of gene expression data. This step is crucial to verify that normalization has properly corrected <em>technical variations</em> inherent to the experimental process without affecting the <em>true biological structure</em> of the analyzed samples.
+  </p>
+
+  <p>
+    To achieve this, various exploratory techniques and statistical visualizations are applied to assess the homogeneity and consistency of normalized data. These techniques include <strong>Principal Component Analysis (PCA)</strong>, which facilitates the identification of clustering and potential outliers; the calculation of the <strong>correlation matrix</strong> between samples, which quantifies overall similarities; and <strong>hierarchical clustering</strong>, which organizes samples according to shared expression patterns.
+  </p>
+
+  <p>
+    Additionally, <strong>heatmaps</strong> and distribution plots such as <em>boxplots</em> and <em>density plots</em> are generated, providing a comprehensive view of the variability and consistency of gene expression after adjustment. These tools help detect potential problematic samples or residual artifacts that could affect biological interpretation.
+  </p>
+
+  <p>
+    All these analyses and visualizations are compiled in a <strong>consolidated PDF report</strong>, available for consultation and download at the specified path, serving as a valuable guide to validate dataset quality and ensure the reliability of subsequent differential expression and functional enrichment analyses.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents of this subsection
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="05-Analisis-estadistico.html#tab3-seccion5">
+        5<span>.</span> Statistical analysis of gene expression
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion5.2">
+            5.2. Evaluation of quality control after normalization
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.2">
+  5.2. Evaluation of quality control after normalization
+</div>
+
+<p>
+  After applying the <strong>normalization process</strong> to the gene expression matrix, it is essential to perform a <strong>comprehensive assessment of data quality</strong>.
+  This step allows verifying that the <strong>preprocessing</strong> has properly corrected the <em>sources of technical variation</em> without altering the <em>biological structure</em> of the samples.
+</p>
+
+<p>
+  For this purpose, a series of <strong>diagnostic plots</strong> have been generated from the normalized matrix, using exploratory approaches such as:
+</p>
+
+<ul>
+  <li><strong>Principal Component Analysis (PCA)</strong></li>
+  <li><strong>Sample correlation matrix</strong></li>
+  <li><strong>Hierarchical clustering</strong></li>
+  <li><strong>Heatmaps</strong></li>
+  <li><strong>Expression distributions (boxplots, density plots)</strong></li>
+</ul>
+
+<p>
+  This set of visualizations has been compiled into a single <strong>PDF report</strong>, available, at the time of generating this report, in the following directory:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+cat(glue::glue('
+  <code>{ruta_experimento_QC}</code>
+'), sep = "\n")
+```
+
+<p>
+  And it can be viewed in the following interactive window:
+</p>
+
+```{r, results='asis'}
+if (file.exists(ruta_experimento_QC_relativa)) {
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{ruta_experimento_QC_relativa}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <div style="display: flex; justify-content: center; gap: 25px;">
+    <a href="{ruta_experimento_QC_relativa}"
+      target="_blank" 
+      class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open report in a new tab
+    </a>
+
+    <a href="{ruta_experimento_QC_relativa}"
+      download="{basename(ruta_experimento_QC_relativa)}"
+      class="boton-iframe-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download report
+    </a>
+  </div>
+  '), sep = "\n")
+
+} else {
+  cat(glue::glue('
+    <div class="alert-warning alert-box">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <b>Warning</b><br>
+      File "{basename(ruta_experimento_QC)}" not found in the specified path:<br>
+      <code>{ruta_experimento_QC}</code>.<br>
+      Please ensure this file is correctly defined in this directory.
+    </div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  More specifically, this document contains the following types of plots:
+</p>
+
+<ul>
+  <li>
+    <strong>Log-CPM density curves</strong> <strong>&rArr;</strong> allow visualizing the distribution of expression values (on a logarithmic scale) for each sample before and after low-expression filtering. These curves help detect differences between samples and assess homogeneity after filtering.
+  </li>
+  <li>
+    <strong>Expression boxplots per sample</strong> <strong>&rArr;</strong> show the statistical distribution of normalized values for each sample, before and after normalization. They help identify potential outliers or systematic biases that have been removed.
+  </li>
+  <li>
+    <strong>Library sizes</strong> <strong>&rArr;</strong> indicate the total number of reads assigned per sample, providing a measure of sequencing depth and justifying the need for normalization.
+  </li>
+  <li>
+    <strong>Sample correlation matrix</strong> <strong>&rArr;</strong> shows the correlation coefficient between all pairs of samples based on their normalized gene expression profiles. 
+    High correlation among biological replicates indicates experimental consistency and good data quality. Discrepancies may suggest outliers or technical errors.
+  </li>
+  <li>
+    <strong>Principal Component Analysis (PCA) and MDS</strong> <strong>&rArr;</strong> provide two-dimensional representations of variance between samples, grouping them according to their gene expression profiles. Clear separation between experimental groups supports the presence of significant biological differences.
+  </li>
+  <li>
+    <strong>Heatmap with hierarchical clustering</strong> <strong>&rArr;</strong> represents the most variable genes in the experiment, showing their expression across all samples. The resulting clustering allows evaluation of consistency between replicates and experimental conditions.
+  </li>
+</ul>
+
+<p>
+  These graphical representations help confirm the quality of the normalized data and provide a global view that facilitates interpretation of the biological patterns present in the experiment. 
+  From this point, the analysis focuses on the identification of differentially expressed genes between conditions.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

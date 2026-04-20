@@ -1,0 +1,1436 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 2: RESUMEN -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "resumen"
+ruta_archives_tmp_resumen <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab2-resumen")
+
+
+
+
+#===================================================================================================================================================
+# METADATA Y DISEÑO EXPERIMENTAL
+#===================================================================================================================================================
+
+# Ruta a los metadatos del proyecto
+ruta_metadata <- file.path(params$project_path, "data", "04_resources", "01_metadata")
+ruta_metadata_relativa <- file.path(ruta_proyecto_relativa, "data", "04_resources", "01_metadata")
+
+if (dir.exists(ruta_metadata_relativa)) {
+
+  # Listar archivos .tsv en la carpeta
+  ruta_metadata_relativa_list <- list.files(ruta_metadata_relativa, pattern = "\\.tsv$", full.names = TRUE)
+
+  if (length(ruta_metadata_relativa_list) > 0) {
+
+    # Extraer solo el nombre del archivo sin ruta
+    names_metadata_list <- basename(ruta_metadata_relativa_list)
+
+    # Leer archivos y guardarlos en una lista con nombre
+    archives_metadata_list <- setNames(
+      lapply(ruta_metadata_relativa_list, read.delim, stringsAsFactors = FALSE),
+      names_metadata_list
+    )
+
+  }
+
+}
+
+
+
+
+#===================================================================================================================================================
+# FASTQ Y MÉTRICAS DE CELL RANGER
+#===================================================================================================================================================
+
+# Carpeta donde están los FASTQ / resultados de Cell Ranger
+ruta_cellranger <- file.path(params$project_path, "data", "02_fastq_cellranger")
+ruta_cellranger_relativa <- file.path(ruta_proyecto_relativa, "data", "02_fastq_cellranger")
+
+
+# Listar todos los archivos FASTQ.gz dentro de la carpeta
+fastq_files <- list.files(
+  ruta_cellranger, 
+  pattern = "\\.fastq\\.gz$", 
+  full.names = TRUE
+)
+
+# Crear data.frame con nombre y ruta
+fastq_df <- data.frame(
+  file_name = basename(fastq_files),
+  ruta_absoluta = fastq_files,
+  stringsAsFactors = FALSE
+)
+
+
+# Lista con rutas de las subcarpetas de primer nivel dentro de la carpeta de Cell Ranger (cada una corresponde a una muestra)
+ruta_muestras_cellranger_relativa_list <- list.dirs(ruta_cellranger_relativa, recursive = FALSE, full.names = TRUE)
+
+# Obtener solo los nombres de las carpetas (sin ruta)
+nombre_muestras_cellranger_relativa_list <- basename(ruta_muestras_cellranger_relativa_list)
+
+# Inicializamos lista para almacenar resultados
+metrics_list <- list()
+
+# Iterar sobre cada subcarpeta
+for (sub in ruta_muestras_cellranger_relativa_list) {
+  
+  # Nombre de la muestra = nombre de la carpeta
+  sample_name <- basename(sub)
+  
+  # Construir ruta relativa y absoluta al metrics_summary.csv
+  ruta_metrics_rel <- file.path(sub, "outs", "metrics_summary.csv")
+  ruta_metrics_abs <- file.path(ruta_cellranger, sample_name, "outs", "metrics_summary.csv")
+  
+  # Solo leer si el archivo existe
+  if (file.exists(ruta_metrics_abs)) {
+    metrics <- read.csv(ruta_metrics_abs, stringsAsFactors = FALSE)
+    
+    # Guardar en la lista con el nombre de la muestra
+    metrics_list[[sample_name]] <- list(
+      metrics_df = metrics,
+      ruta_relativa = ruta_metrics_rel,
+      ruta_absoluta = ruta_metrics_abs
+    )
+  } else {
+    warning("metrics_summary.csv was not found for: ", sample_name)
+  }
+}
+
+# Ahora metrics_list contiene un elemento por muestra con:
+# - metrics_df: el data.frame con los datos
+# - ruta_relativa: la ruta relativa
+# - ruta_absoluta: la ruta absoluta
+
+
+# Crear lista temporal de dataframes
+metrics_df_list <- lapply(names(metrics_list), function(sample_name) {
+  df <- metrics_list[[sample_name]]$metrics_df
+  # Añadir columna con el nombre de la muestra
+  df <- cbind(Sample = sample_name, df)
+  return(df)
+})
+
+# Combinar todo en un único dataframe
+metrics_combined_df <- do.call(rbind, metrics_df_list)
+
+# Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
+colnames(metrics_combined_df) <- gsub("\\.", " ", colnames(metrics_combined_df))
+
+# Ruta de salida para el CSV combinado
+ruta_cellranger_metrics_summary_all_samples <- file.path(ruta_archives_tmp_resumen, "cellranger_metrics_summary_all_samples.csv")
+
+# Guardar el dataframe combinado como CSV en la carpeta de resumen
+write.csv(metrics_combined_df, ruta_cellranger_metrics_summary_all_samples, row.names = FALSE)
+
+
+# Convertir las columnas a formato numérico
+metrics_numeric_df <- metrics_combined_df
+metrics_numeric_df[-1] <- lapply(metrics_numeric_df[-1], function(x) {
+  x <- gsub(",", "", x)   # eliminar separadores de miles
+  x <- gsub("%", "", x)   # eliminar %
+  as.numeric(x)
+})
+
+# Calcular la media de cada métrica (ignorando la columna "Sample") y crear un nuevo dataframe para la fila de medias
+metrics_mean_df <- data.frame(
+  Sample = "Mean",
+  t(colMeans(metrics_numeric_df[-1], na.rm = TRUE))
+)
+
+# Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
+colnames(metrics_mean_df) <- gsub("\\.", " ", colnames(metrics_mean_df))
+
+# Ruta de salida para el CSV con las medias
+ruta_cellranger_metrics_summary_mean <- file.path(ruta_archives_tmp_resumen, "cellranger_metrics_summary_mean.csv")
+
+# Guardar el dataframe combinado como CSV en la carpeta de resumen
+write.csv(metrics_mean_df, ruta_cellranger_metrics_summary_mean, row.names = FALSE)
+
+
+
+
+#===================================================================================================================================================
+# AGRUPACIÓN DE POBLACIONES
+#===================================================================================================================================================
+
+# Rutas al directorio de population_aggregation
+ruta_aggregation <- file.path(params$project_path, "analysis", "06_population_aggregation")
+ruta_aggregation_relativa <- file.path(ruta_proyecto_relativa, "analysis", "06_population_aggregation")
+
+# Listar subcarpetas de primer nivel
+ruta_versiones_aggregation_relativa_list <- list.dirs(ruta_aggregation_relativa, recursive = FALSE, full.names = TRUE)
+
+if (length(ruta_versiones_aggregation_relativa_list) > 0) {
+
+  # Crear data.frame con nombre y ruta
+  versiones_aggregation_df <- data.frame(
+    folder_name = basename(ruta_versiones_aggregation_relativa_list),
+    ruta_absoluta = ruta_versiones_aggregation_relativa_list,
+    stringsAsFactors = FALSE
+  )
+
+  # Ordenar alfabéticamente por folder_name
+  versiones_aggregation_df <- versiones_aggregation_df[order(versiones_aggregation_df$folder_name), ]
+
+  # Carpeta de la última versión
+  ruta_ult_version_aggregation <- versiones_aggregation_df$ruta_absoluta[nrow(versiones_aggregation_df)]
+
+  # Listar los archivos .pdf
+  ruta_files_pdf_ult_version_aggregation <- list.files(
+    ruta_ult_version_aggregation,
+    pattern = "\\.pdf$",
+    full.names = TRUE
+  )
+
+  if (length(ruta_files_pdf_ult_version_aggregation) > 0) {
+
+    # Crear data.frame
+    files_pdf_ult_version_aggregation_df <- data.frame(
+      file_name = basename(ruta_files_pdf_ult_version_aggregation),
+      ruta_absoluta = ruta_files_pdf_ult_version_aggregation,
+      stringsAsFactors = FALSE
+    )
+
+  }
+
+}
+
+
+
+
+#===================================================================================================================================================
+# DEGS AGRUPADOS REFERENCE VS TEST
+#===================================================================================================================================================
+
+# Rutas al directorio de DEG (clusters anotados y agrupados)
+ruta_deg_agg <- file.path(params$project_path, "analysis", "07_deg_conditions", "01_standard_comparisons", "03_manual_aggregated_named_clusters")
+ruta_deg_agg_relativa <- file.path(ruta_proyecto_relativa, "analysis", "07_deg_conditions", "01_standard_comparisons", "03_manual_aggregated_named_clusters")
+
+# Listar subcarpetas de primer nivel
+ruta_versiones_deg_agg_relativa_list <- list.dirs(ruta_deg_agg_relativa, recursive = FALSE, full.names = TRUE)
+
+if (length(ruta_versiones_deg_agg_relativa_list) > 0) {
+
+  # Crear data.frame con nombre y ruta
+  versiones_deg_agg_df <- data.frame(
+    folder_name = basename(ruta_versiones_deg_agg_relativa_list),
+    ruta_absoluta = ruta_versiones_deg_agg_relativa_list,
+    stringsAsFactors = FALSE
+  )
+
+  # Ordenar alfabéticamente por folder_name
+  versiones_deg_agg_df <- versiones_deg_agg_df[order(versiones_deg_agg_df$folder_name), ]
+
+  # Carpeta de la última versión
+  ruta_ult_version_deg_agg <- versiones_deg_agg_df$ruta_absoluta[nrow(versiones_deg_agg_df)]
+
+  # Subcarpeta específica de Reference vs Test dentro de la última versión de DEG agrupados
+  ruta_ult_version_deg_agg_reference_vs_test <- file.path(ruta_ult_version_deg_agg, "01_reference_vs_test_within_cluster")
+
+  # Listar solo los archivos .tsv
+  ruta_files_tsv_ult_version_deg_agg_reference_vs_test <- list.files(
+    ruta_ult_version_deg_agg_reference_vs_test,
+    pattern = "\\.tsv$",
+    full.names = TRUE
+  )
+
+  if (length(ruta_files_tsv_ult_version_deg_agg_reference_vs_test) > 0) {
+
+    # Crear data.frame
+    files_tsv_ult_version_deg_agg_reference_vs_test_df <- data.frame(
+      file_name = basename(ruta_files_tsv_ult_version_deg_agg_reference_vs_test),
+      ruta_absoluta = ruta_files_tsv_ult_version_deg_agg_reference_vs_test,
+      stringsAsFactors = FALSE
+    )
+
+    # Lista para guardar resumen por cluster
+    deg_agg_reference_vs_test_summary_list <- list()
+
+    # Iterar sobre cada TSV
+    for (tsv_file in files_tsv_ult_version_deg_agg_reference_vs_test_df$ruta_absoluta) {
+      
+      # Leer TSV
+      deg_df <- read.delim(tsv_file, stringsAsFactors = FALSE)
+      
+      # Filtrar genes significativos
+      deg_sig <- deg_df %>% filter(p_val_adj < 0.05)
+      
+      # Contar genes Up y Down
+      up_count   <- sum(deg_sig$avg_log2FC > 0)
+      down_count <- sum(deg_sig$avg_log2FC < 0)
+      total_deg  <- nrow(deg_sig)
+      
+      # Nombre del cluster (Limpieza generalizada)
+      cluster_name <- basename(tsv_file)
+      cluster_name <- gsub("^DEG_", "", cluster_name)  # Elimina el prefijo fijo "DEG_"
+      cluster_name <- gsub("_[^_]+_vs_.*$", "", cluster_name)  # Elimina toda la comparativa y extensión
+      
+      # Guardar en lista
+      deg_agg_reference_vs_test_summary_list[[cluster_name]] <- data.frame(
+        Cluster = cluster_name,
+        Up = up_count,
+        Down = down_count,
+        Total = total_deg,
+        stringsAsFactors = FALSE
+      )
+    }
+
+    # Combinar todos los clusters en un solo data.frame
+    deg_agg_reference_vs_test_summary_df <- bind_rows(deg_agg_reference_vs_test_summary_list)
+
+    # Ordenar alfabéticamente por Cluster
+    deg_agg_reference_vs_test_summary_df <- deg_agg_reference_vs_test_summary_df %>% arrange(Cluster)
+
+    # Archivo de salida
+    ruta_archives_tmp_resumen_deg_agg_reference_vs_test <- file.path(
+      ruta_archives_tmp_resumen,
+      "deg_agg_reference_vs_test_summary.tsv"
+    )
+
+    # Guardar el data.frame como TSV
+    write.table(
+      deg_agg_reference_vs_test_summary_df,
+      file = ruta_archives_tmp_resumen_deg_agg_reference_vs_test,
+      sep = "\t",
+      quote = FALSE,
+      row.names = FALSE
+    )
+
+  }
+
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab-unique">
+  <h1>Tab</h1>
+  <h2>General Project Summary</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This tab provides a <strong>comprehensive and executive overview</strong> of the <strong>Single-Cell RNA-Seq (scRNA-Seq)</strong> project, starting from the <strong>experimental design</strong> and <strong>sequencing performance</strong>, and then directly presenting the <strong>final cellular landscape</strong> and a <strong>summary of transcriptomic impact</strong>.
+  </p>
+
+  <p>
+    Initially, the <strong>biological context</strong> and <strong>sample metadata</strong> are detailed, establishing the technical link and traceability to the raw data. Next, the <strong>overall cell capture performance</strong> is assessed using key primary metrics (such as estimated cell number and median genes per cell) obtained after initial processing with <em>Cell Ranger</em>. These metrics are displayed through <strong>visual cards</strong> and interactive tables for easy interpretation.
+  </p>
+
+  <p>
+    After validating the technical success of sequencing, the <strong>tissue cellular landscape</strong> is presented using dimensionality reduction projections (UMAP) and population abundance plots, allowing visualization of the biological structure of the samples and their variations. Finally, the section concludes with a <strong>global summary of differentially expressed genes (DEGs)</strong> by cell type, providing an immediate snapshot of which subpopulations experienced the most significant changes between study conditions.
+  </p>
+
+  <p>
+    Overall, this section functions as an advanced dashboard highlighting the most relevant biological and technical milestones of the study. It provides a quick understanding of the global results and prepares the user to explore the workflow and methodological decision-making in detail in the <strong><a href="../tab3-analisis/00-contexto.html" class="normalink">Analysis</a></strong> tab.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of Contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab2-intro">General Project Summary</a>
+      <ul>
+        <li><a href="#tab2-seccion1">1<span>.</span> Experimental Design and Metadata</a></li>
+        <li><a href="#tab2-seccion2">2<span>.</span> Overall Sequencing Performance</a></li>
+        <li><a href="#tab2-seccion3">3<span>.</span> Cellular Landscape and Population Abundance</a></li>
+        <li><a href="#tab2-seccion4">4<span>.</span> Summary of Transcriptomic Impact (DEGs)</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab2-intro">
+  General Project Summary
+</div>
+
+<p>
+  Every single-cell transcriptomics project requires a solid foundation that unequivocally links the original biological question with the computational data generated. In the following subsections, we will sequentially present the pillars that support this study. This structured approach begins by establishing the exact frame of reference —the samples and their clinical variables— and then progressively distills the complexity of the data to reach the definitive transcriptional alterations, thus ensuring rigorous interpretation from the outset.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab2-seccion1">
+  1<span>.</span> Experimental Design and Metadata
+</div>
+
+<p>
+  Technical reproducibility and proper biological interpretation of a Single-Cell RNA-Seq experiment depend directly on thorough initial documentation. This directory centralizes the files that define the <strong>experimental design</strong>, establishing the link between the clinical variables of the samples and the raw binary files from the sequencing platform.
+</p>
+
+<p>
+  Below are the metadata files associated with this project:
+</p>
+
+<div class="box-files">
+
+```{r, echo=FALSE, results="asis"}
+if (!dir.exists(ruta_metadata_relativa)) {
+  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_metadata_relativa))
+} else {
+  # List all files
+  files <- list.files(ruta_metadata_relativa, full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No files were found in the specified folder.</em></p>\n')
+  } else {
+    enlace <- ruta_metadata_relativa
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Assign class according to extension
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else if (grepl("\\.tsv$", f, ignore.case = TRUE)) {
+        "file-tsv" # Ensure this class exists in your CSS, or use file-default
+      } else if (grepl("\\.csv$", f, ignore.case = TRUE)) {
+        "file-csv"
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Print the button to explore the folder
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_metadata_relativa}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explore the metadata files here
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  After verifying the directory structure, we proceed to explore in detail the individual contents of each of these metadata files. Each table is presented interactively, allowing the researcher to quickly review experimental assignments, sort the data by variables of interest, and check the integrity of the design before delving into purely analytical results.
+</p>
+
+<div class="divider"></div>
+
+```{r, results="asis"}
+if ("sample_metadata.tsv" %in% names_metadata_list) {
+  cat(glue::glue('
+    <p>
+      <i class="fa-solid fa-flask" style="color: #4a86e8;"></i> 
+      <strong>File:</strong> <code>sample_metadata.tsv</code>
+    </p>
+
+    <p>
+      This file constitutes the <strong>biological dictionary</strong> of the analysis. Its function is to associate each unique sample identifier (<code>Sample_ID</code>) with its corresponding experimental variables, such as the clinical condition (e.g., WT vs KO), tissue of origin, replicates, age, or sequencing batch. 
+    </p>
+
+    <p>
+      These parameters are essential in advanced stages of the pipeline (using tools like <em>Seurat</em>), as they allow grouping biologically similar cells, performing batch effect corrections (<em>batch effect</em>), and executing statistical contrasts for differential expression.
+    </p>
+  '), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>sample_metadata.tsv</code> was not found in the specified directory:<br>
+    <code>{ruta_metadata_relativa}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+if ("sample_metadata.tsv" %in% names_metadata_list) {
+  df_sample <- archives_metadata_list[["sample_metadata.tsv"]]
+  
+  DT::datatable(
+    df_sample,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "300px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft',
+      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+    ),
+    class = 'stripe hover compact',
+    rownames = FALSE
+  )
+}
+```
+
+```{r, results='asis'}
+if ("sample_metadata.tsv" %in% names_metadata_list) {
+  ruta_file <- file.path(ruta_metadata_relativa, "sample_metadata.tsv")
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_file}" 
+      download="sample_metadata.tsv" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download file "sample_metadata.tsv"
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+```{r, results="asis"}
+if ("fastq_mapping.tsv" %in% names_metadata_list) {
+  cat(glue::glue('
+    <p>
+      <i class="fa-solid fa-flask" style="color: #4a86e8;"></i> 
+      <strong>File:</strong> <code>fastq_mapping.tsv</code>
+    </p>
+
+    <p>
+      This document represents the <strong>computational and sequencing mapping</strong> of the project. It establishes the direct correspondence between standardized sample names and the raw binary <code>.fastq.gz</code> files (R1 and R2) generated by the Illumina sequencer.
+    </p>
+
+    <p>
+      This traceability ensures complete transparency of the computational process, guaranteeing that primary processing pipelines (such as <em>Cell Ranger</em>) correctly identify and assemble the structure of cell barcodes, molecular identifiers (UMIs), and transcriptomic reads corresponding to each sequencing lane (<em>Lane</em>).
+    </p>
+  '), sep = "\n")
+
+} else {
+  cat(glue::glue('
+  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The file <code>fastq_mapping.tsv</code> was not found in the specified directory:<br>
+    <code>{ruta_metadata_relativa}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+if ("fastq_mapping.tsv" %in% names_metadata_list) {
+  df_fastq <- archives_metadata_list[["fastq_mapping.tsv"]]
+  
+  DT::datatable(
+    df_fastq,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "300px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft',
+      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+    ),
+    class = 'stripe hover compact',
+    rownames = FALSE
+  )
+}
+```
+
+```{r, results='asis'}
+if ("fastq_mapping.tsv" %in% names_metadata_list) {
+  ruta_file <- file.path(ruta_metadata_relativa, "fastq_mapping.tsv")
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_file}" 
+      download="fastq_mapping.tsv" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download file"fastq_mapping.tsv"
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab2-seccion2">
+  2<span>.</span> Overall Sequencing Performance
+</div>
+
+<p>
+  Once the experimental design has been established, the next critical step is to evaluate the <strong>primary technical performance</strong> of sequencing and cell capture. Unlike <em>Bulk</em> transcriptomics, where quality control focuses mainly on read integrity at the nucleotide level (GC content, adapters, or duplicates), in <em>Single-Cell RNA-Seq</em> the success of an experiment is based on systems biology metrics.
+</p>
+
+<p>
+  Here we assess the <strong>encapsulation efficiency</strong> (how many real cells we have captured), the <strong>transcriptomic richness</strong> of the libraries (how many genes are detected per cell), and the <strong>signal purity</strong> (the correct assignment of reads to real cells versus ambient RNA or "background noise").
+</p>
+
+```{r, results="asis"}
+n_samples <- nrow(metrics_combined_df)
+
+if (n_samples > 0) {
+  muestras_str <- paste(paste0("<code>", metrics_combined_df$Sample, "</code>"), collapse = ", ")
+  cat(glue::glue('
+  <p>
+    In this project, primary processing through the <em>Cell Ranger</em> pipeline (alignment, filtering of cellular <em>barcodes</em>, and UMI counting) has been successfully completed for a total of <strong>{n_samples} samples</strong>: {muestras_str}.
+  </p>
+
+  <p>
+    Below, the <strong>consolidated overall metrics</strong> of the experiment are presented. These aggregated values —calculated as the mean of quality metrics across all samples— allow a quick confirmation that sequencing did not experience widespread technical failures and that a robust volume of data has been obtained for subsequent computational analysis.
+  </p>
+  '), sep = "\n")
+
+} else {
+  cat('
+  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    No consolidated Cell Ranger metrics were detected for these samples.
+  </div>
+  ')
+}
+```
+
+```{r, results="asis"}
+if (n_samples > 0 && exists("metrics_mean_df")) {
+  
+  # Cargar librerías necesarias
+  library(tibble)
+  library(purrr)
+  
+  # Función auxiliar para extraer valores de forma segura (por si cambia la versión de Cell Ranger)
+  get_val <- function(col_name) {
+    if (col_name %in% colnames(metrics_mean_df)) {
+      return(metrics_mean_df[[col_name]][1])
+    } else {
+      return(NA)
+    }
+  }
+  
+  # Cálculo del total de células (Media * N_muestras)
+  est_cells_mean <- get_val("Estimated Number of Cells")
+  est_cells_total <- if(!is.na(est_cells_mean)) round(est_cells_mean * n_samples) else NA
+  
+  # Construir el tibble con las métricas más importantes
+  metrics_tibble <- tibble::tibble(
+    nombre = c(
+      "Estimated Cells (Total)", 
+      "Genes / Cell (Median)", 
+      "Reads / Cell (Mean)", 
+      "Reads in Cells", 
+      "Sequencing Saturation", 
+      "Total Genes Detected"
+    ),
+    valor = c(
+      format(est_cells_total, big.mark = ","),
+      format(round(get_val("Median Genes per Cell")), big.mark = ","),
+      format(round(get_val("Mean Reads per Cell")), big.mark = ","),
+      round(get_val("Fraction Reads in Cells"), 1),
+      round(get_val("Sequencing Saturation"), 1),
+      format(round(get_val("Total Genes Detected")), big.mark = ",")
+    ),
+    unidad = c("cells", "genes", "reads", "%", "%", "genes"),
+    color = c("blue", "green", "purple", "orange", "yellow", "cyan")
+  )
+  
+  # Filtrar métricas que pudieran ser NA (por si falta alguna columna en los datos crudos)
+  metrics_tibble <- metrics_tibble[!grepl("NA", metrics_tibble$valor), ]
+  
+  # Construir tarjetas HTML iterando sobre el tibble
+  cards <- purrr::pmap_chr(metrics_tibble, function(nombre, valor, unidad, color) {
+    glue::glue(
+      '<div class="metric-card {color}">
+        <h3>{nombre}</h3>
+        <p>{valor} <span style="font-size: 0.6em; opacity: 0.8;">{unidad}</span></p>
+      </div>'
+    )
+  })
+  
+  # Unir y emitir todo el HTML
+  html_all <- paste(cards, collapse = "\n")
+  
+  cat(glue::glue(
+    '<div class="metric-cards">\n{html_all}\n</div>'
+  ), sep = "\n")
+  
+  cat('<div style="height: 30px; background-color: transparent;"></div>\n')
+}
+```
+
+<p>
+  <strong>Clinical and technical interpretation of key parameters:</strong>
+</p>
+
+<ul>
+  <li>
+    <strong>Estimated Cells (Total Sum):</strong> Indicates the overall success of microfluidic partitioning and tissue viability. Extremely low numbers compared to expectations (based on laboratory <em>input</em>) suggest premature cell lysis or issues during enzymatic dissociation of the original tissue.
+  </li>
+  <li>
+    <strong>Genes per Cell (Global Median):</strong> Reflects the individual complexity of the constructed libraries. High values imply greater technical sensitivity to discover rare cell subtypes or detect subtle transcriptional alterations. This value is also intrinsic to cellular biology (for example, epithelial cells or neurons naturally express many more genes simultaneously than small lymphocytes).
+  </li>
+  <li>
+    <strong>Sequencing Depth (Reads / Cell):</strong> Quantifies the sequencing effort invested. Too low a depth can exacerbate the <em>dropout</em> phenomenon (false negatives where weakly expressed genes are not detected), while excessive depth without an increase in unique genes indicates inefficient use of sequencing resources.
+  </li>
+  <li>
+    <strong>Cellular Purity (Reads in Cells):</strong> A high percentage (generally >70-80%) confirms that the tissue was robust, ensuring that obtained sequences come from physically intact cells within the lipid droplet, and not from "RNA soup" (ambient RNA floating in the suspension due to dead or lysed cells).
+  </li>
+  <li>
+    <strong>Sequencing Saturation (%):</strong>  Is a direct cost-efficiency indicator. It measures the fraction of the captured transcriptome that has already been observed. A high value (>70-80%) indicates that the library has been almost fully sequenced; deeper sequencing would yield little new information (most new reads would be PCR duplicates). A low value (<50%) suggests that a significant hidden transcriptomic diversity could still be revealed by further sequencing the same library.
+  </li>
+  <li>
+    <strong>Total Genes Detected:</strong> Provides an overview of the transcriptomic diversity of the experiment as a whole, approximating the total size of the active genomic transcriptome present in the tissue under the study conditions.
+  </li>
+</ul>
+
+<p>
+  Although these global metrics provide an excellent general view of technical quality, it is imperative to compare these values individually across different biological replicates and conditions. Massive discrepancies (for example, one sample with double the sequencing depth of another or an excessive noise fraction) can impact clustering (<em>clustering</em>) and require severe normalization techniques during integrated analysis in <em>Seurat</em>.
+</p>
+
+<p>
+  Below, the complete and interactive technical metrics for each individually processed sample are detailed:
+</p>
+
+```{r}
+if (n_samples > 0 && exists("metrics_combined_df")) {
+  
+  DT::datatable(
+    metrics_combined_df,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "400px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 't', # Tabla limpia
+      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+    ),
+    class = 'stripe hover row-border order-column',
+    rownames = FALSE
+  )
+}
+```
+
+```{r, results='asis'}
+if (n_samples > 0) {
+  # Enlace de descarga de las métricas combinadas individuales
+  ruta_file_all <- ruta_cellranger_metrics_summary_all_samples
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_file_all}" 
+      download="cellranger_metrics_summary_all_samples.csv" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download complete per-sample metrics (.csv)
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  <strong>Exploration of secondary and alignment metrics:</strong>
+</p>
+
+<p>
+  In addition to the main metrics displayed in the cards, the table above includes advanced technical parameters essential for library diagnostics. If anomalies in overall performance are observed, these columns help identify the exact stage of the technical process where the issue originated:
+</p>
+
+<ul>
+  <li>
+    <strong>Sequencing Quality (Q30 Bases):</strong> Columns such as <code>Q30 Bases in Barcode</code>, <code>RNA Read</code>, and <code>UMI</code> indicate the percentage of bases sequenced with accuracy above 99.9%. Consistently low values (below 85-90%) point to physical issues during the Illumina sequencing run, not the biological preparation of the sample.
+  </li>
+  <li>
+    <strong>Mapping Rates (Reads Mapped Confidently):</strong>  Evaluates the percentage of reads that could be uniquely and confidently aligned to the reference genome or transcriptome. A low percentage in <code>Reads Mapped to Transcriptome</code> (e.g., < 50%) often indicates contamination (e.g., ribosomal RNA, bacterial RNA, or adapter sequences).
+  </li>
+  <li>
+    <strong>Genomic Distribution (Exonic, Intronic, Intergenic):</strong> In standard <em>Single-Cell</em> (scRNA-Seq) experiments, the vast majority of reads should map to exonic regions (mature mRNA). However, an unusually high rate in intronic regions (<code>Reads Mapped Confidently to Intronic Regions</code>) could indicate nuclear RNA contamination or incomplete lysis. <em>Note: In Single-Nucleus (snRNA-Seq) experiments, a high intronic rate is expected and correct.</em>
+  </li>
+  <li>
+    <strong>Median UMIs per Cell (Median UMI Counts):</strong> Unlike genes, this metric counts the total number of individual transcripts (RNA molecules) captured per cell. It is an excellent indicator of reverse transcription (RT) efficiency within the lipid droplet.
+  </li>
+</ul>
+
+<p>
+  Once technical quality metrics are validated and libraries are confirmed robust, the report transitions from technical to biological focus. We move beyond barcodes and sequencing reads to explore the actual cellular structure of the analyzed tissue.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab2-seccion3">
+  3<span>.</span> Cellular Landscape and Population Abundance
+</div>
+
+<p>
+  After validating sequencing quality, the analytical focus transitions from technical metrics to the underlying biology of the tissue. In <em>Single-Cell</em> experiments, the thousands of sequenced cells are projected into a two-dimensional space (typically using <strong>UMAP</strong> or t-SNE) so that transcriptionally similar cells cluster together, forming distinct groups.
+</p>
+
+<p>
+  Subsequently, these numerical clusters have been annotated and identified using immunological databases and canonical markers. In collaboration with the research team, these initial groups were re-evaluated, refined, and <strong>aggregated into biologically functional and definitive populations</strong>. The figures presented below represent the <strong>final curated map</strong> of the experiment. This panoramic visualization allows immediate identification of tissue structure and detection of drastic population changes between conditions (for example, massive depletion or expansion of a cellular subpopulation in a Knockout phenotype).
+</p>
+
+<p>
+  Below, the graphical files generated in the latest consensus version of population clustering are listed:
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_ult_version_aggregation)) {
+  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_ult_version_aggregation))
+} else {
+  # Listar archivos en la ruta de la última versión
+  files <- list.files(ruta_ult_version_aggregation, full.names = FALSE)
+  files <- files[!grepl("(_cache|_libs|\\.html$)", files)]
+  
+  if (length(files) == 0) {
+    cat('<p><em>No files were found in the specified folder.</em></p>\n')
+  } else {
+    carpetas <- files[file.info(file.path(ruta_ult_version_aggregation, files))$isdir]
+    archivos <- setdiff(files, carpetas)
+    
+    carpetas <- sort(carpetas)
+    archivos <- sort(archivos)
+    files_ordenados <- c(carpetas, archivos)
+
+    cat("<ul>\n")
+    for (f in files_ordenados) {
+      ruta_f <- file.path(ruta_ult_version_aggregation, f)
+      es_dir <- file.info(ruta_f)$isdir
+
+      clase <- "file-default"
+      if (es_dir) {
+        clase <- "file-folder"
+      } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+        clase <- "file-pdf" # Ajusta si tienes una clase específica para PDF
+      } else if (grepl("\\.png$|\\.jpg$", f, ignore.case = TRUE)) {
+        clase <- "file-image"
+      }
+      cat(sprintf('<li class="%s">%s</li>\n', clase, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Imprimir el botón para explorar la carpeta
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_ult_version_aggregation}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explore the files in the folder "{basename(ruta_ult_version_aggregation)}" here
+  </a>
+</p>
+\n\n'))
+```
+
+<p>
+  From these files, we extract and visualize the dimensionality reduction plots (UMAP) representing the final configuration of the study:
+</p>
+
+```{r, results="asis"}
+if (exists("files_pdf_ult_version_aggregation_df") && nrow(files_pdf_ult_version_aggregation_df) > 0) {
+  
+  # Iterar sobre cada archivo PDF encontrado en la última versión
+  for (i in 1:nrow(files_pdf_ult_version_aggregation_df)) {
+    nombre_base <- files_pdf_ult_version_aggregation_df$file_name[i]
+    ruta_relativa <- files_pdf_ult_version_aggregation_df$ruta_absoluta[i]
+    
+    cat(glue::glue('
+    <p style="margin-top: 10px; margin-bottom: -10px;">
+      <i class="fa-solid fa-map-location-dot" style="color: #276DC3;"></i> 
+      <strong>Cell Map:</strong> <code>{nombre_base}</code>
+    </p>
+
+    <div class="iframe-container">
+      <iframe src="{ruta_relativa}" frameborder="0" style="height: 700px;"></iframe>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px;">
+      <a href="{ruta_relativa}"
+        target="_blank" 
+        class="boton-iframe">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in a new tab
+      </a>
+
+      <a href="{ruta_relativa}"
+        download="{nombre_base}"
+        class="boton-iframe-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download plot
+      </a>
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+  # Mensaje de advertencia si no hay PDFs
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    No consolidated plots (PDF files) were found in the last population aggregation directory:<br>
+    <code>{ruta_ult_version_aggregation}</code>.
+  </div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  <strong>Guide for biological interpretation of cellular projections:</strong>
+</p>
+
+<ul>
+  <li>
+    <strong>Topological proximity (Transcriptomic similarity):</strong> In these two-dimensional projections, each point represents the transcriptome of an individual cell (based on thousands of genes). The closeness between points reflects their biological affinity; cells densely packed in the same "continent" share a common cellular state or lineage, while distant clusters represent functionally and ontogenetically divergent cell types.
+  </li>
+  <li>
+    <strong>Identity and Structure (Colors):</strong> The color palette projected onto the cells identifies the agreed definitive subpopulations. The shape, dispersion, and connectivity of these clusters provide clues about cellular differentiation trajectories (for example, clusters that slightly overlap may suggest transitional evolutionary states between mature and immature populations).
+  </li>
+  <li>
+    <strong>Population dynamics (Plots separated by condition):</strong> If among the displayed files there is a version split by experimental condition (<em>split by condition</em>), this represents the most powerful visual tool on the panel. It allows immediate identification of tissue reorganization events: the appearance, disappearance (massive depletion), or displacement of specific clusters in the mutant phenotype versus the basal phenotype.
+  </li>
+</ul>
+
+<p>
+  It is important to emphasize that obtaining this curated cell map represents the culmination of an extensive and rigorous bioinformatic process, and not a direct initial algorithmic output. To reach this consensus resolution, multiple prior stages have been iteratively evaluated, ranging from automatic (unsupervised) mathematical segmentations generated by <em>Seurat</em> to detailed analysis of the underlying differential canonical genetic marker profiles for each cluster.
+</p>
+
+<p>
+  All methodological traceability —including testing different algorithmic resolutions, filtering transitional cells, preliminary annotations in databases (SingleR), and joint biological decisions that led to the definition of these final populations— is thoroughly documented for reproducibility in the section dedicated to <a href="../tab3-analisis/06-agrupacion.html" class="normalink">Cell Population Clustering</a> within the detailed analysis tab.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab2-seccion4">
+  4<span>.</span> Transcriptomic Impact Summary (DEGs)
+</div>
+
+<p>
+  Once cells have been grouped into their definitive biological populations, the fundamental question guiding the study is: <strong>How does each of these cell types respond to the experimental perturbation?</strong>
+</p>
+
+<p>
+  In single-cell transcriptomics, differential expression is not calculated globally by mixing the entire tissue (as would occur in <em>Bulk RNA-Seq</em>), but rather isolated statistical contrasts are performed <strong>within each cellular subpopulation</strong> (for example, comparing exclusively the <em>DPre</em> population of the WT mouse versus the <em>DPre</em> of a KO mouse). This allows discovery of extremely specific transcriptional responses that would otherwise be completely masked.
+</p>
+
+<p>
+  Below, the tabular results (statistically significant genes) and graphical outputs (Volcano plots) generated for each individual cell population in this comparison are listed:
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_ult_version_deg_agg_reference_vs_test)) {
+  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_ult_version_deg_agg_reference_vs_test))
+
+} else {
+  # List files
+  files <- list.files(ruta_ult_version_deg_agg_reference_vs_test, full.names = FALSE)
+  files <- files[!grepl("(_cache|_libs|\\.html$)", files)]
+  
+  if (length(files) == 0) {
+    cat('<p><em>No files were found in the specified folder.</em></p>\n')
+  } else {
+    carpetas <- files[file.info(file.path(ruta_ult_version_deg_agg_reference_vs_test, files))$isdir]
+    archivos <- setdiff(files, carpetas)
+    
+    carpetas <- sort(carpetas)
+    archivos <- sort(archivos)
+    files_ordenados <- c(carpetas, archivos)
+
+    cat("<ul>\n")
+    for (f in files_ordenados) {
+      ruta_f <- file.path(ruta_ult_version_deg_agg_reference_vs_test, f)
+      es_dir <- file.info(ruta_f)$isdir
+
+      clase <- "file-default"
+      if (es_dir) {
+        clase <- "file-folder"
+      } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+        clase <- "file-pdf" 
+      } else if (grepl("\\.tsv$", f, ignore.case = TRUE)) {
+        clase <- "file-tsv"
+      } else if (grepl("\\.csv$", f, ignore.case = TRUE)) {
+        clase <- "file-csv"
+      }
+      cat(sprintf('<li class="%s">%s</li>\n', clase, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Imprimir el botón para explorar la carpeta
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_ult_version_deg_agg_reference_vs_test}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explore the DEG results here
+  </a>
+</p>
+\n\n'))
+```
+
+<p>
+  The in-depth exploration of these generated files, the visualization of interactive <em>Volcano plots</em> by cluster, the <em>heatmaps</em>, and the list of top markers will be addressed rigorously and extensively in the <a href="../tab3-analisis/07-expresion-diferencial.html" class="normalink">Differential Expression by Condition</a> section within the analysis tab.
+</p>
+
+<p>
+  As a general overview, the total number of significant <strong>Differentially Expressed Genes (DEGs)</strong> (FDR < 0.05) has been tallied for each cell type. The following interactive plot illustrates the magnitude of this transcriptional impact, distinguishing between genes that are overexpressed (<em>Up</em>) or repressed (<em>Down</em>) due to the Knockout:
+</p>
+
+```{r}
+# Control variables
+hay_datos <- FALSE
+
+if (exists("files_tsv_ult_version_deg_agg_reference_vs_test_df") && nrow(files_tsv_ult_version_deg_agg_reference_vs_test_df) > 0) {
+  
+  # List to store summary per cluster
+  deg_agg_reference_vs_test_summary_list <- list()
+  
+  # Iterate over each TSV
+  for (tsv_file in files_tsv_ult_version_deg_agg_reference_vs_test_df$ruta_absoluta) {
+    deg_df <- read.delim(tsv_file, stringsAsFactors = FALSE)
+    deg_sig <- deg_df %>% filter(p_val_adj < 0.05)
+    
+    up_count   <- sum(deg_sig$avg_log2FC > 0)
+    down_count <- sum(deg_sig$avg_log2FC < 0)
+    total_deg  <- nrow(deg_sig)
+    
+    # Nombre del cluster (Limpieza generalizada)
+    cluster_name <- basename(tsv_file)
+    cluster_name <- gsub("^DEG_", "", cluster_name)  # Elimina el prefijo fijo "DEG_"
+    cluster_name <- gsub("_[^_]+_vs_.*$", "", cluster_name)  # Elimina toda la comparativa y extensión
+    
+    deg_agg_reference_vs_test_summary_list[[cluster_name]] <- data.frame(
+      Cluster = cluster_name, Up = up_count, Down = down_count, Total = total_deg,
+      stringsAsFactors = FALSE
+    )
+  }
+  
+  deg_agg_reference_vs_test_summary_df <- bind_rows(deg_agg_reference_vs_test_summary_list) %>% arrange(Cluster)
+  
+  # Save table to disk
+  ruta_archives_tmp_resumen_deg_agg_reference_vs_test <- file.path(ruta_archives_tmp_resumen, "deg_agg_reference_vs_test_summary.tsv")
+  write.table(deg_agg_reference_vs_test_summary_df, file = ruta_archives_tmp_resumen_deg_agg_reference_vs_test, sep = "\t", quote = FALSE, row.names = FALSE)
+  
+  # Prepare long-format data
+  deg_long <- deg_agg_reference_vs_test_summary_df %>%
+    pivot_longer(cols = c("Up", "Down"), names_to = "Regulation", values_to = "Count")
+  
+  deg_long$Cluster <- factor(deg_long$Cluster, levels = deg_agg_reference_vs_test_summary_df$Cluster[order(deg_agg_reference_vs_test_summary_df$Total, decreasing = TRUE)])
+  
+  # Plot
+  p <- ggplot(deg_long, aes(x = Cluster, y = Count, fill = Regulation, text = paste0("Cluster: ", Cluster, "<br>Regulation: ", Regulation, "<br>Count: ", Count))) +
+    geom_bar(stat = "identity") +
+    geom_text(data = deg_agg_reference_vs_test_summary_df, aes(x = Cluster, y = Total, label = Total), inherit.aes = FALSE, vjust = -0.3, size = 3.5) +
+    scale_fill_manual(values = c("Up" = "palegreen", "Down" = "red3")) +
+    labs(x = "Cell Population (Cluster)", y = "Number of genes", fill = "Regulation") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  p_interactivo <- ggplotly(p, tooltip = "text") %>% layout(margin = list(b = 80))
+  hay_datos <- TRUE
+}
+
+# RENDERING
+if (hay_datos) {
+  out <- tagList()
+  
+  # Open container
+  out <- tagAppendChild(out, HTML(glue::glue('
+    <div class="plot-center" style="margin-top: 30px; margin-bottom: 40px;">
+  '), sep = "\n"))
+  
+  # Embed plotly
+  out <- tagAppendChild(out, p_interactivo)
+  
+  # Close container
+  out <- tagAppendChild(out, HTML(glue::glue('
+    </div>
+  '), sep = "\n"))
+  
+  # Return output
+  out
+} else {
+  HTML('<p><em>DEG data could not be loaded.</em></p>')
+}
+```
+
+<p>
+  <strong>Guide for interpreting transcriptomic impact:</strong>
+</p>
+
+<ul>
+  <li>
+    <strong>Cellular sensitivity (Bar height):</strong> Populations with the tallest bars represent the primary cell types affected by the experiment. In contrast, clusters toward the right display "transcriptional robustness," maintaining their profile almost unchanged despite the Knockout.
+  </li>
+  <li>
+    <strong>Response direction (Up vs Down):</strong> Green predominance (<em>Up</em>) suggests hyperactivation, stress, or gene compensation, while red dominance (<em>Down</em>) typically indicates loss of regulatory network function or silencing associated with the studied condition.
+  </li>
+</ul>
+
+<p>
+  The results are numerically broken down below in an interactive table, allowing quick classification and search of populations according to their response magnitude:
+</p>
+
+```{r}
+if (exists("deg_agg_reference_vs_test_summary_df") && nrow(deg_agg_reference_vs_test_summary_df) > 0) {
+  
+  display_deg_df <- deg_agg_reference_vs_test_summary_df
+  colnames(display_deg_df) <- c("Cell Population", "Overexpressed Genes (Up)", "Repressed Genes (Down)", "Total DEGs")
+  
+  DT::datatable(
+    display_deg_df,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "400px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 't', # Clean table
+      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json')
+    ),
+    class = 'stripe hover row-border order-column compact',
+    rownames = FALSE
+  )
+}
+```
+
+```{r, results='asis'}
+if (exists("ruta_archives_tmp_resumen_deg_agg_reference_vs_test")) {
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_archives_tmp_resumen_deg_agg_reference_vs_test}" 
+      download="deg_agg_reference_vs_test_summary.tsv" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download global DEG count (.tsv)
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  <strong>Functional Insights (Enrichment Analysis):</strong>
+</p>
+
+<p>
+  Knowing the number of altered genes is only the first step. To biologically understand these mechanisms, these lists of differentially expressed genes have been subjected to rigorous functional enrichment analyses against canonical biological ontologies (GO and KEGG databases). 
+  This process translates the "anonymous" gene list into the identification of <strong>activated signaling pathways or disrupted metabolic cascades</strong>. All these molecular findings are extensively documented in the next phase of the analysis tab.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  Thus, once the general aspects of the summary and the overall quality statistics have been reviewed on this tab, it is recommended to continue exploring the <a href="../tab3-analisis/00-contexto.html" class="normalink">Analysis</a> tab. There, a detailed and comprehensive walkthrough of the data processing is provided, allowing step-by-step visualization of each stage of the workflow.
+</p>
+
+<p>
+  In the <a href="../tab3-analisis/00-contexto.html" class="normalink">Analysis</a> tab, the workflow includes the initial review of samples and metadata, individual and combined quality control, alignment, and gene expression quantification. Advanced statistical analyses, normalization, post-normalization checks, differential expression, and functional and enrichment analyses are also presented, concluding with study insights and perspectives.
+</p>
+
+<p>
+  This detailed navigation facilitates validation of experimental quality and robustness, identification of potential issues, and a deeper understanding of the results summarized in the overview.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

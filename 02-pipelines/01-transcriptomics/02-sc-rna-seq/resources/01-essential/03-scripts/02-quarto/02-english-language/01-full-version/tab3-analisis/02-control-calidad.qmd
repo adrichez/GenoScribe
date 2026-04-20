@@ -1,0 +1,1621 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 2. CONTROL DE CALIDAD Y FILTRADO (QC) -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+ruta_archives_tmp_control_calidad <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "02-control-calidad")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_control_calidad)
+
+
+
+
+#===================================================================================================================================================
+# QC EN DATA (CELL RANGER)
+#===================================================================================================================================================
+
+# Rutas de la carpeta "data" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "data")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "data")
+
+
+# Carpeta donde están los FASTQ / resultados de Cell Ranger
+ruta_cellranger <- file.path(params$project_path, "data", "02_fastq_cellranger")
+ruta_cellranger_relativa <- file.path(ruta_proyecto_relativa, "data", "02_fastq_cellranger")
+
+
+# Listar todos los archivos FASTQ.gz dentro de la carpeta
+fastq_files <- list.files(
+  ruta_cellranger, 
+  pattern = "\\.fastq\\.gz$", 
+  full.names = TRUE
+)
+
+# Crear data.frame con nombre y ruta
+fastq_df <- data.frame(
+  file_name = basename(fastq_files),
+  ruta_absoluta = fastq_files,
+  stringsAsFactors = FALSE
+)
+
+
+# Lista con rutas de las subcarpetas de primer nivel dentro de la carpeta de Cell Ranger (cada una corresponde a una muestra)
+ruta_muestras_cellranger_relativa_list <- list.dirs(ruta_cellranger_relativa, recursive = FALSE, full.names = TRUE)
+
+# Obtener solo los nombres de las carpetas (sin ruta)
+nombre_muestras_cellranger_relativa_list <- basename(ruta_muestras_cellranger_relativa_list)
+
+# Inicializamos lista para almacenar resultados
+metrics_list <- list()
+
+# Iterar sobre cada subcarpeta
+for (sub in ruta_muestras_cellranger_relativa_list) {
+  
+  # Nombre de la muestra = nombre de la carpeta
+  sample_name <- basename(sub)
+  
+  # Construir ruta relativa y absoluta al metrics_summary.csv
+  ruta_metrics_summary_csv_rel <- file.path(sub, "outs", "metrics_summary.csv")
+  ruta_metrics_summary_csv_abs <- file.path(ruta_cellranger, sample_name, "outs", "metrics_summary.csv")
+
+  # Construir ruta relativa y absoluta al web_summary.html
+  ruta_metrics_summary_html_rel <- file.path(sub, "outs", "web_summary.html")
+  ruta_metrics_summary_html_abs <- file.path(ruta_cellranger, sample_name, "outs", "web_summary.html")
+  
+  # Solo leer si el archivo existe
+  if (file.exists(ruta_metrics_summary_csv_abs) && file.exists(ruta_metrics_summary_html_abs)) {
+    metrics_csv <- read.csv(ruta_metrics_summary_csv_abs, stringsAsFactors = FALSE)
+    
+    # Guardar en la lista con el nombre de la muestra
+    metrics_list[[sample_name]] <- list(
+      metrics_df = metrics_csv,
+      ruta_relativa_csv = ruta_metrics_summary_csv_rel,
+      ruta_absoluta_csv = ruta_metrics_summary_csv_abs,
+      ruta_relativa_html = ruta_metrics_summary_html_rel,
+      ruta_absoluta_html = ruta_metrics_summary_html_abs
+    )
+  } else {
+    warning("metrics_summary.csv and web_summary.html were not found for: ", sample_name)
+  }
+}
+
+# Ahora metrics_list contiene un elemento por muestra con:
+# - metrics_df: el data.frame con los datos
+# - ruta_relativa_csv: la ruta relativa de metrics_summary.csv
+# - ruta_absoluta_csv: la ruta absoluta de metrics_summary.csv
+# - ruta_relativa_html: la ruta relativa de web_summary.html
+# - ruta_absoluta_html: la ruta absoluta de web_summary.html
+
+
+# Crear lista temporal de dataframes
+metrics_df_list <- lapply(names(metrics_list), function(sample_name) {
+  df <- metrics_list[[sample_name]]$metrics_df
+  # Añadir columna con el nombre de la muestra
+  df <- cbind(Sample = sample_name, df)
+  return(df)
+})
+
+# Combinar todo en un único dataframe
+metrics_combined_df <- do.call(rbind, metrics_df_list)
+
+# Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
+colnames(metrics_combined_df) <- gsub("\\.", " ", colnames(metrics_combined_df))
+
+# Ruta de salida para el CSV combinado
+ruta_cellranger_metrics_summary_all_samples <- file.path(ruta_archives_tmp_control_calidad, "cellranger_metrics_summary_all_samples.csv")
+
+# Guardar el dataframe combinado como CSV en la carpeta temporal para control de calidad dentro de análisis
+write.csv(metrics_combined_df, ruta_cellranger_metrics_summary_all_samples, row.names = FALSE)
+
+
+# Convertir las columnas a formato numérico
+metrics_numeric_df <- metrics_combined_df
+metrics_numeric_df[-1] <- lapply(metrics_numeric_df[-1], function(x) {
+  x <- gsub(",", "", x)   # eliminar separadores de miles
+  x <- gsub("%", "", x)   # eliminar %
+  as.numeric(x)
+})
+
+# Calcular la media de cada métrica (ignorando la columna "Sample") y crear un nuevo dataframe para la fila de medias
+metrics_mean_df <- data.frame(
+  Sample = "Mean",
+  t(colMeans(metrics_numeric_df[-1], na.rm = TRUE))
+)
+
+# Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
+colnames(metrics_mean_df) <- gsub("\\.", " ", colnames(metrics_mean_df))
+
+# Ruta de salida para el CSV con las medias
+ruta_cellranger_metrics_summary_mean <- file.path(ruta_archives_tmp_control_calidad, "cellranger_metrics_summary_mean.csv")
+
+# Guardar el dataframe combinado como CSV en la carpeta de ruta_archives_tmp_control_calidad
+write.csv(metrics_mean_df, ruta_cellranger_metrics_summary_mean, row.names = FALSE)
+
+
+
+
+#===================================================================================================================================================
+# QC EN ANALYSIS
+#===================================================================================================================================================
+
+# Rutas de la carpeta "analysis" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "analysis")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "analysis")
+
+
+# Rutas de la carpeta "01_qc" dentro de "analysis"
+ruta_qc <- file.path(ruta_analysis, "01_qc")
+ruta_qc_relativa <- file.path(ruta_analysis_relativa, "01_qc")
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# QC EN ANALYSIS (FASTP/FASTQC/MULTIQC)
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "01_reads_qc" dentro de "01_qc"
+ruta_reads_qc <- file.path(ruta_qc, "01_reads_qc")
+ruta_reads_qc_relativa <- file.path(ruta_qc_relativa, "01_reads_qc")
+
+# 0. INICIALIZAR VARIABLES A NULL PARA EVITAR ERRORES DOWNSTREAM
+fastp_files_df <- NULL
+fastp_html_df <- NULL
+fastqc_files_df <- NULL
+fastqc_html_df <- NULL
+
+
+#------------------------------------------------------------------------
+# FASTP
+#------------------------------------------------------------------------
+
+ruta_reads_qc_fastp <- file.path(ruta_reads_qc, "fastp")
+ruta_reads_qc_fastp_relativa <- file.path(ruta_reads_qc_relativa, "fastp")
+
+if (dir.exists(ruta_reads_qc_fastp)) {
+  
+  # Listar archivos en fastp
+  files_fastp_list <- list.files(ruta_reads_qc_fastp, recursive = FALSE, full.names = FALSE)
+  
+  if (length(files_fastp_list) > 0) {
+    
+    # Crear dataframe general
+    fastp_files_df <- data.frame(
+      file_name = files_fastp_list,
+      ruta_relativa = file.path(ruta_reads_qc_fastp_relativa, files_fastp_list),
+      stringsAsFactors = FALSE
+    )
+    # Ordenar alfabéticamente
+    fastp_files_df <- fastp_files_df[order(fastp_files_df$file_name), ]
+    
+    # Filtrar solo archivos HTML que no sean multiqc
+    fastp_html_files <- files_fastp_list[grepl("_fastp\\.html$", files_fastp_list) & files_fastp_list != "multiqc_report.html"]
+    
+    if (length(fastp_html_files) > 0) {
+      # Crear dataframe con nombre limpio y ruta relativa
+      fastp_html_df <- data.frame(
+        file_name = sub("_fastp\\.html$", "", fastp_html_files),
+        ruta_relativa = file.path(ruta_reads_qc_fastp_relativa, fastp_html_files),
+        stringsAsFactors = FALSE
+      )
+      # Ordenar alfabéticamente
+      fastp_html_df <- fastp_html_df[order(fastp_html_df$file_name), ]
+    }
+  }
+}
+
+
+#------------------------------------------------------------------------
+# FASTQC
+#------------------------------------------------------------------------
+
+ruta_reads_qc_fastqc <- file.path(ruta_reads_qc, "fastqc")
+ruta_reads_qc_fastqc_relativa <- file.path(ruta_reads_qc_relativa, "fastqc")
+
+if (dir.exists(ruta_reads_qc_fastqc)) {
+  
+  # Listar archivos en fastqc
+  files_fastqc_list <- list.files(ruta_reads_qc_fastqc, recursive = FALSE, full.names = FALSE)
+  
+  if (length(files_fastqc_list) > 0) {
+    
+    # Crear dataframe general
+    fastqc_files_df <- data.frame(
+      file_name = files_fastqc_list,
+      ruta_relativa = file.path(ruta_reads_qc_fastqc_relativa, files_fastqc_list),
+      stringsAsFactors = FALSE
+    )
+    # Ordenar alfabéticamente
+    fastqc_files_df <- fastqc_files_df[order(fastqc_files_df$file_name), ]
+    
+    # Filtrar solo archivos HTML que no sean multiqc
+    fastqc_html_files <- files_fastqc_list[grepl("_fastqc\\.html$", files_fastqc_list) & files_fastqc_list != "multiqc_report.html"]
+    
+    if (length(fastqc_html_files) > 0) {
+      # Crear dataframe con nombre limpio y ruta relativa
+      fastqc_html_df <- data.frame(
+        file_name = sub("_fastqc\\.html$", "", fastqc_html_files),
+        ruta_relativa = file.path(ruta_reads_qc_fastqc_relativa, fastqc_html_files),
+        stringsAsFactors = FALSE
+      )
+      # Ordenar alfabéticamente
+      fastqc_html_df <- fastqc_html_df[order(fastqc_html_df$file_name), ]
+    }
+  }
+}
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# QC EN ANALYSIS (SEURAT)
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "02_cells_qc" dentro de "01_qc"
+ruta_cells_qc <- file.path(ruta_qc, "02_cells_qc")
+ruta_cells_qc_relativa <- file.path(ruta_qc_relativa, "02_cells_qc")
+
+
+# Listar todos los archivos en 02_cells_qc
+files_cells_qc_list <- list.files(
+  ruta_cells_qc,
+  recursive = FALSE,
+  full.names = FALSE
+)
+
+# Crear dataframe con nombre y ruta relativa
+cells_qc_files_df <- data.frame(
+  file_name = files_cells_qc_list,
+  ruta_relativa = file.path(ruta_cells_qc_relativa, files_cells_qc_list),
+  stringsAsFactors = FALSE
+)
+
+# Ordenar alfabéticamente
+cells_qc_files_df <- cells_qc_files_df[order(cells_qc_files_df$file_name), ]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 2</h1>
+  <h2>Quality Control and Filtering (QC)</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This tab thoroughly documents the comprehensive process of <strong>Quality Control (QC) and Filtering</strong> applied to single-cell sequencing data (<em>Single-Cell RNA-Seq</em>). Unlike bulk transcriptomics (<em>Bulk RNA-Seq</em>), where technical noise is diluted across the tissue average, single-cell technology presents unique analytical challenges arising from microfluidic encapsulation and the extremely low amount of starting genetic material. Therefore, it is imperative to apply a sequential, multi-level analytical approach that ensures the <strong>highest biological fidelity</strong> for each evaluated cell.
+  </p>
+
+  <p>
+    The validation workflow is structured around three fundamental axes. First, the technical performance of primary processing is audited using the <em>Cell Ranger</em> pipeline (standard for the <em>10x Genomics</em> platform). This initial phase is crucial to verify successful cell partitioning, assess sequencing saturation and depth, and statistically discriminate droplets that encapsulated intact real cells from those that only captured ambient "RNA soup."
+  </p>
+
+  <p>
+    Second, optionally but rigorously, an independent inspection of the raw sequencing chemistry (FASTQ files) is performed using forensic tools such as <strong>FastQC</strong> or <strong>Fastp</strong>. This allows anomalies at the nucleotide level to be discarded, such as abrupt drops in base quality (<em>Phred scores</em>) or persistent adapter sequence contamination.
+  </p>
+
+  <p>
+    Finally, the process culminates with <strong>Biological Cell Filtering using Seurat</strong>. This is the most critical stage of the funnel, where the computational approach gives way to individualized biological scrutiny. Through detailed inspection of statistical distributions, precise thresholds are defined to eliminate three types of protocol-intrinsic artifacts: <strong>dead or apoptotic cells</strong> (characterized by a disproportionately high percentage of residual mitochondrial transcripts), <strong>empty droplets or very low-quality profiles</strong> (detected by an extremely low number of expressed genes), and <strong>cell doublets</strong> (encapsulation errors where two cells share the same barcode, revealed by an anomalous overabundance of gene counts).
+  </p>
+
+  <p>
+    The ultimate goal of this rigorous sequential curation is to isolate the dataset from any technical artifacts that could erroneously appear as false cell subpopulations or mask subtle biological signals. The outcome of this phase is a pristine expression matrix, which constitutes the indispensable foundation for safely performing downstream analyses of dimensionality reduction, phenotypic clustering, and differential gene expression.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion2">2<span>.</span> Quality control and filtering (QC)</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion2.1">2.1. Primary processing quality (Cell Ranger)</a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion2.1.1">2.1.1. Individual technical assessment</a>
+            </li>
+            <li>
+              <a href="#tab3-seccion2.1.2">2.1.2. Consolidation of global metrics</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab3-seccion2.2">2.2. Raw read evaluation (Optional: FastQC / Fastp)</a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion2.2.1">2.2.1. Quality control using Fastp</a>
+            </li>
+            <li>
+              <a href="#tab3-seccion2.2.2">2.2.2. Quality control using FastQC</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab3-seccion2.3">2.3. Cell-level quality control and filtering (Seurat)</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion2">
+  2<span>.</span> Quality control and filtering (QC)
+</div>
+
+<p>
+  This section documents the empirical results and exact metrics derived from the Quality Control (QC) process applied to the samples in this study. The fundamental analytical goal of this stage is to refine the raw data to build a robust and reliable expression matrix, ensuring that each "barcode" (<em>barcode</em>) retained for downstream analysis corresponds unequivocally to a single biologically viable cell.
+</p>
+
+<p>
+  To achieve this level of purity, a workflow is presented that audits quality across three sequential levels:
+</p>
+
+<ul>
+  <li><strong>Platform and alignment level (Cell Ranger):</strong> The efficiency of primary demultiplexing and alignment against the reference genome is audited, confirming that microfluidic capture, cell recovery, and sequencing depth have been optimal.</li>
+  <li><strong>Raw read level (Fastp/FastQC):</strong> The chemical integrity of the FASTQ files is evaluated base by base, discarding sequencer biases, adapter contamination, or quality drops.</li>
+  <li><strong>Cellular integrity level (Seurat):</strong> The individual transcriptomic profile of each cell is examined. By evaluating metrics such as gene complexity (number of detected genes and UMIs) and cellular stress (fraction of mitochondrial transcripts), thresholds are established to remove apoptotic cells, empty droplets, and doublets.</li>
+</ul>
+
+<p>
+  Below, the interactive reports, validation tables, and statistical distributions that guided this process are presented transparently. Instead of applying universal static thresholds, the decisions made follow an adaptive (<em>data-driven</em>) approach tailored to the specific nature of this tissue, starting with the assessment of primary processing.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion2.1">
+  2.1. Primary processing quality (Cell Ranger)
+</div>
+
+<p>
+  The first level of quality control falls on the primary computational processing using the official <em>Cell Ranger</em> pipeline, the bioinformatics standard for 10x Genomics technology. This software centralizes critical operations: <strong>demultiplexing</strong> of raw sequences (conversion from BCL to FASTQ), <strong>genomic alignment</strong>, correction of <strong>cell barcodes (<em>Barcodes</em>)</strong>, and counting of <strong>Unique Molecular Identifiers (UMIs)</strong> to neutralize PCR amplification biases.
+</p>
+
+<p>
+  Unlike <em>Bulk RNA-Seq</em>, single-cell sequencing imposes a primary bioinformatics challenge: <strong>computationally discriminating real cells from empty droplets</strong>. During microfluidic partitioning, the vast majority of lipid droplets (<em>droplets</em>) do not encapsulate an intact cell but only <strong>extracellular ambient RNA</strong> (background noise released by cell lysis during tissue dissociation).
+</p>
+
+<p>
+  To isolate viable cells, Cell Ranger evaluates the global transcript distribution by generating the <strong>Barcode Rank Plot</strong>. Through this analysis, the algorithm identifies the <strong>exact inflection point</strong> (or sharp drop) that separates <em>barcodes</em> associated with viable cells —with high transcriptional content— from the system's background noise. Correctly defining this threshold is essential for the validity of the entire study.
+</p>
+
+<p>
+  Below, the directories resulting from this computational phase are presented. These repositories contain the <strong>sparse expression matrices</strong> (both raw and filtered), secondary cluster analyses, and the <strong>HTML technical validation reports</strong> for each processed library:
+</p>
+
+<div class="box-files">
+
+```{r, echo=FALSE, results="asis"}
+if (!dir.exists(ruta_cellranger_relativa)) {
+  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_cellranger_relativa))
+
+} else {
+  # List all files and folders in the Cell Ranger directory
+  files <- list.files(ruta_cellranger_relativa, full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No files were found in the specified folder.</em></p>\n')
+  } else {
+    enlace <- ruta_cellranger_relativa
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Assign class based on extension (sample folders usually have no dot)
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else if (grepl("\\.html$", f, ignore.case = TRUE)) {
+        "file-html"
+      } else if (grepl("\\.csv$", f, ignore.case = TRUE)) {
+        "file-csv"
+      } else if (grepl("\\.fastq\\.gz$", f, ignore.case = TRUE)) {
+        "file-fastqgz"
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Imprimir el botón para explorar la carpeta
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_cellranger_relativa}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explore the Cell Ranger directory here
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Although manual exploration of these directories is highly useful for accessing raw data, bioinformatics evaluation requires a structured visual inspection of performance statistics. For this reason, the most relevant technical reports from each directory have been extracted and embedded in the following sections, allowing a thorough review of each sample's behavior sequentially without the need to leave this document.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion2.1.1">
+  2.1.1. Individual technical assessment
+</div>
+
+<p>
+  To thoroughly evaluate the technical health of each sequenced library, the global quality reports (<code>web_summary.html</code>) natively generated by the <em>pipeline</em> are presented below in a dynamic and interactive format. These visual panels serve as the first-level diagnostic tool, allowing review of cell capture efficiency, detection of widespread genomic mapping issues, and alerts issued early by the sequencer.
+</p>
+
+<p>
+  Immediately below each interactive graphical report, the matrix table corresponding to its <code>metrics_summary.csv</code> file is displayed. This dual arrangement facilitates inspection of the graph and subsequent extraction of exact statistical values (such as the fraction of reads in cells or sequencing saturation) for each individual sample.
+</p>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 1. Obtener las carpetas de las muestras dinámicamente
+carpetas_muestras <- list.dirs(ruta_cellranger_relativa, recursive = FALSE, full.names = FALSE)
+
+if (length(carpetas_muestras) > 0) {
+  
+  out <- tagList()  # General container
+  
+  i <- 1  # Counter
+
+  # Iterate over each sample
+  for (sample_name in carpetas_muestras) {
+    
+    # Relative (for web) and absolute (for R) paths
+    ruta_html_rel <- file.path(ruta_cellranger_relativa, sample_name, "outs", "web_summary.html")
+    ruta_csv_rel  <- file.path(ruta_cellranger_relativa, sample_name, "outs", "metrics_summary.csv")
+    
+    ruta_html_abs <- file.path(ruta_cellranger, sample_name, "outs", "web_summary.html")
+    ruta_csv_abs  <- file.path(ruta_cellranger, sample_name, "outs", "metrics_summary.csv")
+    
+    # Check that the files exist
+    if (file.exists(ruta_csv_abs) && file.exists(ruta_html_abs)) {
+      
+      # Read the table directly from the file
+      df_metrics <- read.csv(ruta_csv_abs, stringsAsFactors = FALSE)
+      
+      # Clean column names to remove dots for the Datatable
+      colnames(df_metrics) <- gsub("\\.", " ", colnames(df_metrics))
+      
+      # 1. ADD HTML BLOCK FOR IFRAME AND TITLES
+      out <- tagAppendChild(out, HTML(glue::glue('
+        <div style="height: 15px; background-color: transparent;"></div>
+
+        <div class="titulo4" id="tab3-seccion2.1.1.{i}" style="padding-bottom: 8px; line-height: 1.2;">
+          2.1.1.{i}. Sample: {sample_name}
+        </div>
+
+        <p style="margin-top: 20px;">
+          This section breaks down the individual technical profile of the library corresponding to sample <strong>{sample_name}</strong>. Isolated review of this replicate is essential to certify the integrity of its cell partitioning and sequencing process, allowing specific anomalies of this batch to be discarded before integrating the global data of the experiment.
+        </p>
+
+        <p style="margin-top: 20px; margin-bottom: 18px;">
+          <i class="fa-solid fa-microchip" style="color: #276DC3;"></i> 
+          <strong>Cell Ranger Report:</strong> <code>web_summary.html</code>
+        </p>
+        
+        <p style="margin-bottom: 18px;">
+          The following interactive <em>dashboard</em> summarizes the key technical indicators of the sample. Special attention is recommended on the barcode rank plot (blue curve) to ensure that the drop <em>(cliff)</em> between identified cells and background noise is sharp and clear.
+        </p>
+
+        <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+          <iframe src="{ruta_html_rel}" frameborder="0" style="height: 700px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+          <a href="{ruta_html_rel}"
+            target="_blank" 
+            class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Report in a new tab
+          </a>
+
+          <a href="{ruta_html_rel}"
+            download="{sample_name}_web_summary.html"
+            class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download HTML Report
+          </a>
+        </div>
+        
+        <p style="margin-top: 20px; margin-bottom: 18px;">
+          <i class="fa-solid fa-table" style="color: #276DC3;"></i> 
+          <strong>Exact Metrics Table (<code>metrics_summary.csv</code>):</strong>
+        </p>
+        
+        <p style="margin-bottom: 20px;">
+          To complement the above visual analysis, this table directly presents all mapping, depth, and cell performance statistics for this specific library in a copyable format.
+        </p>
+      ')))
+      
+      # 2. AÑADIR BLOQUE DATATABLE
+      out <- tagAppendChild(out, 
+        DT::datatable(
+          df_metrics,
+          options = list(
+            scrollX = TRUE,
+            scrollY = "150px", 
+            scrollCollapse = TRUE,
+            paging = FALSE,
+            lengthChange = FALSE,
+            info = FALSE,
+            dom = 't', 
+            language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+          ),
+          class = 'stripe hover row-border order-column compact',
+          rownames = FALSE
+        )
+      )
+      
+      # 3. AÑADIR BLOQUE HTML PARA EL BOTÓN DE DESCARGA
+      out <- tagAppendChild(out, HTML(glue::glue('
+        <div style="text-align: center; margin-top: 16px; margin-bottom: 25px;">
+          <a href="{ruta_csv_rel}" 
+            download="{sample_name}_metrics_summary.csv" 
+            class="boton-file-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download metrics (.csv)
+          </a>
+        </div>
+      ')))
+
+      # Actualizar contador
+      i <- i + 1
+      
+    } else {
+      # If files are missing
+      out <- tagAppendChild(out, HTML(glue::glue('
+        <div class="alert-warning alert-box">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <b>Warning</b><br>
+          Result files are missing for the sample:<br>
+          <code>{sample_name}</code>.
+        </div>
+      ')))
+    }
+  }
+  
+  # Mostrar todo el contenido al final
+  out
+
+} else {
+  # Warning message if no folders are found
+  HTML(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    No sample folders were found in the Cell Ranger directory:<br>
+    <code>{ruta_cellranger_relativa}</code>.
+  </div>
+  '))
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion2.1.2">
+  2.1.2. Global metrics consolidation
+</div>
+
+<p>
+  As a complement to the individualized exploration described above, it is highly useful to have an overarching view of the entire experiment. Below, the <strong>unified table</strong> is presented, compiling the metrics of all samples simultaneously. This consolidated matrix greatly facilitates rapid detection of discrepancies between biological replicates (e.g., drastic differences in cell viability or sequencing depth) before moving on to advanced analytical stages.
+</p>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+if (exists("metrics_combined_df") && !is.null(metrics_combined_df) && nrow(metrics_combined_df) > 0) {
+  
+  display_df <- metrics_combined_df
+  
+  DT::datatable(
+    display_df,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "400px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 't', 
+      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json')
+    ),
+    class = 'stripe hover row-border order-column compact',
+    rownames = FALSE
+  )
+
+} else {
+  HTML(glue::glue('
+  <div class="alert-error alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    The unified metrics table could not be generated.
+  </div>
+  '))
+}
+```
+
+```{r, results='asis', echo=FALSE}
+if (exists("ruta_cellranger_metrics_summary_all_samples")) {
+  cat(glue::glue('
+  <div style="text-align: center;">
+    <a href="{ruta_cellranger_metrics_summary_all_samples}" 
+      download="cellranger_metrics_summary_all_samples.csv" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download unified global metrics (.csv)
+    </a>
+  </div>
+  '))
+}
+```
+
+<p style="margin-bottom: 40px;">
+  While the global <em>Cell Ranger</em> report confirms the efficiency of cell capture and the overall success of mapping, methodological rigor allows this analysis to be complemented with a structural assessment of the raw sequencing reads (FASTQ files). In the following section, intrinsic metrics of the sequencing platform are examined —such as per-base <em>Phred</em> quality scores, GC content distribution, duplication rates, and the presence of residual adapter sequences— thereby ensuring maximum technical integrity of the starting data.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion2.2">
+  2.2. Raw reads evaluation (Optional: FastQC / Fastp)
+</div>
+
+<p>
+  Although the algorithms integrated in <em>Cell Ranger</em> apply an extraordinarily robust internal quality control and filtering for 10x Genomics libraries, methodological rigor advises, whenever the project design requires it, an independent forensic inspection of the raw sequencing reads (FASTQ files). This phase acts as an audit of sequencing integrity at the nucleotide level, evaluating primary metrics that precede cell mapping.
+</p>
+
+<p>
+  The main objective of this evaluation is to detect potential anomalies intrinsic to the sequencing platform (Illumina, flow cell peculiarities, etc.) before their biases can propagate to expression quantification. Critical parameters analyzed include per-base <em>Phred</em> quality scores (which allow identification of reliability drops at read ends), GC content distribution, unusual duplication rates, and the presence of residual adapter sequences.
+</p>
+
+<p>
+  In the subsections below, the interactive reports generated by the specialized tools <strong>Fastp</strong> and <strong>FastQC</strong> will be presented. Since running these pre-processing steps is a modular decision (and often optional in modern <em>Single-Cell</em> workflows, which delegate this step to Cell Ranger), the document will adapt dynamically: if the tools were executed, their respective interactive panels (<em>MultiQC</em>) and individual reports will be displayed; otherwise, it will be explicitly noted that the project has delegated this validation to the primary processing routines.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion2.2.1">
+  2.2.1. Quality control using Fastp
+</div>
+
+<p>
+  The first step of this technical evaluation of raw sequences is performed using <strong>Fastp</strong>, an ultrafast bioinformatics tool designed to provide comprehensive quality profiles and execute read filtering in a single computational step. Its implementation is highly useful for detecting chemical anomalies and assessing the overall quality of the library before proceeding to alignment.
+</p>
+
+<p>
+  It is crucial to understand a technical peculiarity of the 10x Genomics <em>Single-Cell</em> protocol compared to <em>Bulk</em> sequencing. In this design, paired-end reads (<em>paired-end</em>) are not biologically symmetrical. Read 1 (<strong>R1</strong>) acts as a metadata tag, containing the cell barcode (typically 16 base pairs) and the Unique Molecular Identifier or UMI (12 base pairs). In contrast, Read 2 (<strong>R2</strong>) contains the actual biological sequence corresponding to the captured RNA.
+</p>
+
+<p>
+  By computationally processing both reads simultaneously, Fastp integrates the spatial information (R1) and biological sequence (R2), evaluating the integrity of the pair as a whole. For this reason, the tool generates <strong>a single consolidated quality report per sample</strong>, merging statistics from both sequences to provide a global diagnosis of the sequenced fragment.
+</p>
+
+<p>
+  Below are the files generated during this primary quality control process:
+</p>
+
+```{r, results="asis"}
+if (!is.null(fastp_files_df) && nrow(fastp_files_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(fastp_files_df)) {
+    f <- fastp_files_df$file_name[i]
+    ruta <- fastp_files_df$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.html$", f, ignore.case = TRUE)) {
+      "file-html"
+    } else if (grepl("\\.json$", f, ignore.case = TRUE)) {
+      "file-default" 
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_reads_qc_fastp_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore the Fastp directory here
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No files were found in the Fastp folder. It is likely that this methodological step was skipped, delegating the filtering entirely to Cell Ranger.
+  </div>
+  ')
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion2.2.1.1">
+  2.2.1.1. Interactive sample-level reports
+</div>
+
+<p>
+  This section dynamically embeds the individual quality reports generated by Fastp for each paired library. These interactive panels allow exploring intrinsic metrics of the Illumina platform, such as GC content distributions, geometric mean <em>Phred</em> quality per base, and technical duplication estimates for each biological replicate independently.
+</p>
+
+```{r, echo=FALSE}
+if (!is.null(fastp_html_df) && nrow(fastp_html_df) > 0) {
+  
+  out_fastp <- tagList()
+  i <- 0
+  
+  for (i in 1:nrow(fastp_html_df)) {
+    
+    sample_name_clean <- fastp_html_df$file_name[i]
+    ruta_html_rel <- fastp_html_df$ruta_relativa[i]
+    
+    out_fastp <- tagAppendChild(out_fastp, HTML(glue::glue('
+      <div style="height: 10px; background-color: transparent;"></div>
+
+      <div class="titulo5" id="tab3-seccion2.2.1.1.{i}" style="padding-bottom: 6px; line-height: 1.2;">
+        2.2.1.{i}. Sample: {sample_name_clean}
+      </div>
+
+      <p style="margin-top: 15px;">
+        Below is the nucleotide-level quality audit for the raw reads of sample <strong>{sample_name_clean}</strong>. Individual inspection of this interactive report is key to early detection of specific anomalies during sequencing of this library, such as abrupt drops in <em>Phred</em> quality or the presence of residual adapter sequences, ensuring that the starting data are optimal.
+      </p>
+      
+      <p style="margin-top: 20px; margin-bottom: 18px;">
+        <i class="fa-solid fa-file-code" style="color: #276DC3;"></i> 
+        <strong>Fastp Report:</strong> <code>{sample_name_clean}_fastp.html</code>
+      </p>
+      
+      <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+        <iframe src="{ruta_html_rel}" frameborder="0" style="height: 700px; width: 100%;"></iframe>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+        <a href="{ruta_html_rel}" target="_blank" class="boton-iframe">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Report in new tab
+        </a>
+        <a href="{ruta_html_rel}" download="{sample_name_clean}_fastp.html" class="boton-iframe-download">
+          <i class="fa-solid fa-file-arrow-down"></i> Download HTML Report
+        </a>
+      </div>
+    ')))
+
+  i <- i + 1
+  }
+  
+  out_fastp
+
+} else {
+  HTML('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Note</b><br>
+    As there are no Fastp files, interactive iframes for individual samples will not be generated.
+  </div>
+  ')
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion2.2.1.2">
+  2.2.1.2. Metrics consolidation (MultiQC)
+</div>
+
+<p>
+  To facilitate comparative interpretation of the entire experimental batch, the integration tool <strong>MultiQC</strong> is used. This software recursively scans the individual statistical results produced by Fastp (underlying JSON files) and merges them into a single interactive dashboard. This data aggregation is essential for detecting batch effects during sequencing or samples that deviate drastically from the overall behavior.
+</p>
+
+```{r}
+ruta_multiqc_fastp_rel <- file.path(ruta_reads_qc_fastp_relativa, "multiqc_report.html")
+ruta_multiqc_fastp_abs <- file.path(ruta_reads_qc_fastp, "multiqc_report.html")
+
+if (file.exists(ruta_multiqc_fastp_abs)) {
+  HTML(glue::glue('
+    <p style="margin-top: 25px; margin-bottom: 18px;">
+      <i class="fa-solid fa-chart-line" style="color: #276DC3;"></i> 
+      <strong>Global report:</strong> <code>multiqc_report.html</code>
+    </p>
+
+    <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+      <iframe src="{ruta_multiqc_fastp_rel}" frameborder="0" style="height: 700px; width: 100%;"></iframe>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 50px;">
+      <a href="{ruta_multiqc_fastp_rel}" target="_blank" class="boton-iframe">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open MultiQC in new tab
+      </a>
+      <a href="{ruta_multiqc_fastp_rel}" download="multiqc_fastp_report.html" class="boton-iframe-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download MultiQC HTML
+      </a>
+    </div>
+  '))
+
+} else {
+  HTML('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    The integrated MultiQC report for Fastp is not available in this project.
+  </div>
+  ')
+}
+```
+
+<p>
+  Once the unified behavior of the read pairs has been assessed, the following subsection goes one level deeper in technical granularity. For this, the <strong>FastQC</strong> reports will be reviewed, allowing independent dissection of the exact behavior of the metadata reads (R1) versus the transcriptomic sequences (R2).
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion2.2.2">
+  2.2.2. Quality control using FastQC
+</div>
+
+<p>
+  Following the consolidated evaluation performed by Fastp, this subsection goes down to the maximum level of detail using <strong>FastQC</strong>, the bioinformatics industry standard for raw read auditing. Unlike Fastp —which processes and collapses information from both reads simultaneously— or Cell Ranger —which uses this information to reconstruct the expression matrix— FastQC interrogates each FASTQ file strictly independently.
+</p>
+
+<p>
+  Analyzing the reads separately is critical in <em>Single-Cell</em> (10x Genomics) sequencing due to the profound asymmetry of the data. In a <em>Bulk RNA-Seq</em> experiment, both R1 and R2 correspond to random genomic fragments. However, in single-cell, the structure follows a synthetic biology design:
+</p>
+
+<ul>
+  <li><strong>Read 1 (R1 - Metadata):</strong> Contains the cellular barcode (<em>Barcode</em>) and the Unique Molecular Identifier (UMI). Since its sequence follows a predefined primer design (rather than genomic randomness), <strong>it is entirely expected and biologically normal for FastQC to report warnings (WARNING) or failures (FAIL)</strong> in modules such as GC content, sequence over-representation, or base content (sequence biases).</li>
+  <li><strong>Read 2 (R2 - Transcript):</strong> Contains the actual cDNA fragment corresponding to the captured RNA molecule. Its statistical behavior should resemble that of a standard transcriptomic read, serving as the true indicator of sequencing quality for the library.</li>
+</ul>
+
+<p>
+  From an interpretative standpoint, FastQC structures its evaluation into several analytical modules, each rated as <strong style="color: green;">PASS</strong>, <strong style="color: orange;">WARNING</strong></span> or <strong style="color: red;">FAIL</strong>. The most relevant parameters assessed in these reports are detailed below, based on quality standards:
+</p>
+
+<ul>
+  <li><strong>Basic Statistics:</strong> General information about the sequences, including total number of reads, average length, and GC content.</li>
+  <li><strong>Per base sequence quality:</strong> Evaluates <em>Phred</em> quality at each position of the reads. Quality drops (typically at 3' ends) are the main indicator of the sequencer's optical efficiency.</li>
+  <li><strong>Per sequence quality scores:</strong> Shows the distribution of aggregated quality scores for all reads.</li>
+  <li><strong>Sequence Duplication Levels:</strong> Reports the proportion of identical reads. In R2 (Single-Cell), high duplication rates are common due to PCR amplification of highly expressed genes.</li>
+  <li><strong>Adapter Content:</strong> Detects the presence of residual Illumina adapter sequences that need to be removed.</li>
+</ul>
+
+<p>
+  Below are the individual files generated during this technical scrutiny:
+</p>
+
+```{r, results="asis"}
+if (!is.null(fastqc_files_df) && nrow(fastqc_files_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(fastqc_files_df)) {
+    f <- fastqc_files_df$file_name[i]
+    ruta <- fastqc_files_df$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.html$", f, ignore.case = TRUE)) {
+      "file-html"
+    } else if (grepl("\\.zip$", f, ignore.case = TRUE)) {
+      "file-zip" 
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_reads_qc_fastqc_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore the FastQC directory here
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No files were found in the FastQC folder.
+  </div>
+  ')
+}
+```
+
+
+
+
+
+
+<div style="height: 12px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion2.2.2.1">
+  2.2.2.1. Interactive sample-level reports
+</div>
+
+<p>
+  In this section, the FastQC reports for each sample are integrated sequentially. To facilitate logical inspection of the experiment, the interactive panels corresponding to the molecular tag (R1) and the biological transcript (R2) of the same replicate are presented grouped together.
+</p>
+
+```{r}
+if (!is.null(fastqc_html_df) && nrow(fastqc_html_df) > 0) {
+  
+  out_fastqc <- tagList()
+  
+  # Extraer el nombre base de la muestra (eliminando _R1, _R2 y sufijos extra)
+  # Esto agrupará R1 y R2 bajo el mismo nombre de muestra.
+  muestras_unicas <- unique(sub("_[rR][12].*", "", fastqc_html_df$file_name))
+  
+  for (i in seq_along(muestras_unicas)) {
+    
+    muestra_base <- muestras_unicas[i]
+    
+    # Filtrar los archivos que pertenecen a esta muestra
+    archivos_muestra <- fastqc_html_df[grepl(muestra_base, fastqc_html_df$file_name), ]
+    
+    # Identificar R1 y R2
+    r1_df <- archivos_muestra[grepl("_[rR]1", archivos_muestra$file_name), ]
+    r2_df <- archivos_muestra[grepl("_[rR]2", archivos_muestra$file_name), ]
+    
+    out_fastqc <- tagAppendChild(out_fastqc, HTML(glue::glue('
+      <div style="height: 8px; background-color: transparent;"></div>
+
+      <div class="titulo5" id="tab3-seccion2.2.2.1.{i}" style="padding-bottom: 6px; line-height: 1.2;">
+        2.2.2.1.{i}. Sample: {muestra_base}
+      </div>
+      
+      <p style="margin-top: 15px;">
+        Below are the independent quality profiles for the metadata reads (R1) and transcript reads (R2) of sample <strong>{muestra_base}</strong>. Remember to interpret FastQC alerts on the R1 file with the caution appropriate for a single-cell design, focusing Phred quality and fragmentation analysis on the R2 file.
+      </p>
+    ')))
+    
+    # ------------------ IFRAME R1 ------------------
+    if (nrow(r1_df) > 0) {
+      r1_name <- r1_df$file_name[1]
+      r1_ruta <- r1_df$ruta_relativa[1]
+      
+      out_fastqc <- tagAppendChild(out_fastqc, HTML(glue::glue('
+        <p style="margin-top: 20px; margin-bottom: 10px;">
+          <i class="fa-solid fa-barcode" style="color: #276DC3;"></i> 
+          <strong>Read R1 (Barcode + UMI):</strong> <code>{r1_name}_fastqc.html</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{r1_ruta}" frameborder="0" style="height: 700px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 30px;">
+          <a href="{r1_ruta}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open FastQC R1
+          </a>
+          <a href="{r1_ruta}" download="{r1_name}_fastqc.html" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download HTML
+          </a>
+        </div>
+      ')))
+    }
+    
+    # ------------------ IFRAME R2 ------------------
+    if (nrow(r2_df) > 0) {
+      r2_name <- r2_df$file_name[1]
+      r2_ruta <- r2_df$ruta_relativa[1]
+      
+      out_fastqc <- tagAppendChild(out_fastqc, HTML(glue::glue('
+        <p style="margin-top: 25px; margin-bottom: 10px;">
+          <i class="fa-solid fa-dna" style="color: #276DC3;"></i> 
+          <strong>Read R2 (cDNA Transcript):</strong> <code>{r2_name}_fastqc.html</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{r2_ruta}" frameborder="0" style="height: 700px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 50px;">
+          <a href="{r2_ruta}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open FastQC R2
+          </a>
+          <a href="{r2_ruta}" download="{r2_name}_fastqc.html" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download HTML
+          </a>
+        </div>
+      ')))
+    }
+  }
+  
+  out_fastqc
+
+} else {
+  HTML('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Note</b><br>
+    As there are no FastQC files, interactive iframes for individual samples will not be generated.
+  </div>
+  ')
+}
+```
+
+
+
+
+
+
+<div style="height: 10px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab3-seccion2.2.2.2">
+  2.2.2.2. Metrics consolidation (MultiQC)
+</div>
+
+<p>
+  To obtain a comprehensive overview of the experiment as a whole, <strong>MultiQC</strong> is used again. This tool captures the detailed breakdown generated by FastQC and projects it onto a consolidated canvas. In this way, it is possible to overlay quality curves (e.g., the <em>Phred</em> curves of all R2 files simultaneously) to confirm that there are no samples with technical behaviors deviating from the average of the sequenced batch.
+</p>
+
+```{r}
+ruta_multiqc_fastqc_rel <- file.path(ruta_reads_qc_fastqc_relativa, "multiqc_report.html")
+ruta_multiqc_fastqc_abs <- file.path(ruta_reads_qc_fastqc, "multiqc_report.html")
+
+if (file.exists(ruta_multiqc_fastqc_abs)) {
+  HTML(glue::glue('
+    <p style="margin-top: 18px; margin-bottom: 18px;">
+      <i class="fa-solid fa-layer-group" style="color: #276DC3;"></i> 
+      <strong>Global report (FastQC):</strong> <code>multiqc_report.html</code>
+    </p>
+
+    <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+      <iframe src="{ruta_multiqc_fastqc_rel}" frameborder="0" style="height: 700px; width: 100%;"></iframe>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 30px;">
+      <a href="{ruta_multiqc_fastqc_rel}" target="_blank" class="boton-iframe">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open MultiQC in new tab
+      </a>
+      <a href="{ruta_multiqc_fastqc_rel}" download="multiqc_fastqc_report.html" class="boton-iframe-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download MultiQC HTML
+      </a>
+    </div>
+  '))
+} else {
+  HTML('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    The integrated MultiQC report for FastQC is not available in this project.
+  </div>
+  ')
+}
+```
+
+<p>
+  Having completed the audits of primary processing (Cell Ranger) and the nucleotide-level validation of the sequencing chemistry (Fastp and FastQC), the technical and structural integrity of the raw reads is certified. This milestone marks the end of purely computational pre-processing, confirming that the generated expression matrix is technically sound and free from severe platform-derived biases.
+</p>
+
+<p>
+  The next and final step of this phase transitions to strictly biological scrutiny, which is developed in section <strong>2.3. Quality control and cell filtering (Seurat)</strong>. At this critical stage, the algorithmic approach gives way to the phenotypic assessment of each individual cell. Intrinsic metrics —such as transcriptional complexity and mitochondrial RNA fraction— will be interrogated to identify and discard aberrant events (dead cells, doublets, or empty droplets). This entire curation process will be documented visually and comparatively, displaying the distributions of the dataset before (<em>Pre-Quality</em>) and after (<em>Post-Quality</em>) applying exclusion thresholds, thereby ensuring maximum purity for subsequent cellular population analysis.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion2.3">
+  2.3. Quality control and cell filtering (Seurat)
+</div>
+
+<p>
+  Having passed the technical validation phases of sequencing and mapping, the analysis enters the most critical stage of pre-processing: biological filtering at the single-cell level. To perform this task robustly and in an integrated manner, the <strong>Seurat</strong> ecosystem has been employed, the current bioinformatics standard for single-cell transcriptomics exploration.
+</p>
+
+<p>
+  Unlike Cell Ranger, whose main goal is to distinguish droplets with viable cells from those containing only background noise, Seurat enables deep phenotypic scrutiny based on the actual transcript distribution of each detected cell. The purpose of this phase is to establish adaptive thresholds to isolate pristine transcriptomic profiles and remove biological or technical artifacts that could introduce artificial clusters in subsequent analysis.
+</p>
+
+<p>
+  To achieve this, three fundamental covariates are evaluated at the single-cell level:
+</p>
+
+<ul>
+  <li><strong>Gene complexity (<code>nFeature_RNA</code>):</strong> Represents the number of unique genes detected in each cell. Cells with abnormally low values typically correspond to very low-quality profiles or residual empty droplets. Conversely, those with exceptionally high values are strong candidates for <strong>cell doublets</strong> (two or more cells encapsulated simultaneously in the same microfluidic droplet).</li>
+  <li><strong>Transcriptomic depth (<code>nCount_RNA</code>):</strong> Quantifies the total number of RNA molecules (UMIs) detected. This value is strongly correlated with gene complexity and helps confirm the presence of doublets or hyperactive cells.</li>
+  <li><strong>Mitochondrial fraction (<code>percent.mt</code>):</strong> Indicates the percentage of reads mapping to the mitochondrial genome. High mitochondrial content is the primary biomarker of <strong>cellular stress, lysis, or apoptosis</strong>. When the plasma membrane breaks during tissue preparation, cytoplasmic RNA is lost in the suspension, leaving only mitochondrial RNA intact, as it is encapsulated and protected within its own organelles.</li>
+</ul>
+
+<p>
+  Below are the graphical files generated in this evaluation module, which consolidate the distributions of all samples in the experiment:
+</p>
+
+```{r, results="asis"}
+if (!is.null(cells_qc_files_df) && nrow(cells_qc_files_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(cells_qc_files_df)) {
+    f <- cells_qc_files_df$file_name[i]
+    ruta <- cells_qc_files_df$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_cells_qc_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore the cell QC directory (Seurat)
+    </a>
+  </p>
+  '))
+
+} else {
+  cat('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No files were found in the Seurat cell QC folder.
+  </div>
+  ')
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion2.3.1">
+  2.3.1. Pre-filtering assessment (Pre-Quality)
+</div>
+
+<p>
+  Before applying any exclusion thresholds, it is essential to visualize the natural (raw) distribution of cellular metrics for the entire dataset. This visual inspection allows the researcher to define precise and adaptive (<em>data-driven</em>) cutoffs based on the biological reality of the tissue analyzed, avoiding blind application of standard parameters that could remove legitimate but quiescent cell populations.
+</p>
+
+<p>
+  The following PDF report compiles multiple graphical representations of the basal state of the experiment. Among them, the <strong>violin plots (<em>Violin Plots</em>)</strong> stand out, showing population density for each covariate (genes, UMIs, and mitochondrial percentage) separated by biological conditions or replicates. Additionally, <strong>scatter plots (<em>Scatter Plots</em>)</strong> are included to correlate these variables and visually identify clouds of apoptotic cells or doublets, along with boxplots (<em>Boxplots</em>) that reveal the most transcriptionally dominant genes in the sample.
+</p>
+
+```{r}
+ruta_pre_qc_pdf_rel <- file.path(ruta_cells_qc_relativa, "Pre_Quality_mergeSeurat.pdf")
+ruta_pre_qc_pdf_abs <- file.path(ruta_cells_qc, "Pre_Quality_mergeSeurat.pdf")
+
+if (file.exists(ruta_pre_qc_pdf_abs)) {
+  HTML(glue::glue('
+    <p>
+      <i class="fa-solid fa-chart-area" style="color: #276DC3;"></i> 
+      <strong>Basal distribution plots:</strong> <code>Pre_Quality_mergeSeurat.pdf</code>
+    </p>
+
+    <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+      <iframe src="{ruta_pre_qc_pdf_rel}" frameborder="0" width="100%" height="700"></iframe>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+      <a href="{ruta_pre_qc_pdf_rel}" target="_blank" class="boton-iframe">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in new tab
+      </a>
+      <a href="{ruta_pre_qc_pdf_rel}" download="Pre_Quality_mergeSeurat.pdf" class="boton-iframe-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+      </a>
+    </div>
+  '))
+
+} else {
+  HTML('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    The Pre-Filtering Quality report (Pre_Quality_mergeSeurat.pdf) is not available.
+  </div>
+  ')
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion2.3.2">
+  2.3.2. Post-filtering assessment (Post-Quality)
+</div>
+
+<p>
+  Once the cutoff thresholds have been empirically defined —typically restricting a maximum mitochondrial percentage and limiting extreme values of detected unique genes— the expression matrix is pruned. The graphical document shown below illustrates the distributions of the same covariates after the effective removal of dead cells, empty droplets, and suspected doublets.
+</p>
+
+<p>
+  Comparing the <em>Post-Quality</em> state against the previous raw profile (<em>Pre-Quality</em>) is the definitive method to certify the effectiveness of the filtering. This process demonstrates the attainment of a homogeneous, clean, and biologically high-quality cell set. This pristine matrix will serve as the foundation on which subsequent normalization algorithms, dimensionality reduction (PCA/UMAP), and phenotypic cluster discovery will be executed with full reliability.
+</p>
+
+```{r}
+ruta_post_qc_pdf_rel <- file.path(ruta_cells_qc_relativa, "Post_Quality_mergeSeurat.pdf")
+ruta_post_qc_pdf_abs <- file.path(ruta_cells_qc, "Post_Quality_mergeSeurat.pdf")
+
+if (file.exists(ruta_post_qc_pdf_abs)) {
+  HTML(glue::glue('
+    <p>
+      <i class="fa-solid fa-filter" style="color: #276DC3;"></i> 
+      <strong>Plots after rigorous filtering:</strong> <code>Post_Quality_mergeSeurat.pdf</code>
+    </p>
+
+    <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+      <iframe src="{ruta_post_qc_pdf_rel}" frameborder="0" width="100%" height="700"></iframe>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 20px;">
+      <a href="{ruta_post_qc_pdf_rel}" target="_blank" class="boton-iframe">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in new tab
+      </a>
+      <a href="{ruta_post_qc_pdf_rel}" download="Post_Quality_mergeSeurat.pdf" class="boton-iframe-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+      </a>
+    </div>
+  '))
+
+} else {
+  HTML('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    The Post-Filtering Quality report (Post_Quality_mergeSeurat.pdf) is not available.
+  </div>
+  ')
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  Having completed the exhaustive technical assessment and biological filtering process, we now have a cleaned and statistically robust expression matrix. The rigorous removal of ambient noise, apoptotic cells, and doublets ensures that the retained transcriptional heterogeneity at this stage reflects exclusively the true biological variability of the analyzed tissue, establishing a solid foundation for subsequent phases.
+</p>
+
+<p>
+  The next step in the analytical workflow is to simplify and decipher this immense matrix complexity —where each gene represents an independent dimension— using advanced mathematical techniques. This topological exploration, ranging from global variance assessment via PCA to the identification of phenotypic subpopulations through UMAP projections and graph-based algorithms, will be developed in the next module of the report: <strong><a href="03-clustering.html" class="normalink">Dimensionality reduction and clustering</a></strong>.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

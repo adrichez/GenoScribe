@@ -1,0 +1,1238 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 4. IDENTIFICACIÓN DE MARCADORES (CLUSTERS CIEGOS) -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        ¡Hola! Soy <strong>Geni</strong>, el asistente inteligente de <strong>GenoScribe</strong>.  
+        Estoy aquí para ayudarte a explorar de forma interactiva el contenido de este informe bioinformático.
+      </p>
+
+      <p>
+        Cuando me haces una pregunta, primero intento reconocer si coincide con alguno de los patrones o expresiones que conozco.  
+        Si encuentro una coincidencia, te responderé directamente con una respuesta predefinida, diseñada para ser rápida, clara e incluso un poco ingeniosa.  
+        Si no reconozco el patrón, entonces activo mis herramientas de búsqueda: genero representaciones vectoriales (embeddings) y busco los fragmentos más relevantes entre varios documentos —incluyendo el propio informe, archivos PDF y HTML externos, y sesiones de preguntas y respuestas (QA).  
+        A partir de esa información, creo un resumen que intenta ofrecerte una respuesta coherente y útil basada en el contenido existente.
+      </p>
+
+      <p>
+        Se debe tener en cuenta que este entorno es experimental. No utilizo grandes modelos de lenguaje, por lo que algunas respuestas pueden ser aproximadas o incompletas.  
+        El objetivo principal es facilitar una visualización rápida, comprensible y reproducible de la información contenida en los documentos, permitiendo una exploración más dinámica del informe.
+      </p>
+
+      <p>
+        Actualmente, los resultados pueden variar en precisión, ya que empleo modelos ligeros y locales para asegurar que la aplicación funcione en cualquier entorno sin necesidad de servidores externos.  
+        Sin embargo, la estructura del sistema está preparada para mejorar notablemente su rendimiento en el futuro mediante la integración con modelos más avanzados o APIs externas.  
+        Para comenzar, simplemente escribe tu pregunta en el campo inferior y deja que yo me encargue del resto. ¡Prometo poner todo mi código en ello!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+ruta_archives_tmp_marcadores <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "04-marcadores")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_marcadores)
+
+
+
+
+
+
+#===================================================================================================================================================
+# DIRECTORIO "ANALYSIS"
+#===================================================================================================================================================
+
+# Rutas de la carpeta "analysis" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "analysis")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "analysis")
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "MARKERS" EN "ANALYSIS"
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "04_markers" dentro de "analysis"
+ruta_markers <- file.path(ruta_analysis, "04_markers")
+ruta_markers_relativa <- file.path(ruta_analysis_relativa, "04_markers")
+
+
+
+#------------------------------------------------------------------------
+# DIRECTORIO "MERGED" EN "MARKERS"
+#------------------------------------------------------------------------
+
+# Rutas base Merged
+ruta_markers_merged <- file.path(ruta_markers, "01_markers_seurat_merged_clusters")
+ruta_markers_merged_relativa <- file.path(ruta_markers_relativa, "01_markers_seurat_merged_clusters")
+
+
+# Listar archivos dentro del directorio
+markers_merged_df <- NULL
+
+if (dir.exists(ruta_markers_merged)) {
+  markers_merged_list <- list.files(ruta_markers_merged, recursive = FALSE, full.names = FALSE)
+  
+  if (length(markers_merged_list) > 0) {
+    markers_merged_df <- data.frame(
+      file_name = markers_merged_list,
+      ruta_absoluta = file.path(ruta_markers_merged, markers_merged_list),
+      ruta_relativa = file.path(ruta_markers_merged_relativa, markers_merged_list),
+      stringsAsFactors = FALSE
+    )
+    markers_merged_df <- markers_merged_df[order(markers_merged_df$file_name), ]
+  }
+}
+
+
+
+#------------------------------------------------------------------------
+# DIRECTORIO "INTEGRATED" EN "MARKERS"
+#------------------------------------------------------------------------
+
+# Rutas base Integrated
+ruta_markers_integrated <- file.path(ruta_markers, "02_markers_seurat_integrated_clusters")
+ruta_markers_integrated_relativa <- file.path(ruta_markers_relativa, "02_markers_seurat_integrated_clusters")
+
+
+# Listar archivos dentro del directorio
+markers_integrated_df <- NULL
+
+if (dir.exists(ruta_markers_integrated)) {
+  markers_integrated_list <- list.files(ruta_markers_integrated, recursive = FALSE, full.names = FALSE)
+  
+  if (length(markers_integrated_list) > 0) {
+    markers_integrated_df <- data.frame(
+      file_name = markers_integrated_list,
+      ruta_absoluta = file.path(ruta_markers_integrated, markers_integrated_list),
+      ruta_relativa = file.path(ruta_markers_integrated_relativa, markers_integrated_list),
+      stringsAsFactors = FALSE
+    )
+    markers_integrated_df <- markers_integrated_df[order(markers_integrated_df$file_name), ]
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Pestaña</h1>
+  <h2>Análisis Bioinformático Completo</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Sección 4</h1>
+  <h2>Identificación de Marcadores (Clusters ciegos)</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Resumen</h2>
+
+  <p>
+    En esta pestaña se documenta la fase de <strong>Identificación de Marcadores</strong> para los clústeres primarios (no supervisados). Tras haber estructurado matemáticamente el conjunto de células en la etapa de <em>clustering</em>, el objetivo bioinformático de esta sección es interrogar el transcriptoma de estas agrupaciones numéricas para descubrir qué genes definen su identidad molecular única.
+  </p>
+
+  <p>
+    Para sentar las bases de este descubrimiento ciego, la sección inicial (<strong>4.1. Fundamentos del Análisis de Expresión Diferencial</strong>) detalla la lógica algorítmica y estadística empleada. El enfoque principal se basa en una estrategia de <em>"Clúster X frente al resto" (Cluster vs All)</em>, la cual compara el perfil de expresión de cada clúster individual contra todas las demás células de la muestra de forma simultánea, extrayendo una <strong>firma génica</strong> ponderada por su magnitud de cambio (<em>Log2 Fold Change</em>) y significancia (<em>p-value</em> ajustado).
+  </p>
+
+  <p>
+    Al igual que en la etapa topológica previa, los resultados se exponen bajo las dos estrategias de agrupamiento principales (sujetas a la disponibilidad del proyecto): <strong>agrupamiento basal (<em>Merged</em>)</strong> y <strong>agrupamiento alineado (<em>Integrated</em>)</strong>. El análisis de cada una de estas aproximaciones se ha estructurado en un flujo de trabajo de dos niveles de profundidad:
+  </p>
+
+  <ul>
+    <li><strong>Visualización global de marcadores &rArr;</strong> En primera instancia, se proporciona acceso directo al directorio de resultados y se expone (de estar disponible) un documento PDF consolidado. Este archivo consiste en una compilación práctica que agrupa todos los reportes gráficos individuales en un único formato multipágina, resultando ideal para una revisión panorámica y para facilitar la compartición de los resultados preliminares.</li>
+    <li><strong>Escrutinio estadístico por clúster &rArr;</strong> A continuación, se despliega el núcleo analítico de la sección mediante un desglose individualizado. Para cada clúster primario, se empareja su reporte gráfico específico (proyecciones espaciales y de expresión de sus genes <em>top</em>) con su respectiva tabla estadística completa (archivos <code>.tsv</code> convertidos a formato dinámico e interactivo), permitiendo al investigador navegar por los datos crudos de forma aislada e independiente.</li>
+  </ul>
+
+  <p>
+    La exploración metódica de estas firmas génicas es el paso empírico y definitivo que permitirá, en el siguiente gran módulo del estudio, traducir las matemáticas a biología bautizando a cada clúster con su verdadero linaje celular.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Tabla de contenidos de esta sección
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion4">4<span>.</span> Identificación de marcadores (clústeres ciegos)</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion4.1">4.1. Fundamentos del Análisis de Expresión Diferencial</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion4.2">4.2. Firmas génicas en agrupamiento basal (Merged)</a>
+          <ul>
+            <li><a href="#tab3-seccion4.2.1">4.2.1. Visualización global de marcadores</a></li>
+            <li><a href="#tab3-seccion4.2.2">4.2.2. Escrutinio estadístico por clúster (Cluster vs All)</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab3-seccion4.3">4.3. Firmas génicas en agrupamiento alineado (Integrated)</a>
+          <ul>
+            <li><a href="#tab3-seccion4.3.1">4.3.1. Visualización global de marcadores</a></li>
+            <li><a href="#tab3-seccion4.3.2">4.3.2. Escrutinio estadístico por clúster (Cluster vs All)</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion4">
+  4<span>.</span> Identificación de Marcadores (Clústeres ciegos)
+</div>
+
+<p>
+  Habiendo completado la fase topológica documentada en el módulo anterior, disponemos de un mapa espacial donde las células se encuentran estructuradas en clústeres puramente numéricos (0, 1, 2...). Sin embargo, para la biología computacional, estos grupos matemáticos son entidades fenotípicamente "ciegas". El verdadero poder del análisis de célula única reside en interrogar la matriz de expresión subyacente de cada uno de estos grupos para extraer su identidad molecular intrínseca.
+</p>
+
+<p>
+  Esta sección está diseñada para guiar al investigador a través de este proceso de descubrimiento de forma sistemática. Para garantizar una interpretación rigurosa de los resultados, el documento se ha estructurado siguiendo una progresión analítica lógica:
+</p>
+
+<ul>
+  <li>Primero, estableceremos las reglas del juego. Definiremos qué es exactamente un gen marcador desde el punto de vista estadístico y computacional.</li>
+  <li>Segundo, aplicaremos este escrutinio a la topología natural del tejido, explorando las firmas génicas derivadas de la estrategia <strong>Merged</strong>.</li>
+  <li>Tercero, repetiremos el proceso sobre la topología corregida por efecto lote, evaluando los marcadores resultantes de la estrategia <strong>Integrated</strong>.</li>
+</ul>
+
+<p>
+  En cada una de estas aproximaciones descendemos desde una visión global (mapas de calor de todo el tejido) hasta el máximo nivel de detalle (inspección interactiva de clúster por clúster). No obstante, antes de sumergirnos en los extensos catálogos de genes candidatos, es indispensable comprender el motor algorítmico que los ha seleccionado, el cual se detalla de forma metodológica a continuación.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.1">
+  4.1. Fundamentos del Análisis de Expresión Diferencial
+</div>
+
+<p>
+  En transcriptómica de célula única, la identificación de genes marcadores se fundamenta en el Análisis de Expresión Génica Diferencial (DEG). Dado que en esta fase exploratoria los clústeres carecen de una identidad biológica predefinida y no se están comparando condiciones experimentales directas (ej. WT frente a KO), el algoritmo de Seurat ejecuta una aproximación de descubrimiento topológico conocida como <strong>"Clúster frente al resto" (<em>Cluster vs All</em>)</strong>.
+</p>
+
+<p>
+  Esta estrategia iterativa aísla computacionalmente las células de un clúster de interés (por ejemplo, el Clúster 0) y confronta su perfil transcripcional simultáneamente contra el de todas las demás células de la muestra combinadas (los clústeres 1, 2, 3... en conjunto). El objetivo estadístico es identificar aquellos genes cuya expresión es excepcionalmente alta y exclusiva en el clúster evaluado. 
+</p>
+
+<p>
+  Para ejecutar esta comparación masiva de forma rigurosa, se emplea habitualmente la <strong>prueba de suma de rangos de Wilcoxon</strong> (el estándar por defecto en la bioinformática de <em>Single-Cell</em>).  Este test no paramétrico es idóneo para lidiar con las distribuciones asimétricas y la alta proporción de ceros técnicos (<em>dropouts</em>) inherentes a esta tecnología de secuenciación. Fruto de esta prueba matemática, se generan los archivos tabulares (<code>.tsv</code>) que se explorarán en los apartados posteriores. Cada fila de estas tablas corresponde a un gen candidato, descrito por las siguientes métricas fundamentales:
+</p>
+
+<ul>
+  <li><strong>Gen (Primera columna) &rArr;</strong> Identificador oficial del gen. <em>Nota: Por defecto en las salidas de Seurat, la cabecera de esta primera columna en los archivos crudos suele aparecer en blanco.</em></li>
+  <li><strong>p-value crudo (<code>p_val</code>) &rArr;</strong> El nivel de significancia estadística nominal devuelto directamente por el test matemático. Sin embargo, al testar miles de genes de forma simultánea, este valor por sí solo genera falsos positivos y no debe utilizarse como criterio principal.</li>
+  <li><strong>Log2 Fold Change (<code>avg_log2FC</code>) &rArr;</strong> Cuantifica la magnitud del cambio en la expresión media del gen. Un valor positivo indica que el gen está sobreexpresado (<em>upregulated</em>) en el clúster analizado frente al resto. Cuanto mayor sea este logaritmo, más "fuerte" y discriminativo será el marcador.</li>
+  <li><strong>Porcentaje de expresión local (<code>pct.1</code>) &rArr;</strong> Indica la fracción de células <em>dentro</em> del clúster de interés que expresan dicho gen (es decir, que cuentan con al menos 1 UMI detectado). Un marcador robusto debería tener un <code>pct.1</code> elevado (idealmente superior a 0.50 o 50%), garantizando que es representativo de la mayoría de esa subpoblación.</li>
+  <li><strong>Porcentaje de expresión global (<code>pct.2</code>) &rArr;</strong> Indica la fracción de células <em>fuera</em> del clúster de interés que también expresan el gen. Un marcador ideal y exclusivo mostrará un <code>pct.2</code> muy bajo (cercano a 0), demostrando que apenas existe expresión residual en el resto del tejido.</li>
+  <li><strong>p-value ajustado (<code>p_val_adj</code>) &rArr;</strong> Es la métrica de significancia definitiva, sometida a una estricta corrección por comparaciones múltiples (típicamente corrección de Bonferroni). Para que un gen se considere un biomarcador válido y biológicamente relevante, este valor debe ser estrictamente inferior a 0.05.</li>
+</ul>
+
+<p>
+  La correcta interpretación de estas tablas pasa por comprender la interacción de sus variables: <strong>el marcador biológico perfecto es aquel que combina un alto <code>avg_log2FC</code>, un alto <code>pct.1</code>, un bajísimo <code>pct.2</code> y un <code>p_val_adj</code> significativo</strong>. Con estos fundamentos establecidos, las siguientes subsecciones despliegan este escrutinio empírico de forma individualizada para cada estrategia de agrupamiento.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.2">
+  4.2. Firmas génicas en agrupamiento basal (Merged)
+</div>
+
+<p>
+  Comenzamos la identificación fenotípica explorando la estrategia <em>Merged</em>. Dado que este agrupamiento preserva los niveles de expresión originales sin aplicar algoritmos de alineamiento o corrección de lote, las firmas génicas descubiertas aquí representan las diferencias moleculares de las células en su estado transcriptómico más puro. Constituye la aproximación de referencia siempre y cuando las condiciones experimentales no presenten sesgos técnicos limitantes.
+</p>
+
+<p>
+  A continuación, se presenta el directorio completo correspondiente a los marcadores extraídos de esta topología basal. Desde este explorador podrá descargar todos los archivos generados en esta fase, incluyendo posibles tablas maestras consolidadas (archivos <code>.csv</code> o <code>.xlsx</code>) con el compendio global de todos los marcadores hallados en el tejido.
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# 1. GENERAR BOX-FILES DE MERGED
+if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
+
+  # Extraer el número de clúster del nombre del archivo para forzar un "orden natural"
+  num_cluster <- as.numeric(stringr::str_extract(markers_merged_df$file_name, "\\d+"))
+  
+  # A los archivos sin números (como resúmenes o CSV globales) les damos un -1 para que vayan al principio
+  num_cluster[is.na(num_cluster)] <- -1
+  
+  # Ordenar primero por el número de clúster (-1, 0, 1, 2... 10) y luego alfabéticamente (para desempatar .pdf y .tsv)
+  df_sorted <- markers_merged_df[order(num_cluster, markers_merged_df$file_name), ]
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(df_sorted)) {
+    f <- df_sorted$file_name[i]
+    ruta <- df_sorted$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else if (grepl("\\.csv$|\\.tsv$", f, ignore.case = TRUE)) {
+      "file-csv"
+    } else if (grepl("\\.xlsx$", f, ignore.case = TRUE)) {
+      "file-xlsx"
+    } else if (grepl("\\.xls$", f, ignore.case = TRUE)) {
+      "file-xls"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center" style="margin-top: 15px;">
+    <a href="{ruta_markers_merged_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explorar directorio de Marcadores (Merged)
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota Metodológica</b><br>
+    No se detectaron archivos de marcadores para la estrategia <em>Merged</em> en este proyecto. Las subsecciones correspondientes se mostrarán vacías.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.2.1">
+  4.2.1. Visualización global de marcadores
+</div>
+
+<p>
+  Antes de diseccionar cada subpoblación celular de forma independiente, resulta inmensamente útil obtener una panorámica visual de la expresión en todo el tejido. En los casos en los que se haya generado, esta subsección mostrará un documento PDF consolidado. Este archivo actúa como un atlas resumen, agrupando en un único formato multipágina las proyecciones espaciales y de expresión (<em>FeaturePlots</em>, mapas de calor, etc.) de los marcadores más significativos correspondientes a todos los clústeres simultáneamente, facilitando su revisión general y compartición.
+</p>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 2. MOSTRAR EL PDF GLOBAL (SI EXISTE)
+if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
+  
+  # Buscar un PDF que NO sea individual (asumimos que los individuales contienen "_vs_all" en su nombre)
+  global_pdf_df <- markers_merged_df[grepl("\\.pdf$", markers_merged_df$file_name, ignore.case = TRUE) & 
+                                      !grepl("_vs_all", markers_merged_df$file_name, ignore.case = TRUE), ]
+  
+  if (nrow(global_pdf_df) > 0) {
+    out_global <- tagList()
+    
+    for (i in 1:nrow(global_pdf_df)) {
+      file_name_clean <- global_pdf_df$file_name[i]
+      ruta_rel <- global_pdf_df$ruta_relativa[i]
+      
+      out_global <- tagAppendChild(out_global, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 20px; padding-top: 25px;"></div>
+
+        <p style="margin-bottom: 15px;">
+          <strong>Reporte Gráfico Consolidado:</strong> El siguiente panel interactivo muestra la visualización conjunta de los marcadores principales para el agrupamiento basal.
+        </p>
+
+        <p style="margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>Archivo:</strong> <code>{file_name_clean}</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{ruta_rel}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 20px;">
+          <a href="{ruta_rel}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir PDF en pestaña nueva
+          </a>
+          <a href="{ruta_rel}" download="{file_name_clean}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF
+          </a>
+        </div>
+      ')))
+    }
+    out_global
+  
+  } else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box" style="margin-top: 20px;">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Nota</b><br>
+      No se ha encontrado un archivo PDF consolidado global (resumen) para esta estrategia. Revise el escrutinio individual a continuación.
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box" style="margin-top: 20px;">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Directorio vacío</b><br>
+      La carpeta no contiene resultados para realizar esta visualización.
+    </div>
+    '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.2.2">
+  4.2.2. Escrutinio estadístico por clúster (Cluster vs All)
+</div>
+
+<p>
+  A continuación se despliega el núcleo analítico de la sección mediante el desglose individualizado de cada agrupación primaria. Para cada clúster evaluado matemáticamente, se proporciona un panel de resultados que documenta su perfil diferencial frente al resto de la población celular.
+</p>
+
+<p>
+  En aquellos casos en los que la estructura de directorios disponga de archivos individuales (típicamente designados con el sufijo <code>_vs_all</code>), se expondrá de forma iterativa:
+</p>
+
+<ul>
+  <li><strong>Reporte visual en PDF:</strong> Proyecciones espaciales y de distribución (como <em>Feature Plots</em> o mapas de calor) que ilustran la expresión de los principales genes marcadores identificados para el clúster en cuestión.</li>
+  <li><strong>Tabla estadística DEG (TSV/CSV):</strong> El catálogo navegable de todos los genes contrastados, permitiendo inspeccionar la magnitud de cambio (<code>avg_log2FC</code>) y su significancia (<code>p_val_adj</code>).</li>
+</ul>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# EMPAREJAR Y MOSTRAR PDF Y TSV POR CLÚSTER
+if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
+  
+  # Aislar solo los archivos que contienen "_vs_all"
+  indiv_df <- markers_merged_df[grepl("_vs_all", markers_merged_df$file_name, ignore.case = TRUE), ]
+  
+  if (nrow(indiv_df) > 0) {
+    # Extraer los números de los clústeres usando expresiones regulares para ordenarlos numéricamente
+    clusters_detectados <- as.numeric(stringr::str_extract(indiv_df$file_name, "\\d+"))
+    clusters_unicos <- sort(unique(clusters_detectados[!is.na(clusters_detectados)]))
+    
+    out_indiv <- tagList()
+    
+    # Índice para la numeración de los apartados (4.2.2.1, 4.2.2.2, etc.)
+    idx <- 1
+    
+    for (c in clusters_unicos) {
+      
+      # Filtrar los archivos exactos de este clúster 
+      pattern_cluster <- paste0("[^0-9]", c, "_vs_all")
+      archivos_cluster <- indiv_df[grepl(pattern_cluster, indiv_df$file_name, ignore.case = TRUE), ]
+      
+      fila_pdf <- archivos_cluster[grepl("\\.pdf$", archivos_cluster$file_name, ignore.case = TRUE), ]
+      fila_tsv <- archivos_cluster[grepl("\\.tsv$|\\.csv$", archivos_cluster$file_name, ignore.case = TRUE), ]
+      
+      # Añadir la cabecera de la subsección para este clúster (Estilo Control de Calidad)
+      out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+        <div style="height: 12px; background-color: transparent;"></div>
+
+        <div class="titulo4" id="tab3-seccion4.2.2.{idx}" style="padding-bottom: 8px; line-height: 1.2;">
+          4.2.2.{idx}. Escrutinio del Clúster {c}
+        </div>
+
+        <p style="margin-top: 20px;">
+          En este apartado se desglosa el perfil de expresión diferencial específico del <strong>Clúster {c}</strong> en la estrategia <em>Merged</em>. La revisión aislada de esta agrupación permite identificar inequívocamente su firma génica frente al resto del tejido, sentando las bases empíricas para su posterior anotación fenotípica.
+        </p>
+      ')))
+      
+      # --- BLOQUE 1: PDF ---
+      if (nrow(fila_pdf) > 0) {
+        ruta_rel_pdf <- fila_pdf$ruta_relativa[1]
+        nombre_pdf <- fila_pdf$file_name[1]
+        
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <p style="margin-top: 20px; margin-bottom: 18px;">
+            <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+            <strong>Reporte Gráfico de Marcadores Top:</strong> <code>{nombre_pdf}</code>
+          </p>
+          
+          <p style="margin-bottom: 18px;">
+            El siguiente panel interactivo resume visualmente la localización espacial y el nivel de expresión de los genes más representativos de este clúster.
+          </p>
+
+          <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+            <iframe src="{ruta_rel_pdf}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+            <a href="{ruta_rel_pdf}"
+              target="_blank" 
+              class="boton-iframe">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir PDF en pestaña nueva
+            </a>
+
+            <a href="{ruta_rel_pdf}"
+              download="{nombre_pdf}"
+              class="boton-iframe-download">
+              <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF
+            </a>
+          </div>
+        ')))
+      
+      } else {
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <div class="alert-info alert-box" style="margin-bottom: 25px;">
+            <i class="fa-solid fa-circle-info"></i> No se encontró reporte gráfico en PDF asociado al Clúster {c}.
+          </div>
+        '), sep = "\n"))
+      }
+      
+      # --- BLOQUE 2: TSV / CSV (Datatable) ---
+      if (nrow(fila_tsv) > 0) {
+        ruta_abs_tsv <- fila_tsv$ruta_absoluta[1]
+        ruta_rel_tsv <- fila_tsv$ruta_relativa[1]
+        nombre_tsv <- fila_tsv$file_name[1]
+        
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <p style="margin-top: 20px; margin-bottom: 18px;">
+            <i class="fa-solid fa-table" style="color: #276DC3;"></i> 
+            <strong>Tabla Estadística Completa (DEG):</strong> <code>{nombre_tsv}</code>
+          </p>
+          
+          <p style="margin-bottom: 20px;">
+            Para complementar el análisis visual superior, esta tabla expone de forma directa e interactiva todos los estadísticos del contraste diferencial, ordenados por significancia biológica para el Clúster {c}.
+          </p>
+        ')))
+        
+        sep_char <- ifelse(grepl("\\.csv$", nombre_tsv, ignore.case=T), ",", "\t")
+        
+        tryCatch({
+          datos_tsv <- read.table(ruta_abs_tsv, sep=sep_char, header=TRUE, stringsAsFactors=FALSE, fill=TRUE)
+          
+          # Renombrar primera columna si no tiene nombre
+          if(colnames(datos_tsv)[1] == "X" || colnames(datos_tsv)[1] == "") {
+              colnames(datos_tsv)[1] <- "Gene"
+          }
+          
+          # Formateo numérico
+          if("avg_log2FC" %in% colnames(datos_tsv)) datos_tsv$avg_log2FC <- round(as.numeric(datos_tsv$avg_log2FC), 4)
+          if("p_val_adj" %in% colnames(datos_tsv)) datos_tsv$p_val_adj <- signif(as.numeric(datos_tsv$p_val_adj), 4)
+          if("p_val" %in% colnames(datos_tsv)) datos_tsv$p_val <- signif(as.numeric(datos_tsv$p_val), 4)
+          
+          # Bloque datatable (Estilo Control de Calidad)
+          out_indiv <- tagAppendChild(out_indiv, 
+            DT::datatable(
+              datos_tsv,
+              options = list(
+                scrollX = TRUE,
+                scrollY = "400px",
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                lengthChange = FALSE,
+                info = FALSE,
+                dom = 't', 
+                language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+              ),
+              class = 'stripe hover row-border order-column compact',
+              rownames = FALSE
+            )
+          )
+          
+          # Botón de descarga de la tabla
+          out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+            <div style="text-align: center; margin-top: 16px; margin-bottom: 60px;">
+              <a href="{ruta_rel_tsv}" 
+                download="{nombre_tsv}" 
+                class="boton-file-download">
+                <i class="fa-solid fa-file-arrow-down"></i> Descargar marcadores (.tsv)
+              </a>
+            </div>
+          ')))
+          
+        }, error = function(e) {
+            out_indiv <<- tagAppendChild(out_indiv, HTML(glue::glue('
+              <div class="alert-info alert-box" style="margin-bottom: 50px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Error al leer la tabla {nombre_tsv}. Formato inesperado.
+              </div>
+            '), sep = "\n"))
+        })
+      
+      } else {
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <div class="alert-info alert-box" style="margin-bottom: 50px;">
+            <i class="fa-solid fa-circle-info"></i> No se encontró tabla de datos para el Clúster {c}.
+          </div>
+        ')))
+      }
+      
+      idx <- idx + 1
+    }
+    
+    out_indiv
+    
+  } else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Nota</b><br>
+      No se han encontrado archivos individuales de clústeres (formatos <code>_vs_all</code>) para realizar el escrutinio detallado.
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Directorio vacío</b><br>
+      La carpeta no contiene resultados para realizar este análisis individual.
+    </div>
+    '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.3">
+  4.3. Firmas génicas en agrupamiento alineado (Integrated)
+</div>
+
+<p>
+  Tras analizar la topología basal, procedemos a explorar los marcadores derivados de la estrategia <em>Integrated</em>. En este escenario, la matriz ha sido sometida a algoritmos de anclaje matemático para corregir posibles efectos de lote (<em>batch effects</em>). Las firmas génicas que emergen en esta sección son especialmente robustas, ya que representan a genes conservados que definen un tipo celular superando las desviaciones técnicas o biológicas entre las distintas condiciones (ej. WT vs KO).
+</p>
+
+<p>
+  A continuación, se presenta el directorio completo correspondiente a los marcadores extraídos de esta topología alineada. Desde este explorador podrá descargar todos los archivos generados, incluyendo tablas maestras consolidadas (archivos <code>.csv</code> o <code>.xlsx</code>) con el compendio global de los biomarcadores.
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# 1. GENERAR BOX-FILES DE INTEGRATED
+if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
+  
+  # Extraer el número de clúster del nombre del archivo para forzar un "orden natural"
+  num_cluster <- as.numeric(stringr::str_extract(markers_integrated_df$file_name, "\\d+"))
+  
+  # A los archivos sin números (como resúmenes, CSV o XLSX globales) les damos un -1 para que vayan al principio
+  num_cluster[is.na(num_cluster)] <- -1
+  
+  # Ordenar primero por el número de clúster (-1, 0, 1, 2... 10) y luego alfabéticamente (para desempatar .pdf y .tsv)
+  df_sorted <- markers_integrated_df[order(num_cluster, markers_integrated_df$file_name), ]
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(df_sorted)) {
+    f <- df_sorted$file_name[i]
+    ruta <- df_sorted$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else if (grepl("\\.csv$|\\.tsv$", f, ignore.case = TRUE)) {
+      "file-csv"
+    } else if (grepl("\\.xlsx$", f, ignore.case = TRUE)) {
+      "file-xlsx"
+    } else if (grepl("\\.xls$", f, ignore.case = TRUE)) {
+      "file-xls"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center" style="margin-top: 15px;">
+    <a href="{ruta_markers_integrated_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explorar directorio de Marcadores (Integrated)
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota Metodológica</b><br>
+    No se detectaron archivos de marcadores para la estrategia <em>Integrated</em> en este proyecto. Las subsecciones correspondientes se mostrarán vacías.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.3.1">
+  4.3.1. Visualización global de marcadores
+</div>
+
+<p>
+  Al igual que en el caso anterior, en los proyectos que lo dispongan, esta subsección albergará un documento PDF consolidado. Este archivo agrupa en un único formato multipágina las visualizaciones espaciales de los marcadores top para todos los clústeres integrados simultáneamente, ofreciendo una panorámica esencial del tejido alineado antes de proceder a la disección individual.
+</p>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 2. MOSTRAR EL PDF GLOBAL (SI EXISTE)
+if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
+  
+  # Buscar un PDF que NO sea individual (asumimos que los individuales contienen "_vs_all" en su nombre)
+  global_pdf_df <- markers_integrated_df[grepl("\\.pdf$", markers_integrated_df$file_name, ignore.case = TRUE) & 
+                                          !grepl("_vs_all", markers_integrated_df$file_name, ignore.case = TRUE), ]
+  
+  if (nrow(global_pdf_df) > 0) {
+    out_global <- tagList()
+    
+    for (i in 1:nrow(global_pdf_df)) {
+      file_name_clean <- global_pdf_df$file_name[i]
+      ruta_rel <- global_pdf_df$ruta_relativa[i]
+      
+      out_global <- tagAppendChild(out_global, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 20px; padding-top: 25px;"></div>
+
+        <p style="margin-bottom: 15px;">
+          <strong>Reporte Gráfico Consolidado:</strong> El siguiente panel interactivo muestra la visualización conjunta de los marcadores principales para el agrupamiento alineado.
+        </p>
+
+        <p style="margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>Archivo:</strong> <code>{file_name_clean}</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{ruta_rel}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 20px;">
+          <a href="{ruta_rel}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir PDF en pestaña nueva
+          </a>
+          <a href="{ruta_rel}" download="{file_name_clean}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF
+          </a>
+        </div>
+      ')))
+    }
+
+    out_global
+  
+  } else {
+    HTML('
+    <div class="alert-info alert-box" style="margin-top: 20px;">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Nota</b><br>
+      No se ha encontrado un archivo PDF consolidado global (resumen) para esta estrategia. Revise el escrutinio individual a continuación.
+    </div>
+    ')
+  }
+
+} else {
+    HTML('
+    <div class="alert-info alert-box" style="margin-top: 20px;">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Directorio vacío</b><br>
+      La carpeta no contiene resultados para realizar esta visualización.
+    </div>
+    ')
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.3.2">
+  4.3.2. Escrutinio estadístico por clúster (Cluster vs All)
+</div>
+
+<p>
+  A continuación se despliega el núcleo analítico mediante el desglose individualizado de cada agrupación integrada. Para cada clúster evaluado se proporciona un panel que documenta su perfil diferencial frente al resto de la población celular corregida.
+</p>
+
+<p>
+  En aquellos casos en los que la estructura disponga de archivos individuales (típicamente designados con el sufijo <code>_vs_all</code>), se expondrá de forma iterativa:
+</p>
+
+<ul>
+  <li><strong>Reporte visual en PDF:</strong> Proyecciones espaciales y de distribución que ilustran la expresión de los principales genes marcadores identificados para el clúster.</li>
+  <li><strong>Tabla estadística DEG (TSV/CSV):</strong> El catálogo navegable de todos los genes contrastados, permitiendo inspeccionar la magnitud de cambio y su significancia estadística.</li>
+</ul>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 3. EMPAREJAR Y MOSTRAR PDF Y TSV POR CLÚSTER (INTEGRATED)
+if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
+  
+  # Aislar solo los archivos que contienen "_vs_all"
+  indiv_df <- markers_integrated_df[grepl("_vs_all", markers_integrated_df$file_name, ignore.case = TRUE), ]
+  
+  if (nrow(indiv_df) > 0) {
+    # Extraer los números de los clústeres usando expresiones regulares para ordenarlos numéricamente
+    clusters_detectados <- as.numeric(stringr::str_extract(indiv_df$file_name, "\\d+"))
+    clusters_unicos <- sort(unique(clusters_detectados[!is.na(clusters_detectados)]))
+    
+    out_indiv <- tagList()
+    
+    # Índice para la numeración de los apartados (4.3.2.1, 4.3.2.2, etc.)
+    idx <- 1
+    
+    for (c in clusters_unicos) {
+      
+      # Filtrar los archivos exactos de este clúster 
+      pattern_cluster <- paste0("[^0-9]", c, "_vs_all")
+      archivos_cluster <- indiv_df[grepl(pattern_cluster, indiv_df$file_name, ignore.case = TRUE), ]
+      
+      fila_pdf <- archivos_cluster[grepl("\\.pdf$", archivos_cluster$file_name, ignore.case = TRUE), ]
+      fila_tsv <- archivos_cluster[grepl("\\.tsv$|\\.csv$", archivos_cluster$file_name, ignore.case = TRUE), ]
+      
+      # Añadir la cabecera de la subsección para este clúster
+      out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+        <div style="height: 12px; background-color: transparent;"></div>
+
+        <div class="titulo4" id="tab3-seccion4.3.2.{idx}" style="padding-bottom: 8px; line-height: 1.2;">
+          4.3.2.{idx}. Escrutinio del Clúster {c}
+        </div>
+
+        <p style="margin-top: 20px;">
+          En este apartado se desglosa el perfil de expresión diferencial específico del <strong>Clúster {c}</strong> en la estrategia <em>Integrated</em>. La revisión aislada de esta agrupación permite identificar inequívocamente su firma génica superando los posibles sesgos de origen, sentando las bases empíricas para su posterior anotación fenotípica.
+        </p>
+      ')))
+      
+      # --- BLOQUE 1: PDF ---
+      if (nrow(fila_pdf) > 0) {
+        ruta_rel_pdf <- fila_pdf$ruta_relativa[1]
+        nombre_pdf <- fila_pdf$file_name[1]
+        
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <p style="margin-top: 20px; margin-bottom: 18px;">
+            <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+            <strong>Reporte Gráfico de Marcadores Top:</strong> <code>{nombre_pdf}</code>
+          </p>
+          
+          <p style="margin-bottom: 18px;">
+            El siguiente panel interactivo resume visualmente la localización espacial y el nivel de expresión de los genes más representativos de este clúster integrado.
+          </p>
+
+          <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
+            <iframe src="{ruta_rel_pdf}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 40px;">
+            <a href="{ruta_rel_pdf}"
+              target="_blank" 
+              class="boton-iframe">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir PDF en pestaña nueva
+            </a>
+
+            <a href="{ruta_rel_pdf}"
+              download="{nombre_pdf}"
+              class="boton-iframe-download">
+              <i class="fa-solid fa-file-arrow-down"></i> Descargar PDF
+            </a>
+          </div>
+        ')))
+      
+      } else {
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <div class="alert-info alert-box" style="margin-bottom: 25px;">
+            <i class="fa-solid fa-circle-info"></i> No se encontró reporte gráfico en PDF asociado al Clúster {c}.
+          </div>
+        '), sep = "\n"))
+      }
+      
+      # --- BLOQUE 2: TSV / CSV (Datatable) ---
+      if (nrow(fila_tsv) > 0) {
+        ruta_abs_tsv <- fila_tsv$ruta_absoluta[1]
+        ruta_rel_tsv <- fila_tsv$ruta_relativa[1]
+        nombre_tsv <- fila_tsv$file_name[1]
+        
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <p style="margin-top: 20px; margin-bottom: 18px;">
+            <i class="fa-solid fa-table" style="color: #276DC3;"></i> 
+            <strong>Tabla Estadística Completa (DEG):</strong> <code>{nombre_tsv}</code>
+          </p>
+          
+          <p style="margin-bottom: 20px;">
+            Para complementar el análisis visual superior, esta tabla expone de forma directa e interactiva todos los estadísticos del contraste diferencial, ordenados por significancia biológica para el Clúster {c}.
+          </p>
+        ')))
+        
+        sep_char <- ifelse(grepl("\\.csv$", nombre_tsv, ignore.case=T), ",", "\t")
+        
+        tryCatch({
+          datos_tsv <- read.table(ruta_abs_tsv, sep=sep_char, header=TRUE, stringsAsFactors=FALSE, fill=TRUE)
+          
+          # Renombrar primera columna si no tiene nombre
+          if(colnames(datos_tsv)[1] == "X" || colnames(datos_tsv)[1] == "") {
+              colnames(datos_tsv)[1] <- "Gene"
+          }
+          
+          # Formateo numérico
+          if("avg_log2FC" %in% colnames(datos_tsv)) datos_tsv$avg_log2FC <- round(as.numeric(datos_tsv$avg_log2FC), 4)
+          if("p_val_adj" %in% colnames(datos_tsv)) datos_tsv$p_val_adj <- signif(as.numeric(datos_tsv$p_val_adj), 4)
+          if("p_val" %in% colnames(datos_tsv)) datos_tsv$p_val <- signif(as.numeric(datos_tsv$p_val), 4)
+          
+          # Bloque datatable
+          out_indiv <- tagAppendChild(out_indiv, 
+            DT::datatable(
+              datos_tsv,
+              options = list(
+                scrollX = TRUE,
+                scrollY = "500px", 
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                lengthChange = FALSE,
+                info = FALSE,
+                dom = 't', 
+                language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
+              ),
+              class = 'stripe hover row-border order-column compact',
+              rownames = FALSE
+            )
+          )
+          
+          # Botón de descarga de la tabla
+          out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+            <div style="text-align: center; margin-top: 16px; margin-bottom: 30px;">
+              <a href="{ruta_rel_tsv}" 
+                download="{nombre_tsv}" 
+                class="boton-file-download">
+                <i class="fa-solid fa-file-arrow-down"></i> Descargar marcadores (.tsv)
+              </a>
+            </div>
+          ')))
+          
+        }, error = function(e) {
+            out_indiv <<- tagAppendChild(out_indiv, HTML(glue::glue('
+              <div class="alert-info alert-box" style="margin-bottom: 50px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Error al leer la tabla {nombre_tsv}. Formato inesperado.
+              </div>
+            '), sep = "\n"))
+        })
+      } else {
+        out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
+          <div class="alert-info alert-box" style="margin-bottom: 50px;">
+            <i class="fa-solid fa-circle-info"></i> No se encontró tabla de datos para el Clúster {c}.
+          </div>
+        ')))
+      }
+      
+      idx <- idx + 1
+    }
+    
+    out_indiv
+    
+  } else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Nota</b><br>
+      No se han encontrado archivos individuales de clústeres (formatos <code>_vs_all</code>) para realizar el escrutinio detallado.
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+    HTML(glue::glue('
+    <div class="alert-info alert-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Directorio vacío</b><br>
+      La carpeta no contiene resultados para realizar este análisis individual.
+    </div>
+    '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  Habiendo extraído y catalogado exhaustivamente las firmas génicas de cada clúster —tanto en la topología basal como en la integrada— disponemos ahora del "carnet de identidad" molecular de cada subpoblación. Sin embargo, designaciones numéricas como "Clúster 0" o "Clúster 1" siguen siendo artefactos puramente matemáticos. El último eslabón imprescindible para dar un sentido biológico y funcional a este mapa topológico consiste en traducir estas listas de genes aislados a fenotipos celulares reales.
+</p>
+
+<p>
+  Este proceso de inferencia fenotípica se abordará en el proyecto mediante una estrategia analítica dual. En primer lugar, se ejecutará una <strong>anotación automática</strong>, empleando algoritmos que cruzan nuestras firmas génicas con bases de datos transcriptómicas de referencia (como <em>Human Primary Cell Atlas</em>, <em>Monaco Immune Data</em> o atlas genéricos murinos) para asignar linajes principales de forma rápida y no sesgada (ej. Células T, Monocitos, Estroma). 
+</p>
+
+<p>
+  En segundo lugar, dado que la biología intrínseca del tejido a menudo presenta una resolución o unos estadios de maduración que escapan a las bases de datos genéricas, se realizará una <strong>anotación manual curada</strong>. Mediante la inspección experta de marcadores canónicos, se afinará la nomenclatura para definir subpoblaciones específicas y etapas concretas de desarrollo.
+</p>
+
+<p>
+  La asignación definitiva de estos linajes representa la cristalización del análisis de célula única, dotando de contexto biológico a todos los cálculos previos. Todo este proceso de etiquetado y validación celular se detalla en el siguiente módulo del informe: <strong><a href="05-anotacion.html" class="normalink">5. Anotación celular (automática y manual)</a></strong>.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

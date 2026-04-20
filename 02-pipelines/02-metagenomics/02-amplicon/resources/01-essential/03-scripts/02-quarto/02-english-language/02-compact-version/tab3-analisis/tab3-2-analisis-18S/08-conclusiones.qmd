@@ -1,0 +1,352 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  amplicon_type: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS 18S | 8. CONCLUSIONES Y PERSPECTIVAS -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Insertar aquí en el caso de que fuera necesario -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatic Analysis (18S)</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 8</h1>
+  <h2>Conclusions and perspectives</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Conclusions and perspectives</h2>
+
+  <p>
+    This final section serves to <strong>close and integrate the set of analyses presented throughout the 18S metagenomic report</strong>. Rather than listing specific findings, it aims to provide a <strong>global and contextualized view</strong> of the results obtained, highlighting their relevance within the experimental framework and their potential to generate new research questions.
+  </p>
+
+  <p>
+    Based on taxonomic characterization, the evaluation of microbial diversity, and the comparative analyses performed, it is possible to <strong>outline general interpretations</strong> regarding microbial dynamics under the studied conditions. These reflections allow the results to be placed in a broader biological context, without losing sight of the inherent limitations of the approach used and the need for complementary analyses.
+  </p>
+
+  <p>
+    Finally, this section <strong>opens the door to future developments</strong>, such as experimental validation of observed patterns, integration with other types of data (multi-omics, environmental, clinical, or phenotypic), and the exploration of new hypotheses derived from the present study. In this way, the report is not only concluded, but also lays the foundation for <strong>future research lines and applications</strong>.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion6">
+        8<span>.</span> Conclusions and perspectives
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion6">
+  8<span>.</span> Conclusions and perspectives
+</div>
+
+<p>
+  Throughout this report, a comprehensive <strong>18S metagenomic analysis</strong> has been conducted, systematically covering all essential stages of a typical workflow in microbial characterization studies based on amplicon sequencing. 
+  From the <strong>initial review of samples and their metadata</strong>, through the <strong>quality control of raw reads</strong>, the <strong>generation of ASVs and abundance tables</strong>, the <strong>taxonomic and phylogenetic assignment</strong>, and the <strong>microbial diversity analyses</strong>, to the <strong>functional prediction of metabolic pathways</strong>, each step has been implemented with a rigorous, reproducible approach oriented toward biological interpretation.
+</p>
+
+<p>
+  The <strong>initial review</strong> ensured consistency between samples, their experimental conditions, and associated metadata, providing a solid foundation for downstream analyses. The <strong>quality control and preprocessing procedures</strong> helped remove low-quality reads, minimizing biases and strengthening the robustness of the final sequence dataset used.
+</p>
+
+<p>
+  Through <strong>taxonomic assignment</strong> and the <strong>construction of the abundance table</strong>, a detailed characterization of the microbial communities present in the samples was obtained. The <strong>alpha and beta diversity analyses</strong> revealed patterns of richness, evenness, and differentiation between experimental groups, providing a comprehensive ecological view of the microbial communities.
+</p>
+
+<p>
+  In turn, the <strong>differential abundance analysis</strong> allowed the identification of taxa with significantly different patterns between conditions, providing evidence of <strong>potential microbial associations with biological or environmental variables</strong>. 
+  The <strong>functional prediction</strong> using tools such as <code>PICRUSt2</code> complemented this taxonomic view with information on possible <strong>metabolic functions and biological pathways</strong> involved in the observed differences, enriching the ecological and functional interpretation of the study.
+</p>
+
+<p>
+  Overall, this report constitutes a <strong>comprehensive analytical platform</strong> for the exploration and contextualization of microbial communities using 18S sequencing techniques. 
+  Its results not only allow the characterization of the structure and potential function of the analyzed microbiomes, but also provide a solid foundation for <strong>biological hypothesis generation</strong> and the planning of further studies.
+</p>
+
+<p>
+  As future directions, the following recommendations are suggested:
+</p>
+
+<ul>
+  <li>
+    <strong>Experimentally validate taxa or functions of interest</strong> using complementary techniques such as targeted qPCR, specific culturing, or metabolomic analyses.
+  </li>
+  <li>
+    Incorporate <strong>environmental, phenotypic, or clinical data</strong> to explore correlations and generate more comprehensive explanatory models.
+  </li>
+  <li>
+    Develop <strong>microbial network analyses</strong> to identify potential interactions between taxa and complex community structures.
+  </li>
+  <li>
+    Move toward <strong>multi-omics approaches</strong> (e.g., shotgun metagenomics, transcriptomics, metabolomics) that provide deeper functional resolution.
+  </li>
+  <li>
+    Apply <strong>advanced computational models</strong> and robust statistical methods to identify non-obvious ecological patterns and improve the predictive power of the analysis.
+  </li>
+</ul>
+
+<p>
+  In summary, this analysis represents a fundamental step toward the <strong>ecological and functional understanding of the studied microbial communities</strong>, and lays the groundwork for more specific, integrative, and complex future research aimed at addressing higher-level biological or biotechnological questions.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-soporte">
+  ➤ Support and Contact
+</div>
+
+<p>
+  Amplicon metagenomic analysis generates a vast data ecosystem with high technical complexity. We understand that digesting this information and integrating it with laboratory results is an ongoing process. 
+</p>
+
+<p>
+  Therefore, for any methodological questions, inquiries regarding the interpretation of results, or the need to explore the data from new perspectives, the <strong>Bioinformatics Unit</strong> team is fully available. We will be happy to assist you in the optimal exploitation of this resource and in the planning of your future research directions.
+</p>
+
+<div class='contact-cards' style="margin-top: 30px; margin-bottom: 40px;">
+<div class='contact-card blue'>
+  <i class='fa-solid fa-globe fa-2x'></i>
+  <p><strong>Official website and contact</strong></p>
+  <a href='https://www.ipb.csic.es/servicios/Bioinformatica/index.html' target='_blank'>CSIC Bioinformatics Unit</a>
+</div>
+<div class='contact-card green'>
+  <i class='fa-solid fa-envelope fa-2x'></i>
+  <p><strong>Support email</strong></p>
+  <a href='mailto:bioinformatica@ipb.csic.es'>bioinformatica@ipb.csic.es</a>
+</div>
+<div class='contact-card purple'>
+  <i class='fa-brands fa-github fa-2x'></i>
+  <p><strong>Code repository</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe' target='_blank'>Project GitHub</a>
+</div>
+<div class='contact-card orange'>
+  <i class='fa-solid fa-book fa-2x'></i>
+  <p><strong>Documentation</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe/blob/main/06-info/0202_METAGENOMICS_AMPLICON_GUIDE.md' target='_blank'>User manual</a>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../../04-javascript/script.js"></script>

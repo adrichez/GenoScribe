@@ -1,0 +1,1064 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  amplicon_type: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS ITS | 5. ANÁLISIS DIFERENCIAL DE ABUNDANCIA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+# Cargar librerías
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(htmltools)
+library(purrr)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_metagenomics_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..", "..")
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Rutas de la carpeta Def
+ruta_Def_ITS <- file.path(params$project_path, "Resultados", "Def_ITS")
+ruta_Def_ITS_relativa <- file.path(ruta_proyecto_relativa, "Resultados", "Def_ITS")
+
+
+# Rutas de la carpeta export
+ruta_exported <- file.path(ruta_Def_ITS, "exported")
+ruta_exported_relativa <- file.path(ruta_Def_ITS_relativa, "exported")
+
+
+# Listar carpetas únicas (nivel 1) ignorando "_ingles" y que existan realmente
+folders <- list.dirs(ruta_exported_relativa, full.names = TRUE, recursive = FALSE) %>%
+  str_subset("_ingles", negate = TRUE) %>%
+  keep(dir.exists) %>%       # <-- solo carpetas que existen
+  basename()
+
+
+# Función para obtener lista de archivos y comparaciones únicas de forma segura
+get_files_info <- function(folder_name) {
+  path <- file.path(ruta_exported_relativa, folder_name)
+  
+  if (!dir.exists(path)) {
+    message(glue("Folder '{folder_name}' does not exist. Skipping."))
+    return(NULL)
+  }
+  
+  # List .xls and .png files
+  files <- list.files(path, pattern = "\\.(xls|png)$", full.names = TRUE)
+  
+  if (length(files) == 0) {
+    message(glue("No files were found in '{folder_name}'."))
+    return(NULL)
+  }
+  
+  # Extraer solo el nombre base
+  file_names <- basename(files)
+  
+  # Extraer comparación limpia (quitamos número inicial, extensión y cambiamos _ -> " ", - -> " vs ")
+  comparison <- file_names %>%
+    str_remove("^\\d+\\.") %>%        # quitar número inicial
+    str_remove("\\.(xls|png)$") %>%   # quitar extensión
+    str_replace_all("_", " ") %>%     # _ -> espacio
+    str_replace_all("-", " vs ")      # - -> " vs "
+  
+  tibble(
+    file = files,
+    comparison = comparison,
+    type = if_else(str_detect(files, "\\.xls$"), "xls", "png")
+  )
+}
+
+
+# Crear lista de dataframes solo para carpetas existentes
+folder_dfs <- map(folders, ~ get_files_info(.x)) %>%
+  set_names(folders)
+
+
+# Filtrar NULLs (carpetas vacías o inexistentes)
+folder_dfs <- folder_dfs[!sapply(folder_dfs, is.null)]
+
+
+# Lista de carpetas con comparaciones únicas
+folder_files <- map(names(folder_dfs), ~ {
+  df <- folder_dfs[[.x]]
+  df %>%
+    group_by(comparison) %>%
+    summarise(
+      xls = file[type == "xls"],
+      png = file[type == "png"],
+      .groups = "drop"
+    )
+}) %>%
+  set_names(names(folder_dfs))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis (ITS)</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 5</h1>
+  <h2>Differential Abundance Analysis</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This section presents the results of the <strong>differential abundance analysis</strong> of different taxonomic levels (family, genus, and species) across the defined experimental groups. 
+    This analysis is based on the abundance matrix obtained from sequencing, along with the corresponding taxonomic information, and allows the identification of taxa that show significant changes in relative abundance.
+  </p>
+
+  <p>
+    For each taxonomic level, two main types of results are presented:
+  </p>
+
+  <ul>
+    <li>
+      <strong>Differential abundance tables</strong> <strong>&rArr;</strong> Excel files containing relevant statistical values, such as logFC, average expression, t-statistic, p-value, and adjusted p-value for each identified taxon. These tables allow a detailed quantitative analysis of abundance changes between groups.
+    </li>
+    <li>
+      <strong>Volcano plots</strong> <strong>&rArr;</strong> visual representations that facilitate rapid interpretation of results, showing taxa with significant abundance changes and their relative magnitude. Points at the extremes of the plot highlight the most differentially abundant taxa.
+    </li>
+  </ul>
+
+  <p>
+    The section is then organized into three subsections:
+  </p>
+
+  <ul>
+    <li>
+      <strong>5.1. Family-level results</strong> <strong>&rArr;</strong> shows the corresponding tables and plots for microbial families.
+    </li>
+    <li>
+      <strong>5.2. Genus-level results</strong> <strong>&rArr;</strong> presents the tables and plots corresponding to microbial genera.
+    </li>
+    <li>
+      <strong>5.3. Species-level results</strong> <strong>&rArr;</strong> includes the tables and plots for the identified microbial species.
+    </li>
+  </ul>
+
+  <p>
+    This structure allows the reader to clearly and comprehensively understand which taxa show significant differences between groups, facilitating biological interpretation and identification of relevant patterns for the study.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+```{=html}
+```{r, results="asis"}
+cat('<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion5">
+        5<span>.</span> Differential abundance analysis
+      </a>
+      <ul>
+')
+
+# Iterar sobre las carpetas/folders
+for (i in seq_along(folders)) {
+  cat(glue('
+        <li>
+          <a href="#tab3-seccion5.{i}">
+            5.{i}. Results at the {folders[i]} level
+          </a>
+        </li>
+  '))
+}
+
+cat('      </ul>
+    </li>
+  </ul>
+</div>
+')
+```
+```
+
+```{=html}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion3">
+  5<span>.</span> Differential abundance analysis
+</div>
+
+<p>
+  This section presents the <strong>differential abundance analysis</strong> of microbial taxa across the different experimental groups. 
+  Unlike the composition analyses performed in Section 4, which described which organisms were present and in what proportion, here we evaluate <em>which families, genera, or species change significantly between conditions</em>. 
+  This approach allows the identification of taxa associated with treatments, health states, or specific environmental conditions.
+</p>
+
+<p>
+  The results of this analysis are based on the <strong>exported relative abundance matrices</strong> in Excel format (`feature-table_l5_export.tsv`, `feature-table_l6_export.tsv`, `feature-table_l7_export.tsv`) and on the files generated by group comparison methods (`*.xls` and `*.png`) located in the <code>exported/</code> folder.
+</p>
+
+<p>
+  For each taxonomic level, the following will be presented:
+</p>
+
+<ul>
+  <li>
+    <strong>Differential abundance tables</strong> <strong>&rArr;</strong> Excel files containing abundance changes between groups, p and q values, fold changes, and mean abundances. These tables allow precise identification of taxa showing significant differences.
+  </li>
+  <li>
+    <strong>Volcano plots</strong> <strong>&rArr;</strong> visual representations of the results, showing abundance changes (log2 fold change) versus statistical significance (-log10 p-value). Volcano plots facilitate rapid identification of the most relevant taxa in each contrast.
+  </li>
+</ul>
+
+<p>
+  The structure of this section will follow a uniform pattern by taxonomic level:
+</p>
+
+<ol>
+  <li>
+    <strong>Family-level results (L5)</strong> <strong>&rArr;</strong> (if data is available) analysis of abundance differences between groups at the microbial family level.
+  </li>
+  <li>
+    <strong>Genus-level results (L6)</strong> <strong>&rArr;</strong> (if data is available) analysis at the genus level, providing higher taxonomic resolution than the family level.
+  </li>
+  <li>
+    <strong>Species-level results (L7)</strong> <strong>&rArr;</strong> (if data is available) analysis at the species level, offering the most detailed resolution.
+  </li>
+</ol>
+
+<p>
+  In each subsection, for each experimental comparison, the following will be shown:
+</p>
+
+<ul>
+  <li>The interactive differential abundance table (<code>DataTable</code>) to explore the data dynamically.</li>
+  <li>The corresponding volcano plot, with a subtitle clearly indicating which groups are being compared.</li>
+</ul>
+
+<p>
+  This presentation will allow the reader to understand not only which taxa are present but also which are significantly different between conditions, 
+  thus preparing the ground for the next section on <strong>microbial diversity</strong>, where it will be assessed how these differences are reflected in the richness and overall structure of microbial communities.
+</p>
+
+```{r}
+library(htmltools)
+library(DT)
+library(glue)
+
+out <- tagList()  # Contenedor principal
+
+if ("familia" %in% names(folder_files)) {
+  
+  # Título principal
+  out <- tagAppendChild(out, HTML(glue('
+  <div style="height: 20px; background-color: transparent;"></div>
+
+  <div class="titulo2" id="tab3-seccion5.1" style="margin-top: 50px; margin-bottom: 15px; padding-bottom: 10px">
+    5.1. Family-level results (L5)
+  </div>
+
+  <p style="margin-bottom: 22px;">
+    This subsection presents the results of abundance differences between groups at the <strong>microbial family</strong> level. 
+    Each row of the table represents an identified bacterial family, while each column shows the comparison results between the groups defined in the experiment. For each comparison, the following is included:
+  </p>
+
+  <ul style="margin-bottom: 22px;">
+    <li>The <strong>differential abundance table</strong>, showing logFC, adjusted p-values, and other relevant metrics.</li>
+    <li>The <strong>volcano plot</strong>, which allows rapid visualization of the most differentially abundant families between groups.</li>
+  </ul>
+
+  <p style="margin-bottom: 22px;">
+    These visualizations allow the identification of patterns of interest and facilitate biological interpretation of the results.
+  </p>
+  ')))
+  
+  df_familia <- folder_files[["familia"]]
+
+  for (i in seq_len(nrow(df_familia))) {
+    comp <- df_familia$comparison[i]
+    xls_file <- df_familia$xls[i]
+    png_file <- df_familia$png[i]
+    
+    # Subtítulo
+    out <- tagAppendChild(out, HTML(glue('
+    <div style="height: 15px; background-color: transparent;"></div>
+
+    <div class="titulo3" id="tab3-seccion5.1.{i}" style="margin-top: 42px; margin-bottom: 12px; padding-bottom: 8px;">
+      5.1.{i}. {comp}
+    </div>
+
+    <p style="margin-bottom: 22px;">
+      This section presents the results corresponding to the comparison "<strong>{comp}</strong>". 
+      The differential abundance table will be shown first, followed by the volcano plot to facilitate visual interpretation.
+    </p>
+    ')))
+    
+    # Tabla interactiva si existe
+    if (!is.na(xls_file) && file.exists(xls_file)) {
+      dat <- read.delim(
+        xls_file,
+        sep = "\t",
+        header = TRUE,
+        quote = "",
+        check.names = FALSE,
+        stringsAsFactors = FALSE,
+        fill = TRUE,
+        row.names = NULL
+      )
+      names(dat)[1] <- "FeatureID"
+      
+      out <- tagAppendChild(out, HTML('
+      <div class="titulo4" style="margin-top: 37px; margin-bottom: 12px; padding-bottom: 7px;">
+        ➤ Differential abundance table
+      </div>
+
+      <p style="margin-bottom: 22px;">
+        The <strong>interactive table</strong> below shows statistical values for each identified family, including logFC, average expression, t-statistic, p-value, and adjusted p-value. You can sort columns, search for specific families, and explore the results interactively.
+      </p>
+
+      <div style="height: 15px; background-color: transparent;"></div>
+      '))
+      
+      # Agregar tabla interactiva
+      out <- tagAppendChild(out,
+        DT::datatable(
+          dat,
+          escape = FALSE,
+          options = list(
+            scrollX = TRUE,
+            scrollY = "500px",
+            scrollCollapse = TRUE,
+            paging = FALSE,
+            lengthChange = FALSE,
+            info = FALSE,
+            dom = 'ft', # Solo tabla
+            language = list(
+              url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+            )
+          ),
+          class = 'stripe hover compact'
+        )
+      )
+
+      out <- tagAppendChild(out, HTML(glue('
+      <p style="text-align:center; margin-top: 18px;">
+        <a href="{xls_file}"
+          download="{basename(xls_file)}"
+          class="boton-file-download">
+          <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(xls_file)}"
+        </a>
+      </p>
+      ')))
+      
+    } else {
+      out <- tagAppendChild(out, HTML('
+      <div class="alert-warning alert-box" style="margin: 25px 0;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <b>Warning</b><br>
+        No table was found for this comparison.
+      </div>
+      '))
+    }
+    
+    # Imagen de volcán si existe
+    if (!is.na(png_file) && file.exists(png_file)) {
+      out <- tagAppendChild(out, HTML(glue('
+      <div class="titulo4" style="margin-top: 37px; margin-bottom: 12px; padding-bottom: 7px;">
+        ➤ Comparison volcano plot
+      </div>
+
+      <p style="margin-bottom: 22px;">
+        The <strong>volcano plot</strong> allows visual identification of the most differentially abundant families between groups. Points at the extremes of the plot represent families with significant abundance changes and high logFC magnitude.
+      </p>
+
+      <div class="box-images" style="margin-top: 30px; margin-bottom: 10px;">
+        <img src="{png_file}" alt="{comp} volcano">
+      </div>
+      ')))
+
+      out <- tagAppendChild(out, HTML(glue('
+      <div style="display: flex; justify-content: center; gap: 25px; margin-top:45px">
+        <a href="{png_file}"
+          target="_blank" 
+          class="boton-image">
+          <i class="fa-solid fa-chart-column"></i> View plot in a new page
+        </a>
+
+        <a href="{png_file}"
+          download="{basename(png_file)}"
+          class="boton-image-download">
+          <i class="fa-solid fa-file-arrow-down"></i> Download image "{basename(png_file)}"
+        </a>
+      </div>
+      ')))
+
+    } else {
+      out <- tagAppendChild(out, HTML('
+      <div class="alert-warning alert-box" style="margin-top: 30px; margin-bottom: 30px;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <b>Warning</b><br>
+        No volcano plot was found for this comparison.
+      </div>
+      '))
+    }
+  }
+  
+} else {
+  out <- tagAppendChild(out, HTML('
+  <div style="height: 20px; background-color: transparent;"></div>
+
+  <div class="titulo2" id="tab3-seccion5.1" style="margin-top: 50px; margin-bottom: 15px; padding-bottom: 10px">
+    5.1. Family-level results (L5)
+  </div>
+
+  <p style="margin-bottom: 22px;">
+    This subsection presents the results of abundance differences between groups at the <strong>microbial family</strong> level. 
+    Each row of the table would normally represent an identified bacterial family, while each column would show the comparison results between the groups defined in the experiment. For each comparison, the following is usually included:
+  </p>
+
+  <ul style="margin-bottom: 22px;">
+    <li>The <strong>differential abundance table</strong>, showing logFC, adjusted p-values, and other relevant metrics.</li>
+    <li>The <strong>volcano plot</strong>, which allows rapid visualization of the most differentially abundant families between groups.</li>
+  </ul>
+
+  <p style="margin-bottom: 22px;">
+    Under normal circumstances, the tables and plots corresponding to each experimental comparison would be presented, allowing analysis of which families show significant changes between the studied groups.
+    However, the folder corresponding to families was not found. This indicates that result files for this taxonomic level are absent or have not yet been generated, so the expected tables and plots cannot be displayed.
+  </p>
+
+  <div class="alert-warning alert-box" style="margin-top: 30px; margin-bottom: 30px;">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    No family-level results were found (folder "familia" missing or empty).<br>
+  </div>
+  '))
+}
+
+# Mostrar todo el contenido
+out
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+library(htmltools)
+library(DT)
+library(glue)
+
+out <- tagList()  # Contenedor principal
+
+if ("genero" %in% names(folder_files)) {
+  
+  out <- tagAppendChild(out, HTML(glue('
+  <div style="height: 20px; background-color: transparent;"></div>
+
+  <div class="titulo2" id="tab3-seccion5.2" style="margin-top: 50px; margin-bottom: 15px; padding-bottom: 10px">
+    5.2. Genus-level results (L6)
+  </div>
+
+  <p style="margin-bottom: 22px;">
+    This subsection presents the results of abundance differences between groups at the <strong>microbial genus</strong> level. 
+    Each row of the table represents an identified bacterial genus, while each column shows the comparison results between the groups defined in the experiment. For each comparison, the following is included:
+  </p>
+
+  <ul style="margin-bottom: 22px;">
+    <li>The <strong>differential abundance table</strong>, showing logFC, adjusted p-values, and other relevant metrics.</li>
+    <li>The <strong>volcano plot</strong>, which allows rapid visualization of the most differentially abundant genera between groups.</li>
+  </ul>
+
+  <p style="margin-bottom: 22px;">
+    These visualizations allow the identification of patterns of interest and facilitate biological interpretation of the results.
+  </p>
+  ')))
+  
+  df_genero <- folder_files[["genero"]]
+
+  for (i in seq_len(nrow(df_genero))) {
+    comp <- df_genero$comparison[i]
+    xls_file <- df_genero$xls[i]
+    png_file <- df_genero$png[i]
+    
+    out <- tagAppendChild(out, HTML(glue('
+    <div style="height: 15px; background-color: transparent;"></div>
+
+    <div class="titulo3" id="tab3-seccion5.2.{i}" style="margin-top: 42px; margin-bottom: 12px; padding-bottom: 8px;">
+      5.2.{i}. {comp}
+    </div>
+
+    <p style="margin-bottom: 22px;">
+      This section presents the results corresponding to the comparison "<strong>{comp}</strong>". 
+      The differential abundance table will be shown first, followed by the volcano plot to facilitate visual interpretation.
+    </p>
+    ')))
+    
+    if (!is.na(xls_file) && file.exists(xls_file)) {
+      dat <- read.delim(
+        xls_file,
+        sep = "\t",
+        header = TRUE,
+        quote = "",
+        check.names = FALSE,
+        stringsAsFactors = FALSE,
+        fill = TRUE,
+        row.names = NULL
+      )
+      names(dat)[1] <- "FeatureID"
+      
+      out <- tagAppendChild(out, HTML('
+      <div class="titulo4" style="margin-top: 37px; margin-bottom: 12px; padding-bottom: 7px;">
+        ➤ Differential abundance table
+      </div>
+
+      <p style="margin-bottom: 22px;">
+        The <strong>interactive table</strong> below shows statistical values for each identified genus, including logFC, average expression, t-statistic, p-value, and adjusted p-value. You can sort columns, search for specific genera, and explore the results interactively.
+      </p>
+
+      <div style="height: 15px; background-color: transparent;"></div>
+      '))
+      
+      # Agregar tabla interactiva
+      out <- tagAppendChild(out,
+        DT::datatable(
+          dat,
+          escape = FALSE,
+          options = list(
+            scrollX = TRUE,
+            scrollY = "500px",
+            scrollCollapse = TRUE,
+            paging = FALSE,
+            lengthChange = FALSE,
+            info = FALSE,
+            dom = 'ft', # Solo tabla
+            language = list(
+              url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+            )
+          ),
+          class = 'stripe hover compact'
+        )
+      )
+
+      out <- tagAppendChild(out, HTML(glue('
+      <p style="text-align:center; margin-top: 18px;">
+        <a href="{xls_file}"
+          download="{basename(xls_file)}" 
+          class="boton-file-download">
+          <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(xls_file)}"
+        </a>
+      </p>
+      ')))
+      
+    } else {
+      out <- tagAppendChild(out, HTML('
+      <div class="alert-warning alert-box" style="margin-top: 30px; margin-bottom: 30px;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <b>Warning</b><br>
+        No table was found for this comparison.
+      </div>
+      '))
+    }
+    
+    if (!is.na(png_file) && file.exists(png_file)) {
+      out <- tagAppendChild(out, HTML(glue('
+      <div class="titulo4" style="margin-top: 37px; margin-bottom: 12px; padding-bottom: 7px;">
+        ➤ Comparison volcano plot
+      </div>
+
+      <p style="margin-bottom: 22px;">
+        The <strong>volcano plot</strong> allows visual identification of the most differentially abundant genera between groups. 
+        Points at the extremes of the plot represent genera with significant abundance changes and high logFC magnitude.
+      </p>
+
+      <div class="box-images" style="margin-top: 30px; margin-bottom: 10px;">
+        <img src="{png_file}" alt="{comp} volcano">
+      </div>
+      ')))
+
+      out <- tagAppendChild(out, HTML(glue('
+      <div style="display: flex; justify-content: center; gap: 25px; margin-top:45px">
+        <a href="{png_file}"
+          target="_blank" 
+          class="boton-image">
+          <i class="fa-solid fa-chart-column"></i> View plot in a new page
+        </a>
+
+        <a href="{png_file}"
+          download="{basename(png_file)}"
+          class="boton-image-download">
+          <i class="fa-solid fa-file-arrow-down"></i> Download image "{basename(png_file)}"
+        </a>
+      </div>
+      ')))
+
+    } else {
+      out <- tagAppendChild(out, HTML('
+      <div class="alert-warning alert-box" style="margin-top: 30px; margin-bottom: 30px;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <b>Warning</b><br>
+        No volcano plot was found for this comparison.
+      </div>
+      '))
+    }
+  }
+  
+} else {
+  out <- tagAppendChild(out, HTML('
+  <div style="height: 20px; background-color: transparent;"></div>
+
+  <div class="titulo2" id="tab3-seccion5.2" style="margin-top: 50px; margin-bottom: 15px; padding-bottom: 10px">
+    5.2. Genus-level results (L6)
+  </div>
+
+  <p style="margin-bottom: 22px;">
+    This subsection presents the results of abundance differences between groups at the <strong>microbial genus</strong> level. 
+    Each row of the table would normally represent an identified bacterial genus, while each column would show the comparison results between the groups defined in the experiment. For each comparison, the following is usually included:
+  </p>
+
+  <ul style="margin-bottom: 22px;">
+    <li>The <strong>differential abundance table</strong>, showing logFC, adjusted p-values, and other relevant metrics.</li>
+    <li>The <strong>volcano plot</strong>, which allows rapid visualization of the most differentially abundant genera between groups.</li>
+  </ul>
+
+  <p style="margin-bottom: 22px;">
+    Under normal circumstances, the tables and plots corresponding to each experimental comparison would be presented, allowing analysis of which genera show significant changes between the studied groups.
+    However, the folder corresponding to genera was not found. This indicates that result files for this taxonomic level are absent or have not yet been generated, so the expected tables and plots cannot be displayed.
+  </p>
+
+  <div class="alert-error alert-box" style="margin-top: 30px; margin-bottom: 30px;">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    No genus-level results were found (folder "genero" missing or empty).<br>
+    Ensure that the data has been generated and saved correctly.
+  </div>
+  '))
+}
+
+# Mostrar todo el contenido
+out
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+library(htmltools)
+library(DT)
+library(glue)
+
+out <- tagList()  # Contenedor principal
+
+if ("especie" %in% names(folder_files)) {
+  
+  out <- tagAppendChild(out, HTML(glue('
+  <div style="height: 20px; background-color: transparent;"></div>
+
+  <div class="titulo2" id="tab3-seccion5.3" style="margin-top: 50px; margin-bottom: 15px; padding-bottom: 10px">
+    5.3. Species-level results (L7)
+  </div>
+
+  <p style="margin-bottom: 22px;">
+    This subsection presents the results of abundance differences between groups at the <strong>microbial species</strong> level. 
+    Each row of the table represents an identified bacterial species, while each column shows the comparison results between the groups defined in the experiment. For each comparison, the following is included:
+  </p>
+
+  <ul style="margin-bottom: 22px;">
+    <li>The <strong>differential abundance table</strong>, showing logFC, adjusted p-values, and other relevant metrics.</li>
+    <li>The <strong>volcano plot</strong>, which allows rapid visualization of the most differentially abundant species between groups.</li>
+  </ul>
+
+  <p style="margin-bottom: 22px;">
+    These visualizations allow the identification of patterns of interest and facilitate biological interpretation of the results.
+  </p>
+  ')))
+  
+  df_especie <- folder_files[["especie"]]
+
+  for (i in seq_len(nrow(df_especie))) {
+    comp <- df_especie$comparison[i]
+    xls_file <- df_especie$xls[i]
+    png_file <- df_especie$png[i]
+    
+    out <- tagAppendChild(out, HTML(glue('
+    <div style="height: 15px; background-color: transparent;"></div>
+
+    <div class="titulo3" id="tab3-seccion5.3.{i}" style="margin-top: 42px; margin-bottom: 12px; padding-bottom: 8px;">
+      5.3.{i}. {comp}
+    </div>
+
+    <p style="margin-bottom: 22px;">
+      This section presents the results corresponding to the comparison "<strong>{comp}</strong>". 
+      The differential abundance table will be shown first, followed by the volcano plot to facilitate visual interpretation.
+    </p>
+    ')))
+    
+    if (!is.na(xls_file) && file.exists(xls_file)) {
+      dat <- read.delim(
+        xls_file,
+        sep = "\t",
+        header = TRUE,
+        quote = "",
+        check.names = FALSE,
+        stringsAsFactors = FALSE,
+        fill = TRUE,
+        row.names = NULL
+      )
+      names(dat)[1] <- "FeatureID"
+      
+      out <- tagAppendChild(out, HTML('
+      <div class="titulo4" style="margin-top: 37px; margin-bottom: 12px; padding-bottom: 7px;">
+        ➤ Differential abundance table
+      </div>
+
+      <p style="margin-bottom: 22px;">
+        The <strong>interactive table</strong> below shows statistical values for each identified species, including logFC, average expression, t-statistic, p-value, and adjusted p-value. You can sort columns, search for specific species, and explore the results interactively.
+      </p>
+
+      <div style="height: 15px; background-color: transparent;"></div>
+      '))
+      
+      # Agregar tabla interactiva
+      out <- tagAppendChild(out,
+        DT::datatable(
+          dat,
+          escape = FALSE,
+          options = list(
+            scrollX = TRUE,
+            scrollY = "500px",
+            scrollCollapse = TRUE,
+            paging = FALSE,
+            lengthChange = FALSE,
+            info = FALSE,
+            dom = 'ft', # Solo tabla
+            language = list(
+              url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+            )
+          ),
+          class = 'stripe hover compact'
+        )
+      )
+
+      out <- tagAppendChild(out, HTML(glue('
+      <p style="text-align:center; margin-top: 18px;">
+        <a href="{xls_file}"
+          download="{basename(xls_file)}"
+          class="boton-file-download">
+          <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(xls_file)}"
+        </a>
+      </p>
+      ')))
+      
+    } else {
+      out <- tagAppendChild(out, HTML('
+      <div class="alert-warning alert-box" style="margin-top: 30px; margin-bottom: 30px;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <b>Warning</b><br>
+        No table was found for this comparison.
+      </div>
+      '))
+    }
+    
+    if (!is.na(png_file) && file.exists(png_file)) {
+      out <- tagAppendChild(out, HTML(glue('
+      <div class="titulo4" style="margin-top: 37px; margin-bottom: 12px; padding-bottom: 7px;">
+        ➤ Comparison volcano plot
+      </div>
+
+      <p style="margin-bottom: 22px;">
+        The <strong>volcano plot</strong> allows visual identification of the most differentially abundant species between groups. 
+        Points at the extremes of the plot represent species with significant abundance changes and high logFC magnitude.
+      </p>
+
+      <div class="box-images" style="margin-top: 30px; margin-bottom: 10px;">
+        <img src="{png_file}" alt="{comp} volcano">
+      </div>
+      ')))
+
+      out <- tagAppendChild(out, HTML(glue('
+      <div style="display: flex; justify-content: center; gap: 25px; margin-top:45px">
+        <a href="{png_file}"
+          target="_blank" 
+          class="boton-image">
+          <i class="fa-solid fa-chart-column"></i> View plot in a new page
+        </a>
+
+        <a href="{png_file}"
+          download="{basename(png_file)}"
+          class="boton-image-download">
+          <i class="fa-solid fa-file-arrow-down"></i> Download image "{basename(png_file)}"
+        </a>
+      </div>
+      ')))
+
+    } else {
+      out <- tagAppendChild(out, HTML('
+      <div class="alert-warning alert-box" style="margin-top: 30px; margin-bottom: 30px;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <b>Warning</b><br>
+        No volcano plot was found for this comparison.
+      </div>
+      '))
+    }
+  }
+  
+} else {
+  out <- tagAppendChild(out, HTML('
+  <div class="titulo2" id="tab3-seccion5.3" style="margin-top: 50px; margin-bottom: 15px; padding-bottom: 10px">
+    5.3. Species-level results (L7)
+  </div>
+
+  <p style="margin-bottom: 22px;">
+    This subsection presents the results of abundance differences between groups at the <strong>microbial species</strong> level. 
+    Each row of the table would normally represent an identified bacterial species, while each column would show the comparison results between the groups defined in the experiment. For each comparison, the following is usually included:
+  </p>
+
+  <ul style="margin-bottom: 22px;">
+    <li>The <strong>differential abundance table</strong>, showing logFC, adjusted p-values, and other relevant metrics.</li>
+    <li>The <strong>volcano plot</strong>, which allows rapid visualization of the most differentially abundant species between groups.</li>
+  </ul>
+
+  <p style="margin-bottom: 22px;">
+    Under normal circumstances, tables and plots corresponding to each experimental comparison would be presented in this section, allowing analysis of which species show significant changes between the studied groups.
+    However, the folder corresponding to species was not found. This indicates that result files for this taxonomic level are absent or have not yet been generated, so the expected tables and plots cannot be displayed.
+  </p>
+
+  <div class="alert-error alert-box" style="margin-top: 30px; margin-bottom: 30px;">
+    <i class="fa-solid fa-circle-xmark"></i>
+    <b>Error</b><br>
+    No species-level results were found (folder "especie" missing or empty).<br>
+    Ensure that the data has been generated and saved correctly.
+  </div>
+  '))
+}
+
+# Mostrar todo el contenido
+out
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../../04-javascript/script.js"></script>

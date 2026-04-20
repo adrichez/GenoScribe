@@ -1,0 +1,809 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  experiment_name: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 2. EVALUACIÓN DE LA CALIDAD DE LAS LECTURAS -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+# Cargar librerías
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(htmltools)
+library(purrr)
+library(tibble)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_bulk_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_bulk_rna_seq_pipeline_absoluta <- normalizePath(ruta_bulk_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+nombre_experimento <- basename(params$experiment_name)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Rutas para el archivo de metadatos
+targets_experimento <- paste0("targets_", nombre_experimento, ".txt")
+ruta_targets_experimento <- file.path(params$project_path, "Resultados", targets_experimento)
+ruta_targets_experimento_relativa <- file.path(ruta_proyecto_relativa, "Resultados", targets_experimento)
+
+
+# Ruta de la carpeta donde están los fastq
+reads_down_select_experimento <- paste0("reads_down_select_", nombre_experimento)
+ruta_reads_down_select_experimento <- file.path(params$project_path, "Analisis", reads_down_select_experimento)
+ruta_reads_down_select_experimento_relativa <- file.path(ruta_proyecto_relativa, "Analisis", reads_down_select_experimento)
+
+
+# Ruta donde están los informes de calidad
+ruta_Pre_fastqc_results <- file.path(params$project_path, "Analisis", nombre_experimento, "Pre_fastqc_results")
+ruta_Pre_fastqc_results_relativa <- file.path(ruta_proyecto_relativa, "Analisis", nombre_experimento, "Pre_fastqc_results")
+
+
+# Obtener archivos .html de FastQC
+archivos_html <- dir_ls(ruta_Pre_fastqc_results, regexp = "\\.html$")
+
+# Extraer IDs de muestra
+ids_muestras <- archivos_html |>
+  path_file() |>
+  str_replace("_fastqc\\.html$", "") |>
+  str_remove("_(R1|R2)$") |>
+  unique()
+
+
+# Leer targets
+targets <- read.table(ruta_targets_experimento_relativa, header = TRUE, fill = TRUE, stringsAsFactors = FALSE)
+
+
+# Listar archivos fastqc y fastq
+archivos_fastqc <- list.files(ruta_Pre_fastqc_results, pattern = "_fastqc\\.html$", full.names = FALSE)
+archivos_fastq <- list.files(ruta_reads_down_select_experimento, pattern = "\\.fastq\\.gz$", full.names = FALSE)
+
+
+# Extraer identificadores base
+ids_fastqc <- unique(gsub("(_R[12])?_fastqc\\.html$", "", archivos_fastqc))
+ids_fastq <- unique(gsub("_R[12]\\.fastq\\.gz$", "", archivos_fastq))
+ids_targets <- targets$Filename
+
+
+# Identificar diferencias
+fastqc_no_targets <- setdiff(ids_fastqc, ids_targets)
+targets_no_fastqc <- setdiff(ids_targets, ids_fastqc)
+targets_no_reads <- setdiff(ids_targets, ids_fastq)
+
+
+# Ruta absoluta al informe de multiqc
+ruta_multiqc_report <- file.path(ruta_nextflow_results, "02-multiqc-report", paste0("results-multiqc-", nombre_experimento), "multiqc_report.html")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatic Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 2</h1>
+  <h2>Read quality assessment</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This section presents the results of the quality control applied to the <code>.fastq.gz</code> files generated after sequencing. The assessment has been carried out both globally and individually, using the tools <strong>FastQC</strong> and <strong>MultiQC</strong>, integrated in both the <strong>miARma‑Seq</strong> pipeline and the specific pipeline for this report developed with <strong>Nextflow</strong>.
+  </p>
+
+  <p>
+    First, a consolidated report generated by <strong>MultiQC</strong> is included, which interactively summarizes the main quality parameters of all processed samples. This report allows identification of general patterns, global anomalies, or systematic differences between experimental conditions.
+  </p>
+
+  <p>
+    Next, the individual <strong>FastQC</strong> reports automatically generated for each sample are presented. These reports allow a more detailed review by read direction (<em>Forward</em> and <em>Backward</em>) and include key metrics such as per-base quality, GC content, duplication levels, or adapter detection. Each report is embedded via an <code>iframe</code>, accompanied by a button that allows viewing it in a separate tab for easier reading.
+  </p>
+
+  <p>
+    The structure of this section follows a hierarchical scheme organized by read type and sample, enabling clearer and more accessible navigation. Additionally, since the report is designed to be fully <strong>automated and reproducible</strong>, the sections corresponding to each sample are dynamically generated from the available metadata, adapting to any experimental dataset.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+```{=html}
+```{r, results="asis"}
+cat('
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion2">
+        2<span>.</span> Read quality assessment
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion2.1">
+            2.1. Joint analysis of all samples (MultiQC)
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion2.2">
+            2.2. Individual sample analysis (FastQC)
+          </a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion2.2.1">
+                2.2.1. Forward read quality assessment
+              </a>
+              <ul>
+')
+
+i <- 1
+for (id in ids_muestras) {
+  cat(glue::glue('<li><a href="#tab3-seccion2.2.1.{i}">2.2.1.{i}. Sample: {id}</a></li>\n'))
+  i <- i + 1
+}
+
+cat('
+              </ul>
+            </li>
+            <li><a href="#tab3-seccion2.2.2">2.2.2. Backward read quality assessment</a>
+              <ul>
+')
+
+i <- 1
+for (id in ids_muestras) {
+  cat(glue::glue('<li><a href="#tab3-seccion2.2.2.{i}">2.2.2.{i}. Sample: {id}</a></li>\n'))
+  i <- i + 1
+}
+
+cat('
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><a href="#tab3-seccion2.3">2.3. Final remarks on quality control</a>
+      </ul>
+    </li>
+  </ul>
+</div>
+')
+```
+```
+
+```{=html}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion2">
+  2<span>.</span> Read quality assessment
+</div>
+
+<p>
+  Read quality in an RNA-Seq experiment is a determining factor for the reliability of downstream analyses, such as alignment, quantification, and identification of differentially expressed genes. Therefore, one of the fundamental first steps in any processing pipeline is the assessment of the quality of the <code>.fastq.gz</code> files generated after sequencing.
+</p>
+
+<p>
+  In this study, quality control was applied to <strong>all initially available samples</strong>, regardless of whether they were selected for the main analysis or not. This approach ensures a comprehensive evaluation of the entire dataset, allowing potential issues to be detected before the final selection of samples for analysis.
+</p>
+
+<p>
+  Quality control was carried out using the <strong>FastQC</strong> tool, which generates detailed reports per sample on various aspects of sequence quality. Subsequently, all these individual reports were integrated using <strong>MultiQC</strong>, producing a single interactive summary report. This consolidated report allows global and comparative inspection of the read status across all processed samples.
+</p>
+
+<p>
+  The key metrics included in the MultiQC report are, among others:
+</p>
+
+<ul>
+  <li>Per-base sequence quality.</li>
+  <li>GC content.</li>
+  <li>Presence of adapters or contaminants.</li>
+  <li>Sequence duplication level.</li>
+  <li>Read length distribution.</li>
+</ul>
+
+<p>
+  These metrics allow identification of potential technical issues, such as RNA degradation, adapter contamination, systematic biases, or other sequencing artifacts. This information is essential for making informed decisions regarding the need for filtering or trimming steps before proceeding with alignment.
+</p>
+
+<p>
+  It is important to note that <strong>not all samples present in the MultiQC report are included in the main analysis</strong>. The metadata table presented earlier only contains the samples selected for the subsequent alignment and quantification steps, so discrepancies may exist between the two.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion2.1">
+  2.1. Joint analysis of all samples (MultiQC)
+</div>
+
+<p>
+  The joint quality analysis was carried out using the <strong>MultiQC</strong> tool, which aggregates and interactively summarizes the individual reports previously generated by <strong>FastQC</strong> for each processed sample. This approach allows visualization of all relevant metrics in a single consolidated report, facilitating comparison between samples and identification of potential systematic anomalies, technical errors, or common patterns.
+</p>
+
+<p>
+  The MultiQC report includes graphs and tables summarizing key aspects such as per-base quality, GC content, read length, presence of adapters or contaminants, and other quality indicators. This global view is especially useful for making decisions about cleaning and filtering reads before alignment.
+</p>
+
+<p>
+  Below is the interactive report embedded directly in this document. A button is also provided to open it in a new tab, allowing more convenient and detailed viewing if further exploration of the report is desired.
+</p>
+
+```{r, results='asis'}
+cat(glue::glue('
+<div class="iframe-container">
+  <iframe src="{ruta_multiqc_report}" frameborder="0" style="height: 700px;"></iframe>
+</div>
+
+<div style="display: flex; justify-content: center; gap: 25px;">
+  <a href="{ruta_multiqc_report}"
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Open interactive MultiQC report in a new tab
+  </a>
+  
+  <a href="{ruta_multiqc_report}"
+    download="{basename(ruta_multiqc_report)}"
+    class="boton-iframe-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Download report
+  </a>
+</div>
+'), sep = "\n")
+```
+
+<p>
+  The following section will detail the individual quality analysis of each sample, differentiating between <em>forward</em> and <em>backward</em> reads, through the direct incorporation of the individual <strong>FastQC</strong> reports automatically generated by <strong>miARma‑Seq</strong>.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion2.2">
+  2.2. Individual sample analysis (FastQC)
+</div>
+
+<p>
+  After the joint assessment using <strong>MultiQC</strong>, this subsection focuses on the individualized analysis of each sample through the reports generated by <strong>FastQC</strong>. This approach allows inspection of various quality parameters in greater detail, identifying potential specific issues that may not be evident in the global analysis.
+</p>
+
+<p>
+  <strong>FastQC</strong> is a widely used tool for quality control of high-throughput sequencing data. It provides a visual and interactive assessment of fundamental aspects such as per-base quality across reads, GC content, presence of adapters, sequence overrepresentation, read length, and duplication levels. This information is crucial for evaluating the suitability of raw data before applying filtering, trimming, or alignment steps.
+</p>
+
+<p>
+  In this report, each sample has a dedicated section organized by read type <em>(forward and backward)</em>, where its corresponding <code>.html</code> FastQC report is presented. The reports were automatically generated by the <strong>miARma‑Seq</strong> pipeline and are integrated into this document via an interactive window to facilitate direct viewing, along with a button to access a more detailed view in a new tab.
+</p>
+
+<p>
+  All individual reports used to generate the MultiQC summary were stored in the following directory at the time this report was generated:
+</p>
+
+```{r, results='asis'}
+cat(glue::glue('
+<code>{ruta_Pre_fastqc_results}</code>
+'), sep = "\n")
+```
+
+<p>
+  Below is the complete list of output files generated by <code>FastQC</code> for each processed sample. For each sample, two main files are generated: an <code>.html</code> report, which provides an interactive view of the quality control results, and a compressed <code>.zip</code> file, which contains the source files used to construct that report, including tabulated data, <code>.png</code> graphs, and a plain text summary.
+</p>
+
+<p>
+  Although it is possible to access these files directly from the interactive viewer presented below, it is recommended to use the sample-specific sections located further down. In these sections, the <code>.html</code> reports are embedded directly in the document via <code>iframe</code>, along with a button for expanded viewing. Additional context is also provided to facilitate interpretation of the individual results.
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_Pre_fastqc_results)) {
+  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_Pre_fastqc_results_relativa))
+} else {
+  # List files with relevant extensions
+  files <- list.files(ruta_Pre_fastqc_results_relativa, pattern = "\\.(html|zip|fastq\\.gz)$", full.names = FALSE)
+  
+  if (length(files) == 0) {
+    cat('<p><em>No files with the expected extensions were found in the specified folder.</em></p>\n')
+  } else {
+    enlace <- paste0("file://", ruta_Pre_fastqc_results_relativa)
+    
+    cat("<ul>\n")
+    for (f in files) {
+      # Assign class based on extension
+      clase <- if (grepl("\\.html$", f)) {
+        "file-html"
+      } else if (grepl("\\.zip$", f)) {
+        "file-zip"
+      } else if (grepl("\\.fastq\\.gz$", f)) {
+        "file-fastqgz"
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, echo=FALSE, results="asis"}
+# Para que funcione con rutas absolutas
+enlace <- ruta_Pre_fastqc_results_relativa
+
+# Imprimir el enlace
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{enlace}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explore the files in the "Pre_fastqc_results" folder here
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Thus, these individual reports generated by <strong>FastQC</strong> provide a visual and interactive assessment of various key aspects of sequencing read quality. Each report is structured into modules summarizing specific metrics, thereby facilitating the identification of potential technical issues or artifacts introduced during library preparation or the sequencing process.
+</p>
+
+
+<div class="divider"></div>
+
+<p>
+  Below is a brief description of the information included in these reports, accessible, as previously mentioned, from the interactive viewer above or later from each specific section.
+</p>
+
+<ul>
+  <li><strong>Basic Statistics [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: General information about the sequences, including the total number of reads, their average length, and GC content. These parameters allow confirmation that the data meet the basic quality criteria expected by the sequencing platform.</li>
+
+  <li><strong>Per base sequence quality [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: Assesses base quality at each position in the reads. Low quality at the beginning or end of reads may require trimming to avoid errors in downstream steps.</li>
+
+  <li><strong>Per tile sequence quality [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: Detects anomalies in specific regions of the sequencer's flow cell. Issues in this module may indicate mechanical or lighting failures affecting local quality.</li>
+
+  <li><strong>Per sequence quality scores [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: Shows the distribution of quality scores for all reads. A high proportion of low-quality reads may compromise the analysis.</li>
+
+  <li><strong>Per base sequence content [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: Analyzes the proportion of nucleotides (A, T, G, C) at each position. Significant imbalances may reflect library biases or contamination.</li>
+
+  <li><strong>Per sequence GC content [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: Evaluates the average GC content per read. Deviations from the expected values for the studied organism may indicate the presence of contaminants or issues in library preparation.</li>
+
+  <li><strong>Sequence Length Distribution [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: Shows the distribution of read lengths. A uniform distribution or one consistent with the protocol indicates good quality, while anomalous distributions may suggest errors in fragmentation or sequencing.</li>
+
+  <li><strong>Sequence Duplication Levels [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: Reports the proportion of duplicated reads. High levels may result from over-sequencing, low sample complexity, or PCR issues.</li>
+
+  <li><strong>Overrepresented sequences [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: Identifies sequences that appear with abnormally high frequency, such as unremoved adapters, contaminants, or ribosomal sequences.</li>
+
+  <li><strong>Adapter Content [<span style="color: green;">PASS</span> | <span style="color: orange;">WARNING</span> | <span style="color: red;">FAIL</span>]</strong>: Detects the presence of adapter sequences within the reads. If detected, trimming is required before proceeding with the analysis.</li>
+</ul>
+
+<p>
+  Each module is evaluated individually and classified as <span style="color: green;"><strong>PASS</strong></span>, <span style="color: orange;"><strong>WARNING</strong></span>, or <span style="color: red;"><strong>FAIL</strong></span>. A <strong>PASS</strong> result indicates that the module meets the recommended quality criteria. <strong>WARNING</strong> indicates a mild or moderate deviation that could affect some analyses depending on downstream sensitivity. <strong>FAIL</strong>, on the other hand, indicates significant issues that should be corrected or at least considered before proceeding with data processing.
+</p>
+
+<p>
+  That said, in the following subsections, the quality results will be analyzed in detail, distinguishing between <em>forward</em> and <em>backward</em> reads. Within each, the corresponding individual report for each sample will be presented, integrated directly into the document to facilitate review. This structure allows an organized and comprehensive assessment of read quality, ensuring that each sample is evaluated with the necessary level of detail before proceeding with subsequent analysis steps.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion2.2.1">
+  2.2.1. Forward read quality assessment
+</div>
+
+<p>
+  This section presents the quality analysis results for the <strong>forward</strong> <em>(read 1)</em> reads of each sample. These reads represent the first end of the sequenced fragments in <em>paired-end</em> protocols, and their quality is particularly relevant to ensure accurate alignment and reliable quantification in subsequent steps of the transcriptomic analysis.
+</p>
+
+<p>
+  Below are the individual assessments for each sample, organized in a structured manner to facilitate review. This presentation allows clear detection of potential specific issues in the <em>read 1</em> reads, such as quality drops at terminal positions, adapter contamination, base composition biases, or anomalous duplication levels. Identifying these problems early is crucial to ensure the robustness and validity of the results obtained in the following stages of the pipeline.
+</p>
+
+```{r}
+# Obtener archivos .html de FastQC
+archivos_html <- dir_ls(ruta_Pre_fastqc_results_relativa, regexp = "\\.html$")
+
+# Extraer IDs de muestra
+ids_muestras <- archivos_html |>
+  path_file() |>
+  str_replace("_fastqc\\.html$", "") |>
+  str_remove("_(R1|R2)$") |>
+  unique()
+```
+
+```{r, results='asis'}
+for (id in ids_muestras) {
+
+  # Construir ruta usando file.path
+  ruta_fasqc_R1 <- file.path(ruta_Pre_fastqc_results_relativa, paste0(id, "_R1_fastqc.html"))
+
+  # Contador
+  i <- 1
+
+  cat(glue::glue('
+  <div style="height: 12px; background-color: transparent;"></div>
+
+  <div class="titulo4" id="tab3-seccion2.2.1.{i}">
+    2.2.1.{i}. Sample: {id}
+  </div>
+
+  <p>
+    Below is the quality control report corresponding to the <strong>forward</strong> <em>(read 1)</em> of sample <strong>{id}</strong>. This report allows visual review of various quality aspects related to the sequences read from the first end of the fragments.
+  </p>
+
+  <div class="iframe-container">
+    <iframe src="{ruta_fasqc_R1}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <div style="display: flex; justify-content: center; gap: 25px;">
+    <a href="{ruta_fasqc_R1}"
+      target="_blank" 
+      class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open interactive FASTQC report in a new tab
+    </a>
+    
+    <a href="{ruta_fasqc_R1}"
+      download="{basename(ruta_fasqc_R1)}"
+      class="boton-iframe-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download report
+    </a>
+  </div>
+  '), sep = "\n")
+
+  # Actualizar contador
+  i <- i + 1
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion2.2.2">
+  2.2.2. Backward read quality assessment
+</div>
+
+<p>
+  This section presents the quality analysis results for the <strong>backward</strong> <em>(read 2)</em> reads of each sample. These reads represent the second end of the sequenced fragments in <em>paired-end</em> protocols, complementing the information provided by the <em>forward</em> reads for a more complete reconstruction of the transcripts.
+</p>
+
+<p>
+  Below are the individual quality assessments for the <em>read 2</em> reads per sample, following the same structured format as in the previous section. Careful review of these reports allows identification of potential specific deficiencies in the <em>backward</em> reads, such as lower quality in terminal regions, cumulative sequencing errors, or unusual base distribution patterns. These aspects are essential to ensure that both reads of each fragment reliably contribute to the overall analysis.
+</p>
+
+```{r, results='asis'}
+for (id in ids_muestras) {
+
+  # Construir ruta usando file.path
+  ruta_fasqc_R2 <- file.path(ruta_Pre_fastqc_results_relativa, paste0(id, "_R2_fastqc.html"))
+
+  # Contador
+  i <- 1
+
+  cat(glue::glue('
+  <div style="height: 12px; background-color: transparent;"></div>
+  
+  <div class="titulo4" id="tab3-seccion2.2.2.{i}">
+    2.2.2.{i}. Sample: {id}
+  </div>
+
+  <p>
+    Below is the quality control report corresponding to the <strong>backward</strong> <em>(read 2)</em> of sample <strong>{id}</strong>. This report allows visual review of various aspects related to the quality of sequences obtained from the second end of the fragments, facilitating detection of potential issues that may compromise downstream analysis.
+  </p>
+
+  <div class="iframe-container">
+    <iframe src="{ruta_fasqc_R2}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <div style="display: flex; justify-content: center; gap: 25px;">
+    <a href="{ruta_fasqc_R2}"
+      target="_blank" 
+      class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open interactive FASTQC report in a new tab
+    </a>
+    
+    <a href="{ruta_fasqc_R2}"
+      download="{basename(ruta_fasqc_R2)}"
+      class="boton-iframe-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download report
+    </a>
+  </div>
+  '), sep = "\n")
+
+  # Actualizar contador
+  i <- i + 1
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion2.3">
+  2.3. Final remarks on quality control
+</div>
+
+<div style="height: 2px; background-color: transparent;"></div>
+
+<p>
+  <strong>Why is quality control in RNA-Seq essential?</strong><br>
+</p>
+
+<p>
+  In <strong>RNA-Seq studies (mRNA, miRNA, and circRNA)</strong>, the reliability of downstream analyses critically depends on read quality. Early detection of issues such as low quality at specific positions, nucleotide biases, residual adapters, or duplicated sequences is essential to ensure accurate results in later stages, including alignment, expression quantification, and differential analysis.
+</p>
+
+<p>
+  Comprehensive quality control allows identification of samples with potential issues before alignment, such as low coverage, read distribution biases, or unremoved adapters. This enables the definition of appropriate filters to clean the data and ensures that the reads entering the pipeline are consistent and reliable.
+</p>
+
+
+<div style="height: 5px; background-color: transparent;"></div>
+
+<p>
+  <strong>Key concepts to remember:</strong>
+</p>
+
+<ul>
+  <li><strong>Forward (read 1) and reverse (read 2) reads</strong> <strong>&rArr;</strong> fragments sequenced from both ends in paired-end protocols, providing complementary information to improve gene quantification resolution and detection of sequencing errors.</li>
+  <li><strong>FastQC modules</strong> <strong>&rArr;</strong> metrics that evaluate per-base quality, GC content, overrepresented sequences, duplications, and adapters, allowing identification of technical or biological issues specific to each sample.</li>
+  <li><strong>MultiQC</strong> <strong>&rArr;</strong> tool that integrates individual FastQC reports, providing a global view that facilitates identification of consistent anomalies across multiple samples and sequencing batches.</li>
+  <li><strong>Importance for RNA-Seq</strong> <strong>&rArr;</strong> proper quality control ensures that alignment, quantification, and differential analysis results are reliable, avoiding artifacts that could affect biological interpretation.</li>
+</ul>
+
+<p>
+  Overall, this quality control represents an indispensable pillar in any RNA-Seq pipeline. The combination of FastQC and MultiQC maximizes confidence in the data, reduces artifact introduction, and ensures that results accurately reflect the true expression of genes and transcripts in the analyzed samples.
+</p>
+
+<p>
+  After completing these inspections and validations, the workflow is ready to proceed to the next phase, which consists of <a href="03-alineamiento.html#" class="normalink">aligning reads to the reference genome</a>, where sequences will be mapped to the reference genome to quantify gene expression.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

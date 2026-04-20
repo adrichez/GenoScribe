@@ -1,0 +1,1217 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  experiment_name: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 4. CUANTIFICACIÓN DE LA EXPRESIÓN GENÉTICA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+library(readr)
+library(htmlwidgets)
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_bulk_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_bulk_rna_seq_pipeline_absoluta <- normalizePath(ruta_bulk_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+nombre_experimento <- basename(params$experiment_name)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Construir ruta usando file.path
+ruta_his_ReadCount <- file.path(params$project_path, "Analisis", nombre_experimento, "Readcount_results", "his-ReadCount.tab")
+ruta_his_ReadCount_relativa <- file.path(ruta_proyecto_relativa, "Analisis", nombre_experimento, "Readcount_results", "his-ReadCount.tab")
+
+
+# Construir ruta usando file.path
+ruta_his_Size <- file.path(params$project_path, "Analisis", nombre_experimento, "Readcount_results", "his-Size.tab")
+ruta_his_Size_relativa <- file.path(ruta_proyecto_relativa, "Analisis", nombre_experimento, "Readcount_results", "his-Size.tab")
+
+
+# Rutas para guardar los archivos creados
+ruta_archives_tmp_analisis <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis")
+
+ruta_total_lecturas_muestra_txt <- file.path(ruta_archives_tmp_analisis, "total_lecturas_muestra.txt")
+ruta_genes_expresados_muestra_txt <- file.path(ruta_archives_tmp_analisis, "genes_expresados_muestra.txt")
+ruta_genes_mayor_expresion_total_txt <- file.path(ruta_archives_tmp_analisis, "genes_mayor_expresion_total.txt")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatic Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 4</h1>
+  <h2>Gene Expression Quantification</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    In this section, <strong>gene expression quantification</strong> is carried out, a fundamental step following the <em>alignment</em> of reads to the reference genome. 
+    The main objective is to <strong>determine how many reads are assigned to each gene</strong>, generating a <em>count matrix</em> that represents transcriptional activity in each analyzed sample. This information forms the basis for subsequent analyses of <strong>differential expression</strong> and <strong>functional enrichment</strong>.
+  </p>
+
+  <p>
+    Quantification has been performed using the <em>alignment files</em> (<code>BAM</code>) generated previously, applying genomic annotations to identify regions corresponding to the genes. The result is an unnormalized expression matrix, stored in the file <code><strong>his-ReadCount.tab</strong></code>, where each row represents a gene and each column represents a sample from the experiment.
+  </p>
+
+  <p>
+    In parallel, the file <code><strong>his-Size.tab</strong></code> has been generated, containing the <strong>length of each gene</strong> in base pairs (bp). 
+    This information is crucial for performing <strong>proper normalization</strong> of the data later, as it allows correction for the bias introduced by variable gene lengths.
+  </p>
+
+  <p>
+    To evaluate the quality and structure of the dataset, various <strong>exploratory visualizations</strong> of the raw counts are included. 
+    These include the <em>interactive visualization of the count matrix</em>, <strong>gene length analysis</strong>, and a set of charts and metrics that assess the <em>distribution</em>, <em>consistency</em>, and <em>homogeneity</em> among samples.
+  </p>
+
+  <p>
+    Key indicators are also examined, such as the <strong>total reads assigned</strong> per sample, the <strong>number of expressed genes</strong>, the <em>most abundantly transcribed genes</em>, and the <strong>distribution of expression levels</strong> through <em>logarithmic boxplots</em>. 
+    This preliminary analysis allows detection of <strong>unusual deviations</strong> or outlier samples before proceeding to normalization and statistical analyses.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion4">
+        4<span>.</span> Gene Expression Quantification
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion4.1">
+            4.1. Visualization of the raw count matrix
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion4.2">
+            4.2. Gene length visualization
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion4.3">
+            4.3. Preliminary exploration of raw counts
+          </a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion4.3.1">
+                4.3.1. Total reads assigned per sample
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion4.3.2">
+                4.3.2. Number of expressed genes per sample
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion4.3.3">
+                4.3.3. Genes with highest total expression
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion4.3.4">
+                4.3.4. Distribution of counts per sample (log10 boxplot)
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion4">
+  4<span>.</span> Gene Expression Quantification
+</div>
+
+<p>
+  After aligning the reads to the reference genome, the next fundamental step in an RNA-Seq analysis is to
+  quantify gene expression. This process allows determining how many reads are associated with each gene, providing an estimate
+  of the transcriptional activity level in each sample.
+</p>
+
+<p>
+  In this project, quantification has been performed by counting reads aligned to annotated gene regions, generating
+  a raw (unnormalized) expression matrix. This count was obtained from the <code>SAM</code>/<code>BAM</code> files generated during alignment.
+</p>
+
+<p>
+  For this purpose, two fundamental files have been produced:
+</p>
+
+<ul>
+  <li>
+    <strong><code>his-ReadCount.tab</code></strong> <strong>&rArr;</strong> contains the raw count matrix, where rows represent genes and columns
+    correspond to the different samples of the experiment. The values indicate the number of reads that align to each gene in each sample.
+  </li>
+  <li>
+    <strong><code>his-Size.tab</code></strong> <strong>&rArr;</strong> stores the length (in base pairs) of each gene. This information is essential for normalizing
+    expression counts and for comparing expression levels between genes of different lengths or between samples with varying sequencing depth.
+  </li>
+</ul>
+
+<p>
+  The combination of these two files allows generating normalized expression metrics such as <code>RPKM</code> or <code>TPM</code>, which will be analyzed in a later section.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.1">
+  4.1. Visualization of the raw count matrix
+</div>
+
+<p>
+  Below is an interactive view of the unnormalized gene expression matrix, extracted from the file <code>his-ReadCount.tab</code>. 
+  This matrix reflects the number of reads aligned to each gene in each of the analyzed samples and serves as the starting point for subsequent 
+  normalization analyses and detection of differentially expressed genes.
+</p>
+
+<p>
+  In the table shown below, it is possible to <strong>search directly by gene identifier</strong> using the integrated search bar. 
+  Additionally, by <strong>clicking on the column headers</strong>, values can be sorted in ascending or descending order, facilitating 
+  detailed exploration of expression levels per sample.
+</p>
+
+```{r}
+library(DT)
+
+# Leer el archivo y mostrar tabla interactiva
+his_ReadCount <- read.delim(ruta_his_ReadCount, row.names = 1)
+
+# Mostrar tabla interactiva con DT
+DT::datatable(
+  his_ReadCount,
+  options = list(
+    scrollX = TRUE,
+    scrollY = "500px",
+    scrollCollapse = TRUE,
+    paging = FALSE,
+    lengthChange = FALSE,
+    info = FALSE,
+    dom = 'ft', # Solo tabla
+    language = list(
+      url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+    )
+  ),
+  class = 'stripe hover compact',
+)
+```
+
+```{r, results='asis'}
+cat(glue::glue('
+<p style="text-align:center; margin-top: 5px;">
+  <a href="{ruta_his_ReadCount_relativa}" 
+    download="{basename(ruta_his_ReadCount_relativa)}" 
+    class="boton-file-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(ruta_his_ReadCount_relativa)}"
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  If you want to view the complete file directly, you can do so using the embedded viewer below or open it in a new tab:
+</p>
+
+```{r, results='asis'}
+cat(glue::glue('
+<div class="iframe-container">
+  <iframe src="{ruta_his_ReadCount_relativa}" frameborder="0" style="height: 500px;"></iframe>
+</div>
+
+<p style="text-align:center;">
+  <a href="{ruta_his_ReadCount_relativa}"
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Open file in a new tab
+  </a>
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.2">
+  4.2. Gene length visualization
+</div>
+
+<p>
+  In addition to expression counts, it is necessary to consider the length of each gene to apply proper normalization methods, such as <code>RPKM</code> or <code>TPM</code>. 
+  Gene length allows correction for the bias introduced by the fact that longer genes tend to accumulate more reads simply due to their size, 
+  regardless of their actual expression level.
+</p>
+
+<p>
+  Gene length information is contained in the file <code>his-Size.tab</code>, which provides the measurement in base pairs (bp) 
+  for each transcript or gene included in the analysis. This file was generated using the genomic annotations corresponding to the reference genome used 
+  during the alignment phase.
+</p>
+
+<p>
+  Below is an interactive table with the gene length data. This table allows <strong>sorting lengths in ascending or descending order</strong> 
+  by clicking on the column header, and <strong>searching for specific genes by their identifier</strong> using the available search bar. 
+  This visualization facilitates the inspection of potential biases in the length distribution that could influence subsequent analyses.
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+his_Size <- read.delim(ruta_his_Size, row.names = 1)
+
+# Mostrar tabla interactiva con DT
+DT::datatable(
+  his_Size,
+  options = list(
+    scrollX = TRUE,
+    scrollY = "500px",
+    scrollCollapse = TRUE,
+    paging = FALSE,
+    lengthChange = FALSE,
+    info = FALSE,
+    dom = 'ft', # Solo tabla
+    language = list(
+      url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+    )
+  ),
+  class = 'stripe hover compact',
+)
+```
+
+```{r, results='asis'}
+cat(glue::glue('
+<p style="text-align:center; margin-top: 5px;">
+  <a href="{ruta_his_Size_relativa}" 
+    download="{basename(ruta_his_Size_relativa)}" 
+    class="boton-file-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(ruta_his_Size_relativa)}"
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  If you want to view the complete file directly, you can do so using the embedded viewer below or open it in a new tab:
+</p>
+
+```{r, echo=FALSE, results='asis'}
+cat(glue::glue('
+<div class="iframe-container">
+  <iframe src="{ruta_his_Size_relativa}" frameborder="0" style="height: 500px;"></iframe>
+</div>
+
+<p style="text-align:center;">
+  <a href="{ruta_his_Size_relativa}"
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Open file in a new tab
+  </a>
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion4.3">
+  4.3. Preliminary exploration of raw counts
+</div>
+
+<p>
+  Before applying normalization techniques and statistical analysis, it is essential to perform a preliminary inspection of the obtained expression counts.
+  This exploration aims to identify possible anomalies, assess the overall distribution of the data, and check consistency among samples.
+</p>
+
+<p>
+  Using the file <code>his-ReadCount.tab</code>, which contains the unnormalized expression matrix, various exploratory analyses are performed that allow:
+</p>
+
+<ul>
+  <li>Calculating the total number of reads assigned to each sample.</li>
+  <li>Determining the number of expressed genes per sample.</li>
+  <li>Identifying the genes with the highest expression levels.</li>
+  <li>Visualizing the overall distribution of counts per gene and per sample.</li>
+</ul>
+
+<p>
+  These metrics and visualizations provide a first impression of the dataset quality and allow anticipating potential sources of variability that could affect differential expression analysis results.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.3.1">
+  4.3.1. Total reads assigned per sample
+</div>
+
+<p>
+  To begin the exploration of the counts, the total number of reads assigned to each sample is calculated. 
+  This value corresponds to the sum of all counts per sample and provides an initial estimate of the sequencing depth obtained in the experiment.
+</p>
+
+<p>
+  Below is the resulting table, showing the total reads per sample, which can be explored interactively.
+</p>
+
+```{r}
+library(DT)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(stringr)
+library(scales)
+library(tidyverse)
+library(tidyr)
+library(tibble)
+
+# Calcular número total de lecturas asignadas por muestra
+total_recuentos_por_muestra <- colSums(his_ReadCount)
+total_recuentos_por_muestra_df <- data.frame(
+  Muestra = names(total_recuentos_por_muestra),
+  TotalRecuentos = as.integer(total_recuentos_por_muestra)
+)
+
+# Convertir a data frame para ggplot2
+df_total <- data.frame(
+  muestra = names(total_recuentos_por_muestra),
+  total_lecturas = as.integer(total_recuentos_por_muestra)
+)
+
+# Asegurarnos que 'targets' está cargado previamente
+targets_experimento <- paste0("targets_", nombre_experimento, ".txt")
+ruta_targets_experimento <- file.path(params$project_path, "Resultados", targets_experimento)
+ruta_targets_experimento_relativa <- file.path(ruta_proyecto_relativa, "Resultados", targets_experimento)
+targets <- read.table(ruta_targets_experimento, header = TRUE, fill = TRUE, stringsAsFactors = FALSE)
+
+# Limpiar y unir condición
+df_total$muestra <- str_remove(df_total$muestra, "_nat$")
+df_total <- df_total %>%
+  left_join(targets %>% select(Filename, Type), by = c("muestra" = "Filename")) %>%
+  rename(condicion = Type) %>%
+  select(muestra, condicion, total_lecturas) %>%
+  arrange(desc(total_lecturas))
+
+# Guardar dataframe generado en formato .txt
+write_delim(df_total, ruta_total_lecturas_muestra_txt, delim = "\t")
+
+# Mostrar tabla interactiva con DT
+DT::datatable(
+  df_total,
+  options = list(
+    scrollX = TRUE,
+    scrollY = "500px",
+    scrollCollapse = TRUE,
+    paging = FALSE,
+    lengthChange = FALSE,
+    info = FALSE,
+    dom = 'ft', # Solo tabla
+    language = list(
+      url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+    )
+  ),
+  class = 'stripe hover compact',
+)
+```
+
+```{r, results='asis'}
+cat(glue::glue('
+<p style="text-align:center; margin-top: 5px;">
+  <a href="{ruta_total_lecturas_muestra_txt}" 
+    download="{basename(ruta_total_lecturas_muestra_txt)}" 
+    class="boton-file-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(ruta_total_lecturas_muestra_txt)}"
+  </a>
+</p>
+
+<p>
+  These results that we have just visualized have been saved in a file named <code>{basename(ruta_total_lecturas_muestra_txt)}</code>, which can be downloaded using the button provided above. Additionally, we can view this file using the following <code>iframe</code> or explore it in more detail in a new tab.
+</p>
+
+<div class="iframe-container">
+  <iframe src="{ruta_total_lecturas_muestra_txt}" frameborder="0" style="height: 500px;"></iframe>
+</div>
+
+<p style="text-align:center;">
+  <a href="{ruta_total_lecturas_muestra_txt}" 
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Open file in a new tab
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Finally, the following interactive bar plot is provided, which allows comparison of sequencing depth between conditions and replicates, providing a more dynamic and visual way to observe these results.
+</p>
+
+<div class="plot-center">
+
+```{r}
+# Gráfico de número total de lecturas por muestra con plotly
+p <- plot_ly(
+  data = df_total,
+  x = ~muestra,
+  y = ~total_lecturas,
+  type = "bar",
+  color = ~condicion,
+  colors = "Set2",
+  text = ~comma(total_lecturas),
+  textposition = "outside",
+  hoverinfo = "text",
+  hovertext = ~paste0("Sample: ", muestra, "<br>Reads: ", comma(total_lecturas))
+) %>%
+  layout(
+    title = "Total reads per sample",
+    xaxis = list(title = "Sample", tickangle = -45, tickfont = list(size = 10)),
+    yaxis = list(
+      title = "Number of reads",
+      range = c(0, max(df_total$total_lecturas) * 1.15)
+    ),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.5,
+      xanchor = "center"
+    ),
+    margin = list(t = 100, b = 170),
+    autosize = TRUE
+  )
+
+# Representar el gráfico
+p
+
+# Ruta para guardar el gráfico
+ruta_graph_total_lecturas_muestra_html <- file.path(ruta_archives_tmp_analisis, "graph_total_lecturas_muestra.html")
+
+# Guardar con título personalizado en la pestaña del navegador
+saveWidget(
+  widget = p,
+  file = ruta_graph_total_lecturas_muestra_html,
+  selfcontained = TRUE,
+  title = "Total reads per sample"
+)
+```
+
+</div>
+
+```{r, results='asis'}
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_graph_total_lecturas_muestra_html}" 
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-chart-column"></i> Open graph in full screen
+  </a>
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.3.2">
+  4.3.2. Number of expressed genes per sample
+</div>
+
+<p>
+  After analyzing sequencing depth, the next step is to evaluate how many genes were detected as expressed in each sample.
+  For this, a gene is considered expressed if it has a count greater than zero in a given sample. This analysis helps identify potential low-quality samples or technical issues, as an unusually low number of expressed genes could indicate poor RNA capture or amplification efficiency.
+</p>
+
+<p>
+  Below is the resulting table, showing the number of expressed genes per sample, which can be explored interactively.
+</p>
+
+```{r}
+# Calcular número de genes expresados por muestra (genes con recuentos > 0)
+genes_expresados_por_muestra <- colSums(his_ReadCount > 0)
+genes_expresados_por_muestra_df <- data.frame(
+  Muestra = names(genes_expresados_por_muestra),
+  GenesExpresados = as.integer(genes_expresados_por_muestra)
+)
+
+# Crear data frame
+df_genes_exp <- data.frame(
+  muestra = names(genes_expresados_por_muestra),
+  genes_expresados = as.integer(genes_expresados_por_muestra)
+)
+
+# Añadir la columna 'condicion' uniendo por el nombre de muestra
+df_genes_exp$muestra <- str_remove(df_genes_exp$muestra, "_nat$")
+df_genes_exp <- df_genes_exp %>%
+  left_join(targets %>% select(Filename, Type), by = c("muestra" = "Filename")) %>%
+  rename(condicion = Type) %>%
+  select(muestra, condicion, genes_expresados) %>%
+  arrange(desc(genes_expresados))
+
+# Guardar dataframe generado en formato .txt
+write_delim(df_genes_exp, ruta_genes_expresados_muestra_txt, delim = "\t")
+
+# Mostrar tabla interactiva con DT
+DT::datatable(
+  df_genes_exp,
+  options = list(
+    scrollX = TRUE,
+    scrollY = "500px",
+    scrollCollapse = TRUE,
+    paging = FALSE,
+    lengthChange = FALSE,
+    info = FALSE,
+    dom = 'ft', # Solo tabla
+    language = list(
+      url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+    )
+  ),
+  class = 'stripe hover compact',
+)
+```
+
+```{r, results='asis'}
+cat(glue::glue('
+<p style="text-align:center; margin-top: 5px;">
+  <a href="{ruta_genes_expresados_muestra_txt}" 
+    download="{basename(ruta_genes_expresados_muestra_txt)}" 
+    class="boton-file-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(ruta_genes_expresados_muestra_txt)}"
+  </a>
+</p>
+
+<p>
+  These results that we have just visualized have been saved in a file named <code>{basename(ruta_genes_expresados_muestra_txt)}</code>, which can be downloaded using the button provided above. Additionally, we can view this file using the following <code>iframe</code> or explore it in more detail in a new tab.
+</p>
+
+<div class="iframe-container">
+  <iframe src="{ruta_genes_expresados_muestra_txt}" frameborder="0" style="height: 500px;"></iframe>
+</div>
+
+<p style="text-align:center;">
+  <a href="{ruta_genes_expresados_muestra_txt}" 
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Open file in a new tab
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Finally, the following interactive bar plot is provided, which facilitates comparison between experimental conditions and provides a more dynamic and visual way to observe these results.
+</p>
+
+<div class="plot-center">
+
+```{r}
+# Gráfico: genes expresados por muestra (>0) con plotly
+p <- plot_ly(
+  data = df_genes_exp,
+  x = ~muestra,
+  y = ~genes_expresados,
+  type = "bar",
+  color = ~condicion,
+  colors = "Set2",  # mismo estilo que ggplot (Set1)
+  text = ~comma(genes_expresados),
+  textposition = "outside",
+  hoverinfo = "text",
+  hovertext = ~paste0("Sample: ", muestra, "<br>Expressed genes: ", comma(genes_expresados))
+) %>%
+  layout(
+    title = "Number of expressed genes per sample",
+    xaxis = list(
+      title = "Sample",
+      tickangle = -45,
+      tickfont = list(size = 10)
+    ),
+    yaxis = list(
+      title = "Genes with counts > 0",
+      range = c(0, max(df_genes_exp$genes_expresados) * 1.15),
+      separatethousands = TRUE
+    ),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.52,
+      xanchor = "center"
+    ),
+    margin = list(t = 100, b = 170),
+    autosize = TRUE
+  )
+
+# Representar el gráfico
+p
+
+# Ruta para guardar el gráfico
+ruta_graph_genes_expresados_muestra_html <- file.path(ruta_archives_tmp_analisis, "graph_genes_expresados_muestra.html")
+
+# Guardar con título personalizado en la pestaña del navegador
+saveWidget(
+  widget = p,
+  file = ruta_graph_genes_expresados_muestra_html,
+  selfcontained = TRUE,
+  title = "Number of expressed genes per sample"
+)
+```
+
+</div>
+
+```{r, results='asis'}
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_graph_genes_expresados_muestra_html}" 
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-chart-column"></i> Open graph in full screen
+  </a>
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.3.3">
+  4.3.3. Genes with highest total expression
+</div>
+
+<p>
+  To identify the genes with the highest transcriptional activity within the dataset, the total sum of counts per gene across all samples is calculated.
+  This metric allows detection of genes that show the highest expression levels globally, which could play a relevant role in the biological context of the experiment.
+</p>
+
+<p>
+  Below is the resulting table, with genes ranked according to their highest cumulative expression, in descending order of total reads.
+</p>
+
+```{r}
+# Obtener los genes con mayor nivel de expresión total (suma por fila)
+top_genes<- rowSums(his_ReadCount) |>
+  sort(decreasing = TRUE)
+
+top_genes_df <- data.frame(
+  Gen = names(top_genes),
+  TotalRecuentos = as.integer(top_genes)
+)
+
+top_genes_20 <- rowSums(his_ReadCount) |>
+  sort(decreasing = TRUE) |>
+  head(20)
+
+top_genes_20_df <- data.frame(
+  Gen = names(top_genes_20),
+  TotalRecuentos = as.integer(top_genes_20)
+)
+
+# Guardar dataframe generado en formato .txt
+write_delim(top_genes_df, ruta_genes_mayor_expresion_total_txt, delim = "\t")
+
+# Crear la tabla interactiva
+DT::datatable(
+  top_genes_df,
+  options = list(
+    scrollX = TRUE,
+    scrollY = "500px",
+    scrollCollapse = TRUE,
+    paging = FALSE,
+    lengthChange = FALSE,
+    info = FALSE,
+    dom = 'ft', # Solo tabla
+    language = list(
+      url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+    )
+  ),
+  class = 'stripe hover compact',
+)
+```
+
+```{r, results='asis'}
+cat(glue::glue('
+<p style="text-align:center; margin-top: 5px;">
+  <a href="{ruta_genes_mayor_expresion_total_txt}" 
+    download="{basename(ruta_genes_mayor_expresion_total_txt)}" 
+    class="boton-file-download">
+    <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(ruta_genes_mayor_expresion_total_txt)}"
+  </a>
+</p>
+
+<p>
+  These results that we have just visualized have been saved in a file named <code>{basename(ruta_genes_mayor_expresion_total_txt)}</code>, which can be downloaded using the button provided above. Additionally, we can view this file using the following <code>iframe</code> or explore it in more detail in a new tab.
+</p>
+
+<div class="iframe-container">
+  <iframe src="{ruta_genes_mayor_expresion_total_txt}" frameborder="0" style="height: 500px;"></iframe>
+</div>
+
+<p style="text-align:center;">
+  <a href="{ruta_genes_mayor_expresion_total_txt}" 
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-file-lines"></i> Open file in a new tab
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Finally, the following interactive bar plot is provided, showing the 20 genes with the highest expression, allowing assessment of their relative contribution within the dataset.
+</p>
+
+<div class="plot-center">
+
+```{r}
+# Ordenar los genes de forma descendente para el gráfico
+top_genes_20_df$Gen <- factor(top_genes_20_df$Gen, levels = rev(top_genes_20_df$Gen))
+
+# Gráfico: top 20 genes más expresados con plotly (horizontal)
+p <- plot_ly(
+  data = top_genes_20_df,
+  x = ~TotalRecuentos,
+  y = ~Gen,
+  type = "bar",
+  orientation = "h",
+  marker = list(
+    color = "#098",
+    line = list(color = "black", width = 1)
+  ),
+  text = ~comma(TotalRecuentos),
+  textposition = "outside",
+  hoverinfo = "text",
+  hovertext = ~paste0("Gene: ", Gen, "<br>Counts: ", comma(TotalRecuentos))
+) %>%
+  layout(
+    title = "Top 20 most expressed genes",
+    xaxis = list(
+      title = "Total counts",
+      range = c(0, max(top_genes_20_df$TotalRecuentos) * 1.2),
+      separatethousands = TRUE
+    ),
+    yaxis = list(
+      title = "Gene",
+      automargin = TRUE,
+      tickfont = list(size = 10)
+    ),
+    margin = list(l = 100, t = 80, r = 40),
+    autosize = TRUE
+  )
+
+# Representar el gráfico
+p
+
+# Ruta para guardar el gráfico
+ruta_graph_genes_mayor_expresion_total_html <- file.path(ruta_archives_tmp_analisis, "graph_genes_mayor_expresion_total.html")
+
+# Guardar con título personalizado en la pestaña del navegador
+saveWidget(
+  widget = p,
+  file = ruta_graph_genes_mayor_expresion_total_html,
+  selfcontained = TRUE,
+  title = "Top 20 most expressed genes"
+)
+```
+
+</div>
+
+```{r, results='asis'}
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_graph_genes_mayor_expresion_total_html}" 
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-chart-column"></i> Open graph in full screen
+  </a>
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion4.3.4">
+  4.3.4. Distribution of counts per sample (log10 boxplot)
+</div>
+
+<p>
+  Finally, to evaluate variability and the distribution of expression counts at the genomic level in each sample, a boxplot is generated using a logarithmic transformation (log10).
+  This representation allows identification of potential outliers, differences in data dispersion, and assessment of homogeneity among replicates and experimental conditions.
+</p>
+
+<p>
+  Zero values are excluded to avoid issues with the logarithmic transformation, and an interactive visualization is used to facilitate detailed exploration of the distribution in each sample.
+</p>
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+```{r}
+# Convertir a formato largo
+his_ReadCount_long <- his_ReadCount |>
+  rownames_to_column("gene") |>
+  pivot_longer(-gene, names_to = "muestra", values_to = "recuento")
+
+# Filtrar recuentos mayores que cero antes de graficar
+his_ReadCount_long_filtrado <- his_ReadCount_long |>
+  filter(recuento > 0)
+
+# Hacer el left join con targets para añadir la columna 'Type' como 'condicion'
+his_ReadCount_long_filtrado <- his_ReadCount_long_filtrado %>%
+  mutate(muestra_clean = str_remove(muestra, "_nat$")) %>%
+  select(-muestra) %>%
+  rename(muestra = muestra_clean) %>%
+  left_join(targets %>% select(Filename, Type), by = c("muestra" = "Filename")) %>%
+  rename(condicion = Type)
+```
+
+<div class="plot-center">
+
+```{r}
+# Gráfico: distribución logarítmica de recuentos por muestra (boxplot)
+p <- plot_ly(
+  data = his_ReadCount_long_filtrado,
+  x = ~muestra,
+  y = ~recuento,
+  color = ~condicion,
+  colors = "Set2",
+  type = "box",
+  boxpoints = "outliers",
+  marker = list(size = 3, opacity = 0.5, line = list(width = 0)),
+  line = list(color = "black"),
+  opacity = 0.8
+) %>%
+  layout(
+    title = list(
+      text = "Logarithmic distribution of counts per sample<br><sub>Each boxplot represents gene expression levels (log10) per sample</sub>",
+      y = 0.95
+    ),
+    xaxis = list(
+      title = "Sample",
+      tickangle = -45,
+      tickfont = list(size = 10)
+    ),
+    yaxis = list(
+      title = "Count (log10)",
+      type = "log",
+      separatethousands = TRUE
+    ),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.52,
+      xanchor = "center"
+    ),
+    margin = list(t = 100, b = 170),
+    autosize = TRUE
+  )
+
+# Representar el gráfico
+p
+
+# Ruta para guardar el gráfico
+ruta_graph_distribucion_expresion_muestra_html <- file.path(ruta_archives_tmp_analisis, "graph_distribucion_expresion_muestra.html")
+
+# Guardar con título personalizado en la pestaña del navegador
+saveWidget(
+  widget = p,
+  file = ruta_graph_distribucion_expresion_muestra_html,
+  selfcontained = TRUE,
+  title = "Expression distribution per sample"
+)
+```
+
+</div>
+
+```{r, results='asis'}
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_graph_distribucion_expresion_muestra_html}" 
+    target="_blank" 
+    class="boton-iframe">
+    <i class="fa-solid fa-chart-column"></i> Open graph in full screen
+  </a>
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  After this <strong>preliminary exploration of gene expression counts</strong>, in which key aspects such as total reads assigned, the distribution of expressed genes, and overall expression per sample have been examined, the next step will be to apply a <em>normalization process</em> to allow fair comparison between samples and reduce potential technical biases. Next, a <a href="05.0-analisis-estadistico.html#" class="normalink">statistical analysis of gene expression</a> will be conducted, which will include <strong>post-normalization quality assessment</strong>, identification of <strong>differentially expressed genes</strong>, and performance of a <strong>functional and enrichment analysis</strong> to interpret the results in the corresponding biological context.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

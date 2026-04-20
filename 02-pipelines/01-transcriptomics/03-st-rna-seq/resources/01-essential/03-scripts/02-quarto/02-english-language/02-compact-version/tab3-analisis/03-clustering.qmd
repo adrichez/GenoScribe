@@ -1,0 +1,1289 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 3. REDUCCIÓN DE DIMENSIONALIDAD Y CLUSTERING -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+ruta_archives_tmp_clustering <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "03-clustering")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_clustering)
+
+
+
+
+
+
+#===================================================================================================================================================
+# DIRECTORIO "ANALYSIS"
+#===================================================================================================================================================
+
+# Rutas de la carpeta "analysis" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "analysis")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "analysis")
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "DIM REDUCTION" EN "ANALYSIS"
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "02_dim_reduction" dentro de "analysis"
+ruta_dim_reduction <- file.path(ruta_analysis, "02_dim_reduction")
+ruta_dim_reduction_relativa <- file.path(ruta_analysis_relativa, "02_dim_reduction")
+
+# Inicializar dataframe
+dim_reduction_df <- NULL
+
+# Comprobar directorio y crear dataframe
+if (dir.exists(ruta_dim_reduction)) {
+  dim_reduction_list <- list.files(ruta_dim_reduction, recursive = FALSE, full.names = FALSE)
+  
+  if (length(dim_reduction_list) > 0) {
+    dim_reduction_df <- data.frame(
+      file_name = dim_reduction_list,
+      ruta_absoluta = file.path(ruta_dim_reduction, dim_reduction_list),
+      ruta_relativa = file.path(ruta_dim_reduction_relativa, dim_reduction_list),
+      stringsAsFactors = FALSE
+    )
+    dim_reduction_df <- dim_reduction_df[order(dim_reduction_df$file_name), ]
+  }
+}
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "CLUSTERING" EN "ANALYSIS"
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas de la carpeta "03_clustering" dentro de "analysis"
+ruta_clustering <- file.path(ruta_analysis, "03_clustering")
+ruta_clustering_relativa <- file.path(ruta_analysis_relativa, "03_clustering")
+
+
+
+#------------------------------------------------------------------------
+# DIRECTORIO "MERGED" EN "CLUSTERING"
+#------------------------------------------------------------------------
+
+# Rutas base Merged
+ruta_clustering_merged <- file.path(ruta_clustering, "01_seurat_merged_clusters")
+ruta_clustering_merged_relativa <- file.path(ruta_clustering_relativa, "01_seurat_merged_clusters")
+
+
+# UMAPS (MERGED)
+ruta_clustering_merged_umaps <- file.path(ruta_clustering_merged, "01_cluster_umaps")
+ruta_clustering_merged_umaps_relativa <- file.path(ruta_clustering_merged_relativa, "01_cluster_umaps")
+
+merged_umaps_df <- NULL
+
+if (dir.exists(ruta_clustering_merged_umaps)) {
+  merged_umaps_list <- list.files(ruta_clustering_merged_umaps, recursive = FALSE, full.names = FALSE)
+  
+  if (length(merged_umaps_list) > 0) {
+    merged_umaps_df <- data.frame(
+      file_name = merged_umaps_list,
+      ruta_absoluta = file.path(ruta_clustering_merged_umaps, merged_umaps_list),
+      ruta_relativa = file.path(ruta_clustering_merged_umaps_relativa, merged_umaps_list),
+      stringsAsFactors = FALSE
+    )
+    merged_umaps_df <- merged_umaps_df[order(merged_umaps_df$file_name), ]
+  }
+}
+
+
+# PROPORTIONS (MERGED)
+ruta_clustering_merged_proportions <- file.path(ruta_clustering_merged, "02_cluster_proportions")
+ruta_clustering_merged_proportions_relativa <- file.path(ruta_clustering_merged_relativa, "02_cluster_proportions")
+
+merged_proportions_df <- NULL
+
+if (dir.exists(ruta_clustering_merged_proportions)) {
+  merged_proportions_list <- list.files(ruta_clustering_merged_proportions, recursive = FALSE, full.names = FALSE)
+  
+  if (length(merged_proportions_list) > 0) {
+    merged_proportions_df <- data.frame(
+      file_name = merged_proportions_list,
+      ruta_absoluta = file.path(ruta_clustering_merged_proportions, merged_proportions_list),
+      ruta_relativa = file.path(ruta_clustering_merged_proportions_relativa, merged_proportions_list),
+      stringsAsFactors = FALSE
+    )
+    merged_proportions_df <- merged_proportions_df[order(merged_proportions_df$file_name), ]
+  }
+}
+
+
+
+#------------------------------------------------------------------------
+# DIRECTORIO "INTEGRATED" EN "CLUSTERING"
+#------------------------------------------------------------------------
+
+# Rutas base Integrated
+ruta_clustering_integrated <- file.path(ruta_clustering, "02_seurat_integrated_clusters")
+ruta_clustering_integrated_relativa <- file.path(ruta_clustering_relativa, "02_seurat_integrated_clusters")
+
+
+# UMAPS (INTEGRATED)
+ruta_clustering_integrated_umaps <- file.path(ruta_clustering_integrated, "01_cluster_umaps")
+ruta_clustering_integrated_umaps_relativa <- file.path(ruta_clustering_integrated_relativa, "01_cluster_umaps")
+
+integrated_umaps_df <- NULL
+
+if (dir.exists(ruta_clustering_integrated_umaps)) {
+  integrated_umaps_list <- list.files(ruta_clustering_integrated_umaps, recursive = FALSE, full.names = FALSE)
+  
+  if (length(integrated_umaps_list) > 0) {
+    integrated_umaps_df <- data.frame(
+      file_name = integrated_umaps_list,
+      ruta_absoluta = file.path(ruta_clustering_integrated_umaps, integrated_umaps_list),
+      ruta_relativa = file.path(ruta_clustering_integrated_umaps_relativa, integrated_umaps_list),
+      stringsAsFactors = FALSE
+    )
+    integrated_umaps_df <- integrated_umaps_df[order(integrated_umaps_df$file_name), ]
+  }
+}
+
+
+# PROPORTIONS (INTEGRATED)
+ruta_clustering_integrated_proportions <- file.path(ruta_clustering_integrated, "02_cluster_proportions")
+ruta_clustering_integrated_proportions_relativa <- file.path(ruta_clustering_integrated_relativa, "02_cluster_proportions")
+
+integrated_proportions_df <- NULL
+
+if (dir.exists(ruta_clustering_integrated_proportions)) {
+  integrated_proportions_list <- list.files(ruta_clustering_integrated_proportions, recursive = FALSE, full.names = FALSE)
+  
+  if (length(integrated_proportions_list) > 0) {
+    integrated_proportions_df <- data.frame(
+      file_name = integrated_proportions_list,
+      ruta_absoluta = file.path(ruta_clustering_integrated_proportions, integrated_proportions_list),
+      ruta_relativa = file.path(ruta_clustering_integrated_proportions_relativa, integrated_proportions_list),
+      stringsAsFactors = FALSE
+    )
+    integrated_proportions_df <- integrated_proportions_df[order(integrated_proportions_df$file_name), ]
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 3</h1>
+  <h2>Dimensionality Reduction and Clustering</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This tab documents the central analytical process of the <em>Single-Cell RNA-Seq</em> experiment: <strong>Dimensionality Reduction and Clustering</strong>. Starting from the pristine expression matrix obtained after rigorous prior quality filtering, the fundamental objective of this phase is to simplify the enormous mathematical complexity of the data—where each gene represents an independent dimension—in order to discover, group, and visualize the distinct cellular subpopulations that compose the tissue.
+  </p>
+
+  <p>
+    The bioinformatics workflow begins with normalization and scaling of the counts, focusing the analysis on highly variable genes. Next, a linear dimensionality reduction is performed using <strong>Principal Component Analysis (PCA)</strong>. This technique captures the most impactful underlying biological signal and discards residual noise, enabling the subsequent projection of cells into a two-dimensional space using nonlinear algorithms such as <strong>UMAP</strong>. In these spatial representations, cells with similar transcriptional profiles group together, forming phenotypic clusters.
+  </p>
+
+  <p>
+    To ensure maximum analytical robustness and adapt to the nature of each experiment, this section presents results structured under two complementary methodological approaches (subject to availability depending on project requirements):
+  </p>
+
+  <ul>
+    <li><strong><em>Merged</em> Strategy (No batch correction) &rArr;</strong> Projects the natural topology of cells by directly concatenating samples. This constitutes the reference approach when biological replicates are consistent and do not exhibit severe technical deviations originating during sequencing or capture.</li>
+    <li><strong><em>Integrated</em> Strategy (Batch alignment) &rArr;</strong> Applies anchoring algorithms to correct the "batch effect" (<em>batch effect</em>), homogenizing technical differences between samples and forcing the overlap of cellular subpopulations that are biologically shared.</li>
+  </ul>
+
+  <p>
+    Throughout the following sections, variance plots, UMAP projections, and statistical analyses of cellular abundance and proportion will be dynamically explored. The precise definition and interpretation of these clusters form the essential foundation for advancing to the next phase of the study: identification of marker genes, cell type annotation, and differential gene expression (DEG) analysis.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents of this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion3">3<span>.</span> Dimensionality Reduction and Clustering</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion3.1">3.1. Linear reduction (Principal Component Analysis - PCA)</a>
+          <ul>
+            <li><a href="#tab3-seccion3.1.1">3.1.1. Visual exploration of Principal Components</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab3-seccion3.2">3.2. Clustering Strategies: Merged vs. Integrated</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion3.3">3.3. Topology and Clustering without batch correction (Merged)</a>
+          <ul>
+            <li><a href="#tab3-seccion3.3.1">3.3.1. Spatial projections (UMAP)</a></li>
+            <li><a href="#tab3-seccion3.3.2">3.3.2. Cellular proportions and abundance</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="#tab3-seccion3.4">3.4. Topology and Clustering with batch alignment (Integrated)</a>
+          <ul>
+            <li><a href="#tab3-seccion3.4.1">3.4.1. Spatial projections (UMAP)</a></li>
+            <li><a href="#tab3-seccion3.4.2">3.4.2. Statistical analysis and cellular proportions</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion3">
+  3<span>.</span> Dimensionality Reduction and Clustering
+</div>
+
+<p>
+  After passing the rigorous quality filters described in the previous section, the retained cells form a biologically valid expression matrix. However, before proceeding to spatial clustering, it is imperative to apply mathematical transformations that correct the technical discrepancies intrinsic to single-cell sequencing.
+</p>
+
+<p>
+  First, individual cells naturally exhibit heterogeneous sequencing depths (total UMIs). To make the transcriptional profiles of all cells comparable, <strong>normalization</strong> of the data is performed (typically through global log-normalization or more advanced variance models such as <em>SCTransform</em>). Subsequently, a linear <strong>scaling</strong> is applied to standardize expression, ensuring that the variance of the dataset is not spuriously dominated by highly expressed constitutive (<em>housekeeping</em>) genes.
+</p>
+
+<p>
+  Second, an analytical process of feature selection (<em>Feature Selection</em>) is carried out. Given that the vast majority of genes in the genome maintain baseline expression levels that are constant across all cell types, they do not provide discriminative information about tissue diversity. Therefore, Seurat algorithms evaluate the relationship between variance and mean expression to isolate a restricted subset of <strong>highly variable genes (HVGs)</strong>. These genes are the true drivers of the biological identity of the different cellular subpopulations.
+</p>
+
+<p>
+  It is precisely on this purified subset of highly variable genes that mathematical dimensionality reduction techniques are applied, beginning with the industry-standard linear method, which is documented below.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion3.1">
+  3.1. Linear reduction (Principal Component Analysis - PCA)
+</div>
+
+<p>
+  The human or murine genome contains tens of thousands of transcriptionally active genes. In the computational context of <em>Single-Cell</em>, this means that each individual cell is located in a hyperdimensional space where each gene represents an independent axis (dimension). Since the vast majority of these genes do not provide discriminative information (either because their expression is basal and constant, or because their variation is merely technical noise), it is mathematically inefficient and computationally unfeasible to analyze the dataset in its original dimensionality.
+</p>
+
+<p>
+  To address this problem, <strong>Principal Component Analysis (PCA)</strong> is applied to the previously purified subset of Highly Variable Genes (HVGs). PCA is a linear dimensionality reduction technique that condenses information by identifying new "directions" or mathematical axes (known as Principal Components or PCs) that capture the largest possible amount of biological variance in the dataset. PC1 will be the axis that explains the greatest variation, PC2 the second, and so on.
+</p>
+
+<p>
+  The ultimate objective of this phase is to compress the biological signal into a few dozen robust components, while simultaneously isolating and discarding lower dimensions, which typically represent background noise or stochastic variability. To diagnose and validate this process, analytical pipelines usually generate a standardized set of graphical reports. Although their exact availability may vary depending on the specific design of each project, the typical files generated at this stage and their interpretative utility are described below:
+</p>
+
+<ul>
+  <li><strong>FeatureScatter / Variable Features &rArr;</strong> Scatter plots that visualize the relationship and variability of key features (genes or cellular metrics). They are essential for illustrating how the algorithm prioritizes elements that exhibit the greatest variation across cells.</li>
+  <li><strong>DimHeatmap &rArr;</strong> Heatmaps that dissect the internal structure of each Principal Component. For each PC, they show which specific genes are "driving" or enforcing the separation of cells along that axis. This inspection is critical to confirm whether a Principal Component is capturing a real biological signal (for example, cell differentiation genes) or is being influenced by technical noise.</li>
+  <li><strong>ElbowPlot (Elbow plot) &rArr;</strong>  Displays Principal Components on the X-axis against the amount of variance they explain on the Y-axis. The curve typically shows a sharp decline that then stabilizes (forming an "elbow"). This plot is the primary mathematical tool for determining exactly how many dimensions (PCs) will be retained to construct the neighbor graph and subsequent UMAP projections.</li>
+</ul>
+
+<p>
+  Below are the graphical files generated in this dimensionality reduction module for the present experiment:
+</p>
+
+```{r, results="asis"}
+if (!is.null(dim_reduction_df) && nrow(dim_reduction_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(dim_reduction_df)) {
+    f <- dim_reduction_df$file_name[i]
+    ruta <- dim_reduction_df$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_dim_reduction_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore the dimensionality reduction directory (PCA)
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No files were found in the dimensionality reduction (PCA) folder.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion3.1.1">
+  3.1.1. Visual exploration of Principal Components
+</div>
+
+<p>
+  In this subsection, the PCA graphical diagnostics generated for this project are interactively embedded. Sequential review of these panels allows justification of the parametric decisions that will guide subsequent <em>clustering</em>.
+</p>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+if (!is.null(dim_reduction_df) && nrow(dim_reduction_df) > 0) {
+  
+  out_pca <- tagList()
+  
+  for (i in 1:nrow(dim_reduction_df)) {
+    
+    file_name_clean <- dim_reduction_df$file_name[i]
+    ruta_rel <- dim_reduction_df$ruta_relativa[i]
+    
+    # Filtrar solo archivos PDF para los iframes
+    if (grepl("\\.pdf$", file_name_clean, ignore.case = TRUE)) {
+      
+      out_pca <- tagAppendChild(out_pca, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 20px; padding-top: 25px;"></div>
+
+        <p style="margin-bottom: 20px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>File:</strong> <code>{file_name_clean}</code>
+        </p>
+
+        <p style="margin-bottom: 20px;">
+          Below is the interactive panel corresponding to the file <strong>{file_name_clean}</strong>. This representation allows visual exploration of the behavior of dimensionality reduction for this specific metric.
+        </p>
+        
+        <div class="iframe-container" style="margin-top: 20px; margin-bottom: 10px;">
+          <iframe src="{ruta_rel}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 50px;">
+          <a href="{ruta_rel}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in a new tab
+          </a>
+          <a href="{ruta_rel}" download="{file_name_clean}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+          </a>
+        </div>
+      ')))
+    }
+  }
+  
+  out_pca
+
+} else {
+  HTML(glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Note</b><br>
+    As no dimensionality reduction files exist, interactive iframes will not be generated for this section.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+<div class="divider"></div>
+
+<p>
+  Once the optimal dimensionality of the dataset has been defined through variance evaluation (PCA), the compressed information is ready to be input into clustering algorithms and nonlinear projection methods (UMAP). However, when an experiment involves multiple samples or distinct biological conditions, a crucial methodological dilemma arises: <strong>should cells be clustered as originally sequenced, or should algorithmic corrections be applied to homogenize potential technical biases?</strong> This decision is addressed in detail in the following section.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion3.2">
+  3.2. Clustering Strategies: Merged vs. Integrated
+</div>
+
+<p>
+  In single-cell transcriptomics experiments involving multiple samples, replicates, or biological conditions (e.g., *Wild Type* versus *Knock Out*), the step prior to UMAP computation and cluster discovery is the unification of data into a single spatial object. At this stage, bioinformatics presents a fundamental methodological dilemma regarding how cells from different origins should be combined.
+</p>
+
+<p>
+  Depending on the technical variability of the experiment, the analytical *pipeline* can produce results under two distinct clustering strategies. It is important to note that not all projects require both approaches; their availability will depend on the experimental design and the decisions made during bioinformatic processing:
+</p>
+
+<ul>
+  <li><strong><em>Merged</em> Strategy (Simple concatenation) &rArr;</strong> In this approach, cells from all samples are combined into a single global matrix without applying any mathematical transformation to their original expression levels. This is the preferred and methodologically pure strategy when biological replicates behave similarly and no severe "batch effect" (<em>batch effect</em>) exists. That is, it assumes that any observed differences in the UMAP are due to real biology and not technical artifacts (such as sequencing samples on different days or using different capture kits).</li>
+  
+  <li><strong><em>Integrated</em> Strategy (Batch alignment) &rArr;</strong> When technical noise between samples is so strong that it masks the biological signal (causing cells to cluster by "processing day" instead of "cell type"), integration algorithms (such as CCA or RPCA in Seurat) are applied. These methods identify shared cellular populations across samples ("anchors") and apply mathematical correction vectors to enforce their geometric overlap. While a powerful tool for data homogenization, it artificially modifies expression values for topological computation.</li>
+</ul>
+
+<p>
+  Providing the results of both strategies (when available) gives the researcher the empirical ability to assess which of the two mathematical models most faithfully represents the biological reality of their tissue.
+</p>
+
+<p>
+  Below is the general structure of the clustering directory, which contains subfolders corresponding to the strategies executed in this project:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+if (dir.exists(ruta_clustering)) {
+  
+  # List only first-level elements inside 03_clustering
+  clustering_list <- list.files(ruta_clustering, recursive = FALSE, full.names = FALSE)
+  
+  if (length(clustering_list) > 0) {
+    cat('<div class="box-files">\n<ul>\n')
+    for (f in clustering_list) {
+      ruta <- file.path(ruta_clustering_relativa, f)
+      
+      # Assign folder icon if no extension, otherwise default icon
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+    }
+    cat('</ul>\n</div>\n')
+    
+    cat(glue::glue('
+    <p class="text-center">
+      <a href="{ruta_clustering_relativa}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explore the root Clustering directory
+      </a>
+    </p>
+    '))
+  
+  } else {
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+      <i class="fa-solid fa-circle-info"></i>
+      <b>Methodological Note</b><br>
+      The root clustering directory is empty in this project.
+    </div>
+    '), sep = "\n")
+  }
+
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Access Error</b><br>
+    The root clustering directory could not be located.
+  </div>
+  '), sep = "\n")
+}
+```
+
+
+<div class="divider"></div>
+
+<p>
+  Having established the theoretical foundations for how samples are unified, the following subsections will delve into the topological details of each strategy, interactively documenting the spatial projections (UMAP) and corresponding statistical analyses of cellular abundance.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion3.3">
+  3.3. Topology and Clustering without batch correction (Merged)
+</div>
+
+<p>
+  The <em>Merged</em> approach constitutes the baseline evaluation of the experiment. By concatenating the expression matrices from different samples without applying mathematical correction algorithms to their values, it allows the researcher to observe the intrinsic and natural topology of the cells. 
+</p>
+
+<p>
+  This evaluation is diagnostic: if cells from different biological replicates or related conditions intermix homogeneously in space, it is a clear indicator that no limiting technical "batch effect" exists. In this scenario, <em>Merged</em> clustering represents the purest and most biologically faithful version of the dataset.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion3.3.1">
+  3.3.1. Spatial projections (UMAP)
+</div>
+
+<p>
+  To intuitively visualize cellular groupings, the <strong>UMAP</strong> technique (<em>Uniform Manifold Approximation and Projection</em>) is employed. Unlike PCA, UMAP is a nonlinear dimensionality reduction algorithm. Its main advantage lies in its ability to preserve both local structure and the global topology of the hyperdimensional space, projecting cells onto a 2D plane where proximity indicates transcriptional similarity.
+</p>
+
+<p>
+  <strong>It is important to highlight the nature of the clusters presented here:</strong> the groupings visualized below are <strong>unsupervised primary clusters</strong>. They have been automatically generated by Seurat's graph algorithm (typically <em>Louvain</em> or <em>Leiden</em>), which clusters cells based exclusively on their mathematical distances, without any prior biological knowledge.
+</p>
+
+<p>
+  These numerical entities (identified as cluster 0, 1, 2...) constitute the initial topological framework. In later methodological phases (documented in subsequent sections of the report), these primary clusters will be interrogated using marker gene analysis to perform their <strong>biological annotation</strong> (assigning them real cellular identities), and may be merged, re-clustered, or subdivided according to the resolution dictated by tissue biology.
+</p>
+
+<p>
+  Therefore, the graphical files in this section aim to explore this "silent map" from different spatial perspectives:
+</p>
+
+<ul>
+  <li><strong>UMAP_clusters &rArr;</strong> General projection where each color represents a numerically discovered cluster. This provides a global snapshot of sample heterogeneity.</li>
+  <li><strong>UMAP_all_cells_by_condition &rArr;</strong> The same map, but colored according to sample origin (e.g., WT vs KO). This is vital for empirically determining whether a biological condition is restricted to a specific area of the map (indicating unique populations) or is distributed globally (topological overlap).</li>
+  <li><strong>UMAP_clusters_by_condition (Split) &rArr;</strong> Projections separated by condition in split panels, facilitating direct visual comparison of cell density and presence across different experimental states.</li>
+</ul>
+
+```{r, echo=FALSE, results="asis"}
+if (!is.null(merged_umaps_df) && nrow(merged_umaps_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(merged_umaps_df)) {
+    f <- merged_umaps_df$file_name[i]
+    ruta <- merged_umaps_df$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_clustering_merged_umaps_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore UMAPs directory (Merged)
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No UMAP projection files were detected for the <em>Merged</em> strategy in this project.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+if (!is.null(merged_umaps_df) && nrow(merged_umaps_df) > 0) {
+  
+  out_merged_umaps <- tagList()
+  
+  for (i in 1:nrow(merged_umaps_df)) {
+    
+    file_name_clean <- merged_umaps_df$file_name[i]
+    ruta_rel <- merged_umaps_df$ruta_relativa[i]
+    
+    # Filter only PDF files for iframes
+    if (grepl("\\.pdf$", file_name_clean, ignore.case = TRUE)) {
+      
+      out_merged_umaps <- tagAppendChild(out_merged_umaps, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 20px; padding-top: 25px;"></div>
+
+        <p style="margin-bottom: 15px;">
+          Interactive panel of the topological projection <strong>{file_name_clean}</strong>. Explore areas of high cell density and the distribution of clusters along the dimensional axes.
+        </p>
+
+        <p style="margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>File:</strong> <code>{file_name_clean}</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{ruta_rel}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 20px;">
+          <a href="{ruta_rel}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in a new tab
+          </a>
+          <a href="{ruta_rel}" download="{file_name_clean}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+          </a>
+        </div>
+      ')))
+    }
+  }
+  
+  out_merged_umaps
+
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion3.3.2">
+  3.3.2. Cellular proportions and abundance
+</div>
+
+<p>
+  Understanding the spatial distribution of clusters is only half of the analytical picture. To interpret potential underlying mechanisms or the impact of a biological perturbation (such as a gene deficiency or pharmacological treatment), it is critical to quantify cellular abundance.
+</p>
+
+<p>
+  Although these groups may still lack a definitive biological label, proportion analysis of the primary numerical clusters allows very early detection of clonal expansion, subpopulation depletion, or severe alterations in the homeostatic composition of the original tissue. This subfolder documents how the size of each unsupervised cluster fluctuates across different experimental conditions. Typical files include:
+</p>
+
+<ul>
+  <li><strong>Bar plots (BarPlots / dittoFreqPlots) &rArr;</strong> Represent both absolute counts and relative fractions (percentages normalized to 100%) of each primary subpopulation in each sample. They facilitate rapid inspection of numerical imbalances.</li>
+  <li><strong>Tabular files (.csv) &rArr;</strong> If executed, the folder may contain spreadsheets with the exact breakdown of counts per numerical cluster and metrics derived from empirical statistical tests (e.g., Fisher's exact test) to assess significant population changes. <strong>These text or raw data files will not be visualized graphically below but can be explored and downloaded directly from the upper directory box.</strong></li>
+</ul>
+
+```{r, results="asis"}
+if (!is.null(merged_proportions_df) && nrow(merged_proportions_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(merged_proportions_df)) {
+    f <- merged_proportions_df$file_name[i]
+    ruta <- merged_proportions_df$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else if (grepl("\\.csv$", f, ignore.case = TRUE) || grepl("\\.tsv$", f, ignore.case = TRUE)) {
+      "file-csv"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_clustering_merged_proportions_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore Proportions directory (Merged)
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No cellular proportion files were detected for the <em>Merged</em> strategy in this project.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+if (!is.null(merged_proportions_df) && nrow(merged_proportions_df) > 0) {
+  
+  out_merged_prop <- tagList()
+  
+  for (i in 1:nrow(merged_proportions_df)) {
+    
+    file_name_clean <- merged_proportions_df$file_name[i]
+    ruta_rel <- merged_proportions_df$ruta_relativa[i]
+    
+    # Filter only PDF files for iframes (CSV files are handled from the upper box)
+    if (grepl("\\.pdf$", file_name_clean, ignore.case = TRUE)) {
+      
+      out_merged_prop <- tagAppendChild(out_merged_prop, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 20px; padding-top: 25px;"></div>
+
+        <p style="margin-bottom: 15px;">
+          Interactive cellular abundance plot <strong>{file_name_clean}</strong>. Assess discrepancies in the number or percentage of cells assigned to each cluster based on phenotype or experimental condition.
+        </p>
+
+        <p style="margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>File:</strong> <code>{file_name_clean}</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{ruta_rel}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 20px;">
+          <a href="{ruta_rel}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in a new tab
+          </a>
+          <a href="{ruta_rel}" download="{file_name_clean}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+          </a>
+        </div>
+      ')))
+    }
+  }
+  
+  out_merged_prop
+
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion3.4">
+  3.4. Topology and Clustering with batch alignment (Integrated)
+</div>
+
+<p>
+  Unlike simple concatenation, the <em>Integrated</em> strategy assumes that systematic technical differences exist between samples (such as variations in capture or sequencing efficiency across different batches) that can mask the true biological signal. If uncorrected, these deviations would cause cells to cluster by their "technical origin" (batch effect) rather than by their "cell identity."
+</p>
+
+<p>
+  To address this challenge, advanced Seurat algorithms (based on Canonical Correlation Analysis - CCA, or Reciprocal PCA - RPCA) identify "anchors" (<em>anchors</em>): shared cellular subpopulations across the different datasets. Using these anchors as reference, the algorithm computes correction vectors and <strong>mathematically adjusts expression values</strong> to enforce batch alignment. The result is an integrated topological space where cells of the same phenotype (e.g., <em>Wild Type</em> macrophages and <em>Knock Out</em> macrophages) spatially overlap, isolating technical variation and allowing true biological differences to emerge.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion3.4.1">
+  3.4.1. Integrated spatial projections (UMAP)
+</div>
+
+<p>
+  The UMAP projection derived from an integrated matrix usually appears much more cohesive. As in the previous case, the clusters represented here are <strong>primary unsupervised mathematical groupings</strong>, but with the methodological guarantee that the topology has been corrected for batch artifacts. 
+</p>
+
+<p>
+  Visual scrutiny of these maps serves as the definitive diagnostic test: if, after integration, the WT and KO cells intermix harmoniously within the same clusters, the alignment has been successful, confirming that we are comparing "apples to apples" across the different biological conditions.
+</p>
+
+```{r results="asis"}
+if (!is.null(integrated_umaps_df) && nrow(integrated_umaps_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(integrated_umaps_df)) {
+    f <- integrated_umaps_df$file_name[i]
+    ruta <- integrated_umaps_df$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE) || grepl("\\.jpeg$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_clustering_integrated_umaps_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore UMAPs directory (Integrated)
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No UMAP projection files were detected for the <em>Integrated</em> strategy in this project.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+if (!is.null(integrated_umaps_df) && nrow(integrated_umaps_df) > 0) {
+  
+  out_int_umaps <- tagList()
+  
+  for (i in 1:nrow(integrated_umaps_df)) {
+    
+    file_name_clean <- integrated_umaps_df$file_name[i]
+    ruta_rel <- integrated_umaps_df$ruta_relativa[i]
+    
+    # Filter only PDF files for iframes (if there is a JPEG, ideally it would be displayed with <img>, but we assume standard PDF for iframes)
+    if (grepl("\\.pdf$", file_name_clean, ignore.case = TRUE)) {
+      
+      out_int_umaps <- tagAppendChild(out_int_umaps, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 20px; padding-top: 25px;"></div>
+
+        <p style="margin-bottom: 15px;">
+          Interactive panel of the aligned topological projection <strong>{file_name_clean}</strong>. Visually inspect the harmonious overlap of cells across different experimental conditions.
+        </p>
+
+        <p style="margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>File:</strong> <code>{file_name_clean}</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{ruta_rel}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 20px;">
+          <a href="{ruta_rel}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in a new tab
+          </a>
+          <a href="{ruta_rel}" download="{file_name_clean}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+          </a>
+        </div>
+      ')))
+    }
+  }
+  
+  out_int_umaps
+
+}
+```
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion3.4.2">
+  3.4.2. Statistical analysis and cellular proportions
+</div>
+
+<p>
+  Once the integration algorithm has enforced the geometric overlap of homologous cell types, quantifying the cells comprising each cluster achieves maximum statistical rigor. This phase allows high-confidence evaluation of whether the biological event under study (such as a gene deletion) induces selective expansion, specific cell death, or fate changes in a particular cellular population.
+</p>
+
+<p>
+  Below are the abundance diagnostics generated in this module. Although the resulting files may vary depending on the analysis, the typical structure of this directory includes:
+</p>
+
+<ul>
+  <li>
+    <strong>BarPlot_clusters_count / BarPlot_clusters_percentage &rArr;</strong> Visual bar plots showing, respectively, the total number of cells (absolute count) and the fraction they represent (percentage relative to 100%) for each numeric cluster, broken down by experimental condition.
+  </li>
+  <li>
+    <strong>dittoFreqPlot &rArr;</strong> Advanced graphical representations of cellular frequency that facilitate observation of variability among different samples or replicates within the same group.
+  </li>
+  <li>
+    <strong>Tabular files (e.g., cluster_differences_by_counts.csv) &rArr;</strong> Data tables containing formal statistical scrutiny (e.g., using Fisher's exact test). These files tabulate the magnitude of change (<em>Log2 Fold Change</em>) and significance value (<em>adjusted p-value</em>) for each cluster. <strong>Note:</strong> These raw data files are not rendered graphically in the panels below but can be explored and downloaded directly from the file explorer shown above.
+  </li>
+</ul>
+
+```{r, echo=FALSE, results="asis"}
+if (!is.null(integrated_proportions_df) && nrow(integrated_proportions_df) > 0) {
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (i in 1:nrow(integrated_proportions_df)) {
+    f <- integrated_proportions_df$file_name[i]
+    ruta <- integrated_proportions_df$ruta_relativa[i]
+    
+    clase <- if (!grepl("\\.", f)) {
+      "file-folder"
+    } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
+      "file-pdf"
+    } else if (grepl("\\.csv$", f, ignore.case = TRUE) || grepl("\\.tsv$", f, ignore.case = TRUE)) {
+      "file-csv"
+    } else {
+      "file-default"
+    }
+    
+    cat(sprintf('<li class="%s"><a href="%s" target="_blank">%s</a></li>\n', clase, ruta, f))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_clustering_integrated_proportions_relativa}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore Proportions directory (Integrated)
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No cellular proportion files were detected for the <em>Integrated</em> strategy in this project.
+  </div>
+  '), sep = "\n")
+}
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+if (!is.null(integrated_proportions_df) && nrow(integrated_proportions_df) > 0) {
+  
+  out_int_prop <- tagList()
+  
+  for (i in 1:nrow(integrated_proportions_df)) {
+    
+    file_name_clean <- integrated_proportions_df$file_name[i]
+    ruta_rel <- integrated_proportions_df$ruta_relativa[i]
+    
+    # Filter only PDF files for the iframes (CSV files are explored from the box-files)
+    if (grepl("\\.pdf$", file_name_clean, ignore.case = TRUE)) {
+      
+      out_int_prop <- tagAppendChild(out_int_prop, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 20px; padding-top: 25px;"></div>
+
+        <p style="margin-bottom: 15px;">
+          Interactive cellular abundance plot <strong>{file_name_clean}</strong> based on the integrated clustering. Visually assess population variations across experimental conditions.
+        </p>
+
+        <p style="margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>File:</strong> <code>{file_name_clean}</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-bottom: 10px;">
+          <iframe src="{ruta_rel}" frameborder="0" style="height: 500px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 20px;">
+          <a href="{ruta_rel}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open PDF in new tab
+          </a>
+          <a href="{ruta_rel}" download="{file_name_clean}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+          </a>
+        </div>
+      ')))
+    }
+  }
+  
+  out_int_prop
+
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  Having explored the baseline topology (<em>Merged</em>) and the aligned topology (<em>Integrated</em>), the dataset is now mathematically structured into robust numerical clusters. However, for these groupings to acquire functional meaning, it is imperative to understand which transcriptional features uniquely define them.
+</p>
+
+<p>
+  The next major milestone of the project will be to interrogate the expression profile of each primary cluster in isolation. To achieve this, differential expression analyses will be performed by comparing each group against the rest of the global cellular population (<em>Cluster X vs All</em>). This statistical scrutiny will reveal the <strong>highly differential marker genes</strong> that constitute the exclusive "gene signature" of each mathematical entity.
+</p>
+
+<p>
+  The exhaustive extraction of these biomarker lists—documented through individual statistical tables per cluster and graphical expression projections—serves as the necessary bridge between the unsupervised algorithm and tissue biology, laying the empirical foundations for future lineage assignment. This entire blind discovery process is detailed in the next module of the report: <strong><a href="04-marcadores.html" class="normalink">4. Marker Identification (blind clusters)</a></strong>.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

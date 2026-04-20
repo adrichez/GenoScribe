@@ -1,0 +1,1113 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  amplicon_type: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS 18S | 3. GENERACIÓN DE ASVs Y TABLA DE ABUNDANCIA -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+# Cargar librerías
+library(glue)
+library(fs)
+library(stringr)
+library(dplyr)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_metagenomics_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..", "..")
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Rutas de la carpeta Def
+ruta_Def_18S <- file.path(params$project_path, "Resultados", "Def_18S")
+ruta_Def_18S_relativa <- file.path(ruta_proyecto_relativa, "Resultados", "Def_18S")
+
+
+# Rutas del archivo de metadatos
+ruta_Def_18S_sample_metadata <- file.path(ruta_Def_18S, "sample-metadata.tsv")
+ruta_Def_18S_sample_metadata_relativa <- file.path(ruta_Def_18S_relativa, "sample-metadata.tsv")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis (18S)</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 3</h1>
+  <h2>ASV generation and abundance table</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    In this third section, the process of <strong>ASV (Amplicon Sequence Variants) generation</strong> and the construction of the corresponding <strong>abundance table</strong> is described, fundamental steps that form the core of any amplicon-based metagenomic analysis. Using the data denoised in previous phases (quality control, demultiplexing, and error correction via DADA2), the final sequences are obtained, which will serve as the basis for characterizing the microbial composition of the samples.
+  </p>
+
+  <p>
+    This block is organized into three subsections that allow a detailed understanding of the workflow logic and the role of each result:
+  </p>
+
+  <ul>
+    <li>
+      <strong>3.1 Concept and acquisition of ASVs</strong> <strong>&rArr;</strong> introduces what ASVs are, how they differ from classical OTUs, and why they provide higher taxonomic resolution. The procedure by which QIIME2 (via DADA2) generates these unique sequences by correcting sequencing errors and removing chimeras is explained.
+    </li>
+
+    <li>
+      <strong>3.2 Representative sequences</strong> <strong>&rArr;</strong> presents the sequences contained in <code>rep-seqs.qza</code> (or <code>rep-seqs.qzv</code>), examining their length distribution and the diversity of variants detected. These sequences will serve as a reference for subsequent taxonomic assignment and to relate them to abundance in each sample.
+    </li>
+
+    <li>
+      <strong>3.3 ASV abundance table</strong> <strong>&rArr;</strong> details the extraction of the abundance matrix from <code>table.qza</code> (subsection 3.3.1), which contains the frequency of each ASV in the samples, and the exploration of summary and visualization files contained in <code>table.qzv</code> (subsection 3.3.2). It explains how these resources allow verification of sequencing coverage, exploration of global ASV frequency, and access to interactive visualizations via <code>index.html</code>.
+    </li>
+  </ul>
+
+  <p>
+    The results of this section include both <code>.qza artifacts</code> and their visualizations in <code>.qzv</code>. To facilitate interpretation, interactive R tables with summarized metrics (such as total reads per sample and frequency of each ASV) are shown, and <code>iframe</code> elements with <code>index.html</code> files are integrated to access dynamic visualization of the abundance matrix.
+  </p>
+
+  <p>
+    Overall, this section provides a clear and structured view of the sequence variants and their distribution across samples, preparing the ground for <a href="04-diversidad.html#tab3-seccion4" class="normalink">microbial diversity analyses</a> that will be addressed in the next section, including alpha and beta diversity and their biological interpretation.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion3">
+        3<span>.</span> ASV generation and abundance table
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion3.1">
+            3.1. Concept and acquisition of ASVs
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion3.2">
+            3.2. Representative sequences
+          </a>
+        </li>
+        <li>
+          <a href="#tab3-seccion3.3">
+            3.3. ASV abundance table
+          </a>
+          <ul>
+            <li>
+              <a href="#tab3-seccion3.3.1">
+                3.3.1. Extraction of the abundance matrix from table.qza
+              </a>
+            </li>
+            <li>
+              <a href="#tab3-seccion3.3.2.">
+                3.3.2. Exploration of results in table.qzv
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<<div class="titulo1" id="tab3-seccion3">
+  3<span>.</span> ASV generation and abundance table
+</div>
+
+<p>
+  After completing the quality control process and read denoising with QIIME2, the next key step in the analysis is the <strong>generation of amplicon sequence variants (ASVs)</strong> and the construction of an <strong>abundance table</strong>. This procedure is essential because it translates sequencing data into biologically interpretable entities, allowing precise quantification of which sequence variants are present in each sample and their frequency.
+</p>
+
+<p>
+  In this block, how these representative units are obtained through the <em>denoising</em> and error removal process is addressed, the <strong>representative sequences</strong> that will serve as the basis for taxonomic assignment are presented, and the information is organized into an abundance matrix summarizing the presence of each ASV across different samples. 
+</p>
+
+<p>
+  In this way, the results presented here constitute the <strong>central core</strong> on which subsequent analysis phases are based, such as alpha and beta diversity studies or the taxonomic characterization of the microbial community. 
+  Next, in the following subsection, the <strong>concept and acquisition of ASVs</strong> will be explored in detail, explaining what they represent and how they are generated in the context of this analysis.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion3.1">
+  3.1. Concept and acquisition of ASVs
+</div>
+
+<p>
+  In amplicon-based metagenomic analysis, <strong>Amplicon Sequence Variants (ASVs)</strong> represent the fundamental unit of information. Each ASV corresponds to a unique sequence inferred after correcting sequencing errors, allowing much higher resolution than that provided by traditional <strong>OTUs</strong>, which cluster reads based on an arbitrary similarity threshold, typically 97%. While OTUs depend on the chosen threshold and clustering method, ASVs are reproducible across experiments and platforms when the same workflow is used, enabling precise and consistent comparisons.
+</p>
+
+<p>
+  The acquisition of ASVs is based on an error correction and artifact removal process that transforms denoised reads (already filtered after quality control and primer/adapter removal) into a set of exact sequences. Using tools like <strong>DADA2</strong> within QIIME2, the general workflow includes platform error modeling, dereplication of identical reads, inference of true biological variants, merging of paired reads, and removal of chimeras generated during PCR. The final result of this process is a set of ASVs and the corresponding abundance table, reflecting the frequency of each variant in each sample.
+</p>
+
+<p>
+  Constructing these tables is fundamental, as they form the basis for calculating alpha and beta diversity metrics, performing statistical comparisons between experimental conditions, and subsequent taxonomic assignments. ASVs allow identification of variants differing by even a single nucleotide, enabling finer and more precise analysis of microbial composition, biomarker detection, and phylogenetic studies.
+</p>
+
+<p>
+  In practical terms, we have focused on the <code>.qzv</code> files generated by QIIME2 to extract relevant ASV information. These files allow interactive exploration of read distribution, sequence lengths, and prevalence across samples. To obtain the data and visualizations, controlled unzipping of the <code>.qzv</code> files has been performed, accessing files such as <code>sequences.fasta</code>, <code>sample-frequency-detail.csv</code>, <code>feature-frequency-detail.csv</code>, and the respective <code>index.html</code> contained within.
+</p>
+
+<p>
+  This approach allows clear and concise reporting of key indicators such as the total number of ASVs detected, read retention after each denoising step, sequence length distribution, relative abundance, and prevalence of each ASV. It also facilitates detailed inspection of sequences and verification of obtained results, ensuring reproducibility and traceability of the analysis.
+</p>
+
+<p>
+  Overall, focusing on the <code>.qzv</code> files provides a complete and accurate view of the sequence variants present in the samples, combining summary tables with interactive visualization. This foundation is solid for subsequent <a href="04-diversidad.html#tab3-seccion4" class="normalink">microbial diversity analyses</a> and the biological interpretation of results. Specific details of the results are presented in the following subsections.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion3.2">
+  3.2. Representative sequences
+</div>
+
+```{r}
+# Definir ruta del archivo .qzv
+ruta_rep_seqs_qzv_relativa <- file.path(ruta_Def_18S_relativa, "rep-seqs.qzv")
+ruta_rep_seqs_qzv <- file.path(ruta_Def_18S, "rep-seqs.qzv")
+
+# Definir ruta del archivo .qza
+ruta_rep_seqs_qza_relativa <- file.path(ruta_Def_18S_relativa, "rep-seqs.qza")
+ruta_rep_seqs_qza <- file.path(ruta_Def_18S, "rep-seqs.qza")
+
+# Definir ruta de salida para el unzip
+ruta_Def_18S_unzip <- file.path(ruta_Def_18S_relativa, "unzip")
+ruta_unzip_rep_seqs <- file.path(ruta_Def_18S_unzip, "rep-seqs")
+
+# Crear carpeta de salida si no existe
+if (!dir.exists(ruta_Def_18S_unzip)) dir.create(ruta_Def_18S_unzip, recursive = TRUE)
+
+# Solo hacer unzip si el archivo existe
+if (file.exists(ruta_rep_seqs_qzv_relativa)) {
+  # Usando system2 para llamar a unzip desde R
+  system2("unzip", args = c("-o", shQuote(ruta_rep_seqs_qzv_relativa),
+                            "-d", shQuote(ruta_unzip_rep_seqs)))
+} else {
+  message("⚠️ The file rep-seqs.qzv does not exist. Unzip skipped.")
+}
+```
+
+```{r}
+# Comprobar que el unzip se ha realizado
+if (dir.exists(ruta_unzip_rep_seqs)) {
+  
+  # Listar subcarpetas dentro de la carpeta unzip (solo 1er nivel)
+  subcarpetas <- list.dirs(ruta_unzip_rep_seqs, recursive = FALSE, full.names = TRUE)
+  
+  if (length(subcarpetas) == 0) {
+    stop("No subfolder found inside ", ruta_unzip_rep_seqs)
+  }
+  
+  # Tomamos la primera subcarpeta (la aleatoria generada por QIIME2)
+  carpeta_random <- subcarpetas[1]
+  
+  # Ruta a 'data'
+  ruta_data <- file.path(carpeta_random, "data")
+  
+  # Archivos dentro de 'data'
+  ruta_sequences_fasta <- file.path(ruta_data, "sequences.fasta")
+  ruta_index_html <- file.path(ruta_data, "index.html")
+  
+  # Comprobar que existen
+  if (!file.exists(ruta_sequences_fasta)) message("⚠️ sequences.fasta not found")
+  if (!file.exists(ruta_index_html)) message("⚠️ index.html not found")
+  
+} else {
+  message("⚠️ Unzip folder not found. Cannot access files.")
+}
+```
+
+<p>
+  This subsection provides a detailed analysis of the <strong>representative sequences</strong> obtained after ASV generation, which constitute the basic unit for characterizing the microbial diversity of each sample. This process starts from the <code>rep-seqs.qzv</code> file generated by QIIME2, which combines both the final sequence data and associated interactive visualizations. These visualizations allow exploration of key aspects such as amplicon length, the abundance of each variant, and their prevalence across samples, facilitating the detection of atypical sequences or artifacts before proceeding to subsequent analyses.
+</p>
+
+<p>
+  The first step involves unzipping the <code>.qzv</code> file to access its internal content. QIIME2 generates folders with random names that include the sequence information and visualization. Within these folders, two essential elements are found: 
+  <code>sequences.fasta</code>, which contains all detected representative sequences, and 
+  <code>index.html</code>, which provides an interactive visualization of the results. This structure allows reproducible access to the data and facilitates their integration into automated reports.
+</p>
+
+<p>
+  It is worth noting that the <code>sequences.fasta</code> file contains the same data as the matrix obtained by reading the <code>rep-seqs.qza</code> artifact itself using the <strong>qiime2R</strong> package, loading it with the <code>read_qza()</code> function and then accessing the raw data via the <code>$data</code> element.
+</p>
+
+<p>
+  That said, the paths to the <code>rep-seqs.qzv</code> and <code>rep-seqs.qza</code> files can be found in the following directories:
+</p>
+
+```{r, results="asis"}
+if (file.exists(ruta_rep_seqs_qzv)) {
+cat(glue::glue('
+<code>{ruta_rep_seqs_qzv}</code>
+'), sep = "\n")
+
+} else {
+cat(glue::glue('
+<div class="alert-warning alert-box">
+<i class="fa-solid fa-triangle-exclamation"></i>
+<b>Warning</b><br>
+The file <code>rep-seqs.qzv</code> does not exist at the specified path:<br>
+<code>{ruta_rep_seqs_qzv}</code>.
+</div>
+'), sep = "\n")
+}
+```
+
+```{r, results="asis"}
+if (file.exists(ruta_rep_seqs_qza)) {
+cat(glue::glue('
+<code>{ruta_rep_seqs_qza}</code>
+'), sep = "\n")
+
+} else {
+cat(glue::glue('
+<div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The file <code>rep-seqs.qza</code> does not exist at the specified path:<br>
+  <code>{ruta_rep_seqs_qza}</code>.
+</div>
+'), sep = "\n")
+}
+```
+
+<p>
+  Once the content is extracted, an <strong>interactive table</strong> in R is constructed from the <code>sequences.fasta</code> file. This table summarizes, for each ASV, its identifier (<em>Feature ID</em>), sequence length, and the nucleotide sequence itself. The sequence length allows evaluation of whether the amplicons meet the expected marker size (e.g., V3-V4 of 18S), and helps detect truncated or extended sequences that could indicate sequencing errors or unremoved chimeras.
+</p>
+
+<p>
+  Additionally, to facilitate interpretation and rapid pattern visualization, each nucleotide is color-coded according to its type (<span style='color: #2ECC71'>A</span>, <span style='color: #E74C3C'>T</span>, <span style='color: #F1C40F'>G</span>, <span style='color: #3498DB'>C</span>, and <span style='color: #7F8C8D'>N</span>). This chromatic coding allows identification of conserved motifs, variable regions, and potential errors, providing an intuitive way to explore sequences without manually inspecting them one by one. The table shows a representative subset of sequences to illustrate the diversity and length of the ASVs obtained, but all variants are included in the full file, accessible via the link provided.
+</p>
+
+<p>
+  For users who wish to review all generated sequences, a link is provided just below this table that allows opening the complete <code>sequences.fasta</code> file in a new browser tab. This ensures that any user can verify all data and facilitates external validation of results, a crucial step in producing reproducible and auditable reports.
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_sequences_fasta)) {
+  # Leer el archivo generado al descomprimir
+  library(Biostrings)
+  library(DT)
+  library(htmltools)
+
+  # Leer el archivo fasta
+  seqs <- readDNAStringSet(ruta_sequences_fasta)
+
+  # Crear data.frame con ID, longitud y secuencia
+  seqs_df <- data.frame(
+    Feature_ID = names(seqs),
+    Sequence_Length = width(seqs),
+    Sequence = as.character(seqs),
+    stringsAsFactors = FALSE,
+    row.names = NULL
+  )
+
+  # Tomar solo las primeras 20 filas
+  seqs_subset_df <- head(seqs_df, 100)
+
+  # Definir colores
+  nuc_colors <- list(
+    A = "#2ECC71",  # verde
+    T = "#E74C3C",  # rojo
+    G = "#F1C40F",  # amarillo
+    C = "#3498DB",  # azul
+    N = "#7F8C8D"   # gris
+  )
+
+  # Función para colorear secuencia
+  color_seq <- function(seq) {
+    paste0(
+      sapply(strsplit(seq, "")[[1]], function(nt) {
+        color <- nuc_colors[[nt]]
+        if (is.null(color)) color <- "black"
+        sprintf("<span style='color:%s'>%s</span>", color, nt)
+      }),
+      collapse = ""
+    )
+  }
+
+  # Aplicar colores a la columna Sequence
+  seqs_subset_df$Sequence <- sapply(seqs_subset_df$Sequence, color_seq)
+
+  # Tabla interactiva de metadatos
+  library(DT)
+
+  DT::datatable(
+    seqs_subset_df,
+    escape = FALSE,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Solo tabla
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+  
+} else {
+  cat(glue::glue('
+  cat("File "sequences.fasta" not found. Check the path.")
+  '), sep = "\n")
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_sequences_fasta)) {
+
+  cat(glue::glue('
+  <div style="display: flex; justify-content: center; gap: 25px;">
+    <a href="{ruta_sequences_fasta}" 
+      target="_blank" 
+      class="boton-file">
+      <i class="fa-solid fa-file-lines"></i> View full file in a new tab
+    </a>
+
+    <a href="{ruta_sequences_fasta}" 
+      download="{basename(ruta_sequences_fasta)}" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download file
+    </a>
+  </div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  In parallel, the <code>index.html</code> is embedded in an <code>iframe</code> within the Quarto report. This interactive visualization offers several advantages: it allows dynamic inspection of ASV length distributions, exploration of the abundance of each sequence across samples, identification of rare or atypical sequences, and navigation through graphs automatically generated by QIIME2. The <code>iframe</code> provides a complete visual environment without the need to open additional software, while an additional link allows opening the report in a new tab to access all interactive features.
+</p>
+
+```{r, results='asis'}
+# Generar iframe para Quarto si existe index.html
+if (file.exists(ruta_index_html)) {
+
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{ruta_index_html}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_index_html}" 
+      target="_blank" 
+      class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open report in a new tab
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  Overall, this subsection provides a comprehensive and detailed view of the representative sequences obtained. The combination of summary tables, color-coded sequences, and interactive visualizations not only facilitates result inspection but also ensures traceability and reproducibility of the analysis. This foundation of representative sequences is essential for the subsequent steps, including the construction of the abundance table and taxonomic assignment, which will be addressed in the next section.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion3.3">
+  3.3. ASV Abundance Table
+</div>
+
+<p>
+  Once the representative sequences (<code>rep-seqs.qza</code>) are generated, the next key step is to construct the <strong>ASV abundance matrix</strong>. This matrix forms the core of microbiome analysis, as it summarizes how many times each sequence variant (<em>Amplicon Sequence Variant</em>, ASV) appears in each study sample.
+</p>
+
+<p>
+  The structure of this matrix is very simple in form but of enormous analytical importance:
+</p>
+
+<ul>
+  <li>
+    <strong>Rows</strong> <strong>&rArr;</strong> each row corresponds to a unique ASV, identified by an alphanumeric hash (for example, <code>5d6d41bab35d14a56fad08d8a468f6f9</code>). This identifier is associated with the representative sequence stored in the <code>rep-seqs.qza</code> file.
+  </li>
+  <li>
+    <strong>Columns</strong> <strong>&rArr;</strong> each column represents an individual sample included in the study (for example, <code>NGS001-23_18S_41</code>, <code>NGS001-23_18S_42</code>, etc.).
+  </li>
+  <li>
+    <strong>Values</strong> <strong>&rArr;</strong> the cells contain the absolute sequence counts, i.e., the number of times a particular ASV was detected in a specific sample.
+  </li>
+</ul>
+
+<p>
+  Thanks to this structure, the abundance matrix becomes the starting point for most downstream microbiome analyses. Its main applications include:
+</p>
+
+<ul>
+  <li>
+    The calculation of <strong>alpha diversity</strong> metrics, which evaluate richness (number of ASVs) and evenness (distribution of abundances) within each sample.
+  </li>
+  <li>
+    The analysis of <strong>beta diversity</strong>, aimed at comparing community composition between different samples or experimental conditions.
+  </li>
+  <li>
+    The <strong>taxonomic assignment</strong> of ASVs and the subsequent creation of taxonomic profiles showing the relative composition of each microbial community.
+  </li>
+  <li>
+    The application of <strong>statistical methods</strong> that detect significant differences in ASV or taxon abundance between study groups.
+  </li>
+</ul>
+
+<p>
+  In QIIME2, this information is managed through two complementary types of files:
+</p>
+
+<ul>
+  <li>
+    <code>table.qza</code> <strong>&rArr;</strong> contains the <strong>actual abundance matrix</strong> in <code>.biom</code> (Biological Observation Matrix) format. This file stores the raw data used for statistical calculations and diversity analyses.
+  </li>
+  <li>
+    <code>table.qzv</code> <strong>&rArr;</strong> is an <strong>interactive visualization</strong> file, including graphical representations, derived tables, and a web interface (<code>index.html</code>) to easily explore abundance distributions across samples.
+  </li>
+</ul>
+
+<p>
+  In summary, the ASV abundance matrix is the central element of metagenomic analysis: it provides a quantitative view of microbial communities and supports both visual exploration and advanced statistical analyses presented in subsequent sections.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion3.3.1">
+  3.3.1. Extraction of the Abundance Matrix from `table.qza`
+</div>
+
+```{r}
+# Cargar paquete qiime2R
+library(qiime2R)
+
+# Definir ruta al archivo table.qza
+ruta_table_qza <- file.path(ruta_Def_18S, "table.qza")
+ruta_table_qza_relativa <- file.path(ruta_Def_18S_relativa, "table.qza")
+```
+
+<p>
+  The <strong>ASV abundance matrix</strong> contains the raw data on how many times each ASV is detected in each sample. This matrix forms the basis for all diversity analyses, rarefaction, taxonomic assignment, and statistical comparisons. In QIIME2, it is stored in <code>table.qza</code>, an artifact that preserves all information in full detail. The associated <code>table.qzv</code> file only provides summarized representations and visualizations of the same matrix (summary tables, plots, and HTML) and will be addressed in the following subsection.
+</p>
+
+<p>
+  The <code>table.qza</code> artifact is located in the working directory defined for QIIME2 results, usually under the path specified at:
+</p>
+
+```{r, results="asis"}
+if (file.exists(ruta_table_qza)) {
+  cat(glue::glue('
+<code>{ruta_table_qza}</code>
+'), sep = "\n")
+} else {
+  cat(glue::glue('
+<div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The file <code>table.qzv</code> does not exist at the specified path:<br>
+  <code>{ruta_table_qza}</code>.
+</div>
+'), sep = "\n")
+}
+```
+
+<p>
+  To import the abundance matrix into R, the <strong>qiime2R</strong> package is used. The function <code>read_qza()</code> loads the artifact and allows access to the raw data via the <code>$data</code> element, where each row corresponds to an ASV and each column to a sample.
+</p>
+
+<p>
+  The extracted matrix represents the full abundance information, while the files within <code>table.qzv</code> only show summaries or derived plots:
+</p>
+
+<ul>
+  <li><code>feature-frequency-detail.csv</code> <strong>&rArr;</strong> summary of the total frequency of each ASV across all samples.</li>
+  <li><code>sample-frequency-detail.csv</code> <strong>&rArr;</strong> summary of the total number of reads per sample.</li>
+  <li><code>index.html</code> and PDF/PNG plots <strong>&rArr;</strong> interactive visualizations of the matrix and its distributions.</li>
+</ul>
+
+<p>
+  Below we show this abundance matrix obtained from <code>table.qza</code>, which can be linked with the representative sequences from <code>rep-seqs.qza</code>, enabling integrated analyses of abundance, diversity, and taxonomic assignment:
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_table_qza)) {
+  library(qiime2R)
+
+  # Leer el artefacto
+  feature_table <- read_qza(ruta_table_qza)
+
+  # Extraer la matriz de abundancia real
+  matriz_abundancia <- feature_table$data
+
+  # Tabla interactiva
+  library(DT)
+  library(htmltools)
+
+  DT::datatable(
+    matriz_abundancia,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Solo tabla
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+  
+} else {
+  cat(glue::glue('
+  cat("Archivo "{ruta_table_qza}" no encontrado. Verifica la ruta.")
+  '), sep = "\n")
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_table_qza_relativa)) {
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_table_qza_relativa}"
+      download="{basename(ruta_table_qza_relativa)}" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download "table.qza" file
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  With this matrix, it is possible to perform filtering, rarefaction, alpha/beta diversity calculations, and custom visualizations, ensuring traceability and reproducibility. This will be covered in the following sections.
+</p>
+
+<p>
+  Once this is detailed, the next subsection will address how to explore <code>table.qzv</code> files as summaries and visualizations of the abundance matrix.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-seccion3.3.2">
+  3.3.2. Exploration of results in `table.qzv`
+</div>
+
+```{r}
+# Definir ruta del archivo .qzv
+ruta_table_qzv_relativa <- file.path(ruta_Def_18S_relativa, "table.qzv")
+ruta_table_qzv <- file.path(ruta_Def_18S, "table.qzv")
+
+# Definir ruta de salida para el unzip
+ruta_Def_18S_unzip <- file.path(ruta_Def_18S_relativa, "unzip")
+ruta_unzip_table <- file.path(ruta_Def_18S_unzip, "table")
+
+# Crear carpeta de salida si no existe
+if (!dir.exists(ruta_Def_18S_unzip)) dir.create(ruta_Def_18S_unzip, recursive = TRUE)
+
+# Solo hacer unzip si el archivo existe
+if (file.exists(ruta_table_qzv_relativa)) {
+  # Usando system2 para llamar a unzip desde R
+  system2("unzip", args = c("-o", shQuote(ruta_table_qzv_relativa),
+                            "-d", shQuote(ruta_unzip_table)))
+} else {
+  message("⚠️ The table.qzv file does not exist. Unzip is skipped.")
+}
+```
+
+```{r}
+# Comprobar que el unzip se ha realizado
+if (dir.exists(ruta_unzip_table)) {
+  
+  # Listar subcarpetas dentro de la carpeta unzip (solo 1er nivel)
+  subcarpetas <- list.dirs(ruta_unzip_table, recursive = FALSE, full.names = TRUE)
+  
+  if (length(subcarpetas) == 0) {
+    stop("No subfolders were found inside ", ruta_unzip_table)
+  }
+  
+  # Tomamos la primera subcarpeta (la aleatoria generada por QIIME2)
+  carpeta_random <- subcarpetas[1]
+  
+  # Ruta a 'data'
+  ruta_data <- file.path(carpeta_random, "data")
+  
+  # Archivos dentro de 'data'
+  ruta_feature_freq_csv <- file.path(ruta_data, "feature-frequency-detail.csv")
+  ruta_sample_freq_csv <- file.path(ruta_data, "sample-frequency-detail.csv")
+  ruta_index_html <- file.path(ruta_data, "index.html")
+  
+  # Comprobar que existen
+  if (!file.exists(ruta_feature_freq_csv)) message("⚠️ feature-frequency-detail.csv not found")
+  if (!file.exists(ruta_sample_freq_csv)) message("⚠️ sample-frequency-detail.csv not found")
+  if (!file.exists(ruta_index_html)) message("⚠️ index.html not found")
+  
+} else {
+  message("⚠️ Unzip folder not found. Files cannot be accessed.")
+}
+```
+
+<p>
+  After extracting and visualizing the abundance matrix in the previous section, this subsection focuses on exploring the resources contained in <code>table.qzv</code>, which provide complementary summaries and visualizations of the abundance information without the need to directly manipulate the raw matrix.
+</p>
+
+<p>
+  The <code>table.qzv</code> file is a compressed artifact containing quantitative abundance data, as well as additional resources that facilitate inspection and validation of the results. This file is located in the following directory:
+</p>
+
+```{r, results="asis"}
+if (file.exists(ruta_table_qzv)) {
+  cat(glue::glue('
+<code>{ruta_table_qzv}</code>
+'), sep = "\n")
+} else {
+  cat(glue::glue('
+<div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The <code>table.qzv</code> file does not exist at the specified path:<br>
+  <code>{ruta_table_qzv}</code>.
+</div>
+'), sep = "\n")
+}
+```
+
+<p>
+  Next, <code>table.qzv</code> is decompressed to access its internal files, which include:
+</p>
+
+<ul>
+  <li>
+    <code>feature-frequency-detail.csv</code> <strong>&rArr;</strong> a table indicating how many times each ASV appears across all samples. Each row corresponds to a unique ASV identifier (hash), and its associated frequency reflects the overall abundance of that variant.
+  </li>
+  <li>
+    <code>sample-frequency-detail.csv</code> <strong>&rArr;</strong> a table summarizing the total number of reads assigned to each sample, allowing assessment of sequencing depth and detection of samples with potentially low coverage.
+  </li>
+  <li>
+    <code>index.html</code> <strong>&rArr;</strong> an interactive visualization of the abundance matrix, equivalent to what is seen when loading the file in <a href="https://view.qiime2.org" class="normalink" target="_blank">QIIME2 View</a>. This interface facilitates graphical exploration of the data through dynamic tables, bar charts, and search and filter panels.
+  </li>
+</ul>
+
+<p>
+  Once decompressed, these internal files can be explored. The first resource to examine is <code>sample-frequency-detail.csv</code>. This file summarizes the total reads per sample and provides an initial overview of sequencing coverage. Its analysis is key for:
+</p>
+
+<ul>
+  <li>Identifying samples with very low read counts that may require exclusion or review.</li>
+  <li>Comparing sequencing depth between experimental groups.</li>
+  <li>Detecting imbalances that could bias downstream analyses.</li>
+</ul>
+
+<p>
+  Below is the interactive table that allows clear and organized inspection of these data. Additionally, a download link to the original file is provided to ensure reproducibility:
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_sample_freq_csv)) {
+  # Leer el archivo generado al descomprimir
+  library(readr)
+  sample_freq <- read_csv(ruta_sample_freq_csv, show_col_types = FALSE)
+  colnames(sample_freq) <- c("Sample ID", "Frequency")
+
+  # Tabla interactiva
+  library(DT)
+
+  DT::datatable(
+    sample_freq,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Solo tabla
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+
+} else {
+  message(glue::glue('
+    File {ruta_sample_freq_csv} not found. Please check the path.
+  '))
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_sample_freq_csv)) {
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_sample_freq_csv}" 
+      download="{basename(ruta_sample_freq_csv)}" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download "sample-frequency-detail.csv" file
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  The next key file is <code>feature-frequency-detail.csv</code>. In it, each row corresponds to a unique ASV identified by a hash, and the frequency column reflects the total number of reads assigned to that variant across all samples. Its main uses are:
+</p>
+
+<ul>
+  <li>Exploring the relative distribution of ASVs, identifying which are dominant or minor.</li>
+  <li>Assessing the representativeness of the sequences detected in the study.</li>
+  <li>Verifying consistency between the abundance matrix and the previously generated representative sequences.</li>
+</ul>
+
+<p>
+  Below is the interactive table with the data from <code>feature-frequency-detail.csv</code>, along with a download link for the complete file:
+</p>
+
+```{r}
+# Leer el archivo y mostrar tabla interactiva
+if (file.exists(ruta_feature_freq_csv)) {
+  # Leer el archivo generado al descomprimir
+  library(readr)
+  feature_freq <- read_csv(ruta_feature_freq_csv, show_col_types = FALSE)
+  colnames(feature_freq) <- c("Feature ID", "Frequency")
+  
+  # Tabla interactiva
+  library(DT)
+
+  DT::datatable(
+    feature_freq,
+    options = list(
+      scrollX = TRUE,
+      scrollY = "500px",
+      scrollCollapse = TRUE,
+      paging = FALSE,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = 'ft', # Solo tabla
+      language = list(
+        url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+      )
+    ),
+    class = 'stripe hover compact'
+  )
+  
+} else {
+  message(glue::glue('
+    File "{ruta_feature_freq_csv}" not found. Please check the path.
+  '))
+}
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_feature_freq_csv)) {
+
+  cat(glue::glue('
+  <p style="text-align:center;">
+    <a href="{ruta_feature_freq_csv}" 
+      download="{basename(ruta_feature_freq_csv)}" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download file "feature-frequency-detail.csv"
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  Finally, the <code>index.html</code> file provides a dynamic visualization of the abundance matrix. This interface replicates what is seen when opening <code>table.qzv</code> in QIIME2 View and allows you to:
+</p>
+
+<ul>
+  <li>Interactively examine the presence and relative abundance of ASVs in each sample.</li>
+  <li>Detect patterns, outliers, or samples with atypical reads.</li>
+  <li>Explore the data through charts and filtering tools that enhance interpretation.</li>
+</ul>
+
+<p>
+  In the report, this file can be embedded directly as an <code>iframe</code> or opened in a new browser tab to leverage all its functionalities:
+</p>
+
+```{r, results='asis'}
+# Generar iframe para Quarto si existe index.html
+if (file.exists(ruta_index_html)) {
+
+  cat(glue::glue('
+  <div class="iframe-container">
+    <iframe src="{ruta_index_html}" frameborder="0" style="height: 700px;"></iframe>
+  </div>
+
+  <p style="text-align:center;">
+    <a href="{ruta_index_html}" target="_blank" class="boton-iframe">
+      <i class="fa-solid fa-file-lines"></i> Open report in a new tab
+    </a>
+  </p>
+
+  <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  Together, these files complement the abundance matrix already displayed, providing summaries and visualizations that enhance data accessibility and understanding. This ensures traceability, accessibility, and reproducibility of the data, and sets the stage for addressing <strong>taxonomic assignment and phylogeny</strong> (<a href="04-taxonimia-filogenia.html#tab3-seccion4" class="normalink">section 4</a>), <strong>differential abundance analysis</strong> (<a href="05-diversidad-diferencial.html#tab3-seccion5" class="normalink">section 5</a>), and <strong>microbial diversity analysis</strong> (<a href="06-diversidad-microbiana.html#tab3-seccion6" class="normalink">section 6</a>), which will include both alpha diversity (richness and evenness) and beta diversity (comparison between communities).
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../../04-javascript/script.js"></script>

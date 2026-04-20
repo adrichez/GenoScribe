@@ -1,0 +1,811 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  experiment_name: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 5.3. ANÁLISIS DE EXPRESIÓN DIFERENCIAL -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+library(stringr)
+library(glue)
+library(fs)
+library(dplyr)
+library(htmlwidgets)
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_bulk_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_bulk_rna_seq_pipeline_absoluta <- normalizePath(ruta_bulk_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+nombre_experimento <- basename(params$experiment_name)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta donde están los resultados de DEG y volcano
+ruta_resultados_experimento <- file.path(params$project_path, "Resultados", nombre_experimento)
+ruta_resultados_experimento_relativa <- file.path(ruta_proyecto_relativa, "Resultados", nombre_experimento)
+
+
+# Buscar archivos .xlsx y .pdf
+archivos_deg <- list.files(ruta_resultados_experimento_relativa, pattern = "^DEG_.*\\.xlsx$", full.names = TRUE)
+archivos_volcano <- list.files(ruta_resultados_experimento_relativa, pattern = "^Volcano_plot_.*\\.pdf$", full.names = TRUE)
+
+# Extraer nombres base de comparación
+comparaciones_raw <- gsub("^DEG_(.*)\\.xlsx$", "\\1", basename(archivos_deg))
+comparaciones <- gsub("_", " ", comparaciones_raw)
+
+
+# Rutas para guardar los archivos creados
+ruta_archives_tmp_analisis <- file.path(ruta_bulk_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion">
+  <h1>Section 5</h1>
+  <h2>Statistical analysis of gene expression</h2>
+</div>
+
+<div class="informe-titulo-subseccion-unique">
+  <h1>Subsection 5.3</h1>
+  <h2>Differential expression analysis</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This section performs the <strong>differential expression analysis</strong>, a central step in transcriptomic studies aimed at identifying <em>genes whose expression varies significantly</em> between different <strong>experimental conditions</strong>. Using the previously 
+    <em>normalized</em> and quality-validated data, pairwise comparisons are established between groups defined in the experimental design.
+  </p>
+
+  <p>
+    For each of these comparisons, the <strong>expression change</strong> of each gene and its <em>statistical significance</em> are calculated, allowing detection of genes <strong>upregulated or downregulated</strong> in response to a given condition. Results are summarized in <code>.xlsx</code> files including key metrics such as <em>log2 fold-change (logFC)</em>, <em>average expression level (logCPM)</em>, <em>p-value</em>, and its correction by <strong>FDR</strong> (false discovery rate). Each gene is classified as <strong>Differentially Expressed (DEG)</strong> or not based on these criteria.
+  </p>
+
+  <p>
+    Additionally, <strong>volcano plots</strong> are generated to provide a clear visual representation of the results, allowing quick identification of the most relevant genes by magnitude of change and significance. These plots are complemented with <strong>other interactive visualizations</strong> such as histograms, MA plots, DEG/non-DEG proportion analyses, as well as downregulated/upregulated genes and lists of the most significant genes, facilitating a <em>visual and comparative exploration</em> of each contrast performed.
+  </p>
+
+  <p>
+    This differential analysis constitutes a <strong>fundamental starting point</strong> for subsequent biological interpretation studies, as genes identified as DEG may be involved in relevant functional processes, serve as potential biomarkers, or provide hypotheses for new research. The following sections will address this interpretation through <em>functional and enrichment analyses</em>.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents of this subsection
+</div>
+
+```{=html}
+```{r, results="asis"}
+cat('
+<div class="toc">
+  <ul>
+    <li>
+      <a href="05-Analisis-estadistico.html#tab3-seccion5">
+        5<span>.</span> Statistical analysis of gene expression
+      </a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion5.3">
+            5.3. Differential expression analysis
+          </a>
+          <ul>
+')
+
+# Subsections generated automatically
+for (i in seq_along(comparaciones)) {
+  cat(glue::glue('
+            <li>
+              <a href="#tab3-seccion5.3.{i}">
+                5.3.{i}. Comparison: {comparaciones[i]}
+              </a>
+            </li>
+\n'))
+}
+
+cat('
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+')
+```
+```
+
+```{=html}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion5.3">
+  5.3. Differential expression analysis
+</div>
+
+<p>
+  Once the quality of the samples has been confirmed and the expression data have been normalized, the next step in transcriptomic analysis is to identify <strong>differentially expressed genes (DEGs)</strong> between the different experimental conditions. This process is key to discovering which genes are activated or repressed as a result of a treatment, a mutation, or any other biological factor of interest.
+</p>
+
+<p>
+  To carry out this analysis, comparisons between experimental conditions have been defined according to the groups established in the experiment metadata. From the normalized expression matrix, a statistical analysis has been performed that calculates, for each gene, the expression change between conditions, as well as its statistical significance. 
+</p>
+
+<p>
+  The result of each analysis has been stored in a <code>.xlsx</code> file, one per comparison, which includes the following fields for each evaluated gene:
+</p>
+
+<ul>
+  <li><strong><code>Gene</code></strong> <strong>&rArr;</strong> Gene identifier.</li>
+  <li><strong><code>Description</code></strong> <strong>&rArr;</strong> Functional description (if available).</li>
+  <li><strong><code>Length</code></strong> <strong>&rArr;</strong> Transcript length in base pairs.</li>
+  <li><strong><code>logFC</code></strong> <strong>&rArr;</strong> Base 2 logarithm of the expression change between conditions (<em>log2 fold-change</em>).</li>
+  <li><strong><code>logCPM</code></strong> <strong>&rArr;</strong> Average gene expression level, expressed as the logarithm of counts per million.</li>
+  <li><strong><code>PValue</code></strong> <strong>&rArr;</strong> Raw p-value of the statistical test.</li>
+  <li><strong><code>FDR</code></strong> <strong>&rArr;</strong> Adjusted p-value according to the Benjamini-Hochberg method to control the false discovery rate.</li>
+  <li><strong><code>Grupo</code></strong> <strong>&rArr;</strong> Classifies the corresponding <em>gene</em> as <code>DEG</code> (Differentially Expressed Gene) or <code>no-DEG</code> (Non-Differentially Expressed Gene).</li>
+</ul>
+
+<p>
+  Additionally, to facilitate the visual interpretation of these results, <strong>volcano plots</strong> have been generated in PDF format, where all analyzed genes are represented according to their expression change and their level of significance. These plots allow rapid identification of genes with significant and large magnitude regulation.
+</p>
+
+<p>
+  Below are the comparisons analyzed in this experiment, along with their corresponding result files and associated volcano plots:
+</p>
+
+<div class="box-files-nested" style="margin-top: 30px;">
+
+```{r, results='asis'}
+# Función para asignar clase por extensión
+asignar_clase <- function(nombre_archivo) {
+  if (grepl("\\.html$", nombre_archivo)) {
+    "file-html"
+  } else if (grepl("\\.zip$", nombre_archivo)) {
+    "file-zip"
+  } else if (grepl("\\.fastq(\\..+)?\\.gz$", nombre_archivo)) {
+    "file-fastqgz"
+  } else if (grepl("\\.bam$", nombre_archivo)) {
+    "file-bam"
+  } else if (grepl("\\.bai$", nombre_archivo)) {
+    "file-bai"
+  } else if (grepl("\\.sam$", nombre_archivo)) {
+    "file-sam"
+  } else if (grepl("\\.metrics$", nombre_archivo)) {
+    "file-metrics"
+  } else if (grepl("\\.ht2$", nombre_archivo)) {
+    "file-ht2"
+  } else if (grepl("\\.xlsx$", nombre_archivo)) {
+    "file-xlsx"
+  } else if (grepl("\\.pdf$", nombre_archivo)) {
+    "file-pdf"
+  } else {
+    "file-default"
+  }
+}
+
+# Verificar si hay archivos
+if (length(comparaciones) == 0) {
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <b>Warning</b><br>
+    No differential expression files were found in the specified path:<br>
+    <code>{ruta_resultados_experimento}</code>.<br>
+    Please ensure that these files are correctly provided in this specific path.
+  </div>
+  '), sep = "\n")
+
+} else {
+  cat("<ol>\n")  # Comenzar lista numerada
+  
+  for (i in seq_along(comparaciones)) {
+    clase_deg <- asignar_clase(archivos_deg[i])
+    clase_pdf <- asignar_clase(archivos_volcano[i])
+    
+    cat(glue::glue('
+      <li>
+        <strong>{comparaciones[i]}</strong>
+        <ul style="margin-top: 4px; margin-bottom: 4px;">
+          <li class="{clase_deg}" style="margin: 0;"><a href="{archivos_deg[i]}" target="_blank">Results table (.xlsx)</a></li>
+          <li class="{clase_pdf}" style="margin: 0;"><a href="{archivos_volcano[i]}" target="_blank">Volcano plot (.pdf)</a></li>
+        </ul>
+      </li>
+    '), sep = "\n")
+  }
+  
+  cat("</ol>\n")  # Cerrar lista numerada
+}
+```
+
+</div>
+
+```{r, results="asis"}
+# Imprimir el enlace
+cat(glue::glue('
+<p style="text-align:center; margin-top: 4px; margin-bottom: 2px;">
+  <a href="{ruta_resultados_experimento_relativa}" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Browse the files in the folder "{basename(ruta_resultados_experimento_relativa)}" here
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Once this has been detailed, the following sections provide a deeper analysis of the results obtained in each individual comparison, including an interactive visualization of the result tables and their corresponding volcano plots.
+</p>
+
+```{r}
+library(readxl)
+library(DT)
+library(htmltools)
+library(glue)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+
+out <- tagList()  # Contenedor general
+
+for (i in seq_along(archivos_deg)) {
+  # Leer archivo de DEG
+  deg_data <- readxl::read_excel(
+    archivos_deg[i],
+    col_types = c("text", "text", "numeric", "numeric", "numeric", "numeric", "numeric")
+  )
+  deg_data <- as.data.frame(deg_data)
+  rownames(deg_data) <- deg_data$Gene
+  deg_data$Gene <- NULL
+  deg_data$Description <- NULL
+
+  # Definir DEG como FDR < 0.05 y |logFC| > 1
+  deg_data$grupo <- ifelse(
+    deg_data$FDR < 0.05 & abs(deg_data$logFC) > 1,
+    "DEG",
+    "no-DEG"
+  )
+
+  # Contar número de genes por grupo (DEG vs no-DEG)
+  deg_summary <- deg_data %>%
+    mutate(grupo = ifelse(FDR < 0.05 & abs(logFC) > 1, "DEG", "no-DEG")) %>%
+    count(grupo)
+
+  # Seleccionar top 10 genes por FDR
+  top_genes <- deg_data %>%
+    mutate(Gene = rownames(.)) %>%
+    arrange(FDR) %>%
+    slice_head(n = 10)
+
+  # Reordenar niveles del factor para presentación en orden descendente
+  top_genes$Gene <- factor(top_genes$Gene, levels = rev(top_genes$Gene))
+
+  # Agregar variable lógica para dirección del logFC
+  top_genes <- top_genes %>%
+    mutate(direction = logFC > 0)
+
+  # Contar número de genes sobreexpresados e inhibidos
+  deg_direction_summary <- deg_data %>%
+    filter(grupo == "DEG") %>%
+    mutate(direction = ifelse(logFC > 0, "Upregulated", "Downregulated")) %>%
+    count(direction)
+  
+
+  # Crear contenido HTML para esta comparación
+  out <- tagAppendChild(out, HTML(glue('
+    <div style="height: 15px; background-color: transparent;"></div>
+
+    <div class="titulo3" id="tab3-seccion5.3.{i}" style="padding-bottom: 10px;">
+      5.3.{i}. Comparison: {comparaciones[i]}
+    </div>
+
+    <div style="height: 15px; background-color: transparent;"></div>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <p style="margin-bottom: 22px;">
+      This section presents the results obtained for the comparison <strong>{comparaciones[i]}</strong>, performed as part of the differential expression analysis within the experiment. This comparison allows identification of genes whose transcriptional activity varies significantly between the two evaluated biological or experimental conditions, which may reflect relevant functional changes or differential regulatory mechanisms.
+    </p>
+
+    <p style="margin-bottom: 22px;">
+      For each analyzed gene, key statistical metrics have been calculated, such as the base 2 logarithm of expression change (<em>logFC</em>), the average abundance expressed as <em>logCPM</em> (log counts per million), the raw p-value, and its corresponding false discovery rate-adjusted value (<em>FDR</em>). Genes with <em>FDR</em> values below a defined threshold (commonly <code>0.05</code>) are considered differentially expressed with statistical significance.
+    </p>
+
+    <p style="margin-bottom: 22px;">
+      Below is an <strong>interactive table</strong> that allows detailed exploration of these results. This table offers features such as column sorting, horizontal scrolling, and search functionality, facilitating the identification of genes of interest according to their significance levels and fold-change magnitude. Moreover, by aligning with other comparisons, this visualization contributes to a global understanding of transcriptional behavior across the analyzed conditions.
+    </p>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out,
+    DT::datatable(
+      deg_data,
+      escape = FALSE,
+      options = list(
+          scrollX = TRUE,
+          scrollY = "500px",
+          scrollCollapse = TRUE,
+          paging = FALSE,
+          lengthChange = FALSE,
+          info = FALSE,
+          dom = 'ft', # Solo tabla
+          language = list(
+            url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+          )
+        ),
+      class = 'stripe hover compact'
+    )
+  )
+
+  out <- tagAppendChild(out, HTML(glue('
+    <p style="text-align:center; margin-top: 17px; margin-bottom: 20px">
+      <a href="{archivos_deg[i]}" 
+        download="{basename(archivos_deg[i])}" 
+        class="boton-file-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download file "{basename(archivos_deg[i])}"
+      </a>
+    </p>
+
+    <p style="margin-bottom: 22px;">
+      As a visual complement to the results table, the corresponding <strong>volcano plot</strong> for the comparison <strong>{comparaciones[i]}</strong> is included below. This plot represents the relationship between the magnitude of expression change (<em>log<sub>2</sub> fold-change</em>, X-axis) and the statistical significance of that change (−log<sub>10</sub> of the <em>FDR</em> value, Y-axis) for each evaluated gene.
+    </p>
+
+    <p style="margin-bottom: 22px;">
+      In the plot, each point represents a gene, and its color indicates whether it has been classified as differentially expressed according to the analysis criteria. Specifically:
+    </p>
+
+    <ul style="margin-bottom: 22px;">
+      <li><strong>DEG (differentially expressed genes)</strong> <strong>&rArr;</strong> highlighted in red, represent genes with significant expression changes.</li>
+      <li><strong>nDEG (non-differentially expressed genes)</strong> <strong>&rArr;</strong> highlighted in blue, correspond to genes that do not meet the statistical significance threshold.</li>
+    </ul>
+
+    <p style="margin-bottom: 22px;">
+      This type of representation allows rapid identification of genes combining high statistical significance with relevant expression change, thereby facilitating the prioritization of candidates for subsequent functional analyses.
+    </p>
+
+    <div class="iframe-container" style="margin-top: 38px;">
+      <iframe src="{archivos_volcano[i]}" frameborder="0" style="height: 700px;"></iframe>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 25px; margin-top: 30px; margin-bottom: 27px;">
+      <a href="{archivos_volcano[i]}"
+        target="_blank" 
+        class="boton-iframe">
+        <i class="fa-solid fa-chart-column"></i> Open plot in full screen
+      </a>
+
+      <a href="{archivos_volcano[i]}"
+        download="{basename(archivos_volcano[i])}"
+        class="boton-iframe-download">
+        <i class="fa-solid fa-file-arrow-down"></i> Download plot
+      </a>
+    </div>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <p style="margin-bottom: 22px;">
+        Once the results table from the differential expression analysis and its corresponding <em>volcano plot</em> have been presented, a series of <strong>complementary and interactive plots</strong> are incorporated below to allow a deeper exploration of the global characteristics of the data obtained for the comparison <strong>{comparaciones[i]}</strong>.
+    </p>
+
+    <p style="margin-bottom: 22px;">
+        Specifically, <strong>four additional visualizations</strong> have been generated from the differentially expressed genes matrix, aiming to provide a more detailed view of the results distribution, the relationship between expression and relative change, as well as the identification of the most relevant genes in the study:
+    </p>
+
+    <ul style="margin-bottom: 22px;">
+        <li><strong>log2 Fold Change Histogram</strong> <strong>&rArr;</strong> visualizes the global distribution of expression changes between the two analyzed conditions.</li>
+        <li><strong>MA Plot (logCPM vs logFC)</strong> <strong>&rArr;</strong> represents the relationship between average expression abundance and relative expression change, allowing detection of expression-dependent trends.</li>
+        <li><strong>DEG vs no-DEG Distribution</strong> <strong>&rArr;</strong> shows how many genes have been identified as differentially expressed versus those that have not.</li>
+        <li><strong>Upregulated vs Downregulated DEG Genes</strong> <strong>&rArr;</strong> compares the number of differentially expressed genes that are upregulated versus those that are downregulated.</li>
+        <li><strong>Most significant genes</strong> <strong>&rArr;</strong> presents the most relevant genes of the comparison, selected according to criteria such as FDR value or absolute logFC.</li>
+    </ul>
+
+    <p style="margin-bottom: 22px;">
+        The following section presents and describes these plots individually, which complement and illustrate the results obtained from the differential analysis.
+    </p>
+
+    <p style="margin-bottom: 20px;">
+        We begin with the <strong>log2 Fold Change (logFC) histogram</strong>, showing the distribution of gene expression changes between the compared conditions. This allows visualization of how genes are distributed according to increases or decreases in expression and the magnitude of these changes.
+    </p>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <div class="plot-center">
+  '), sep = "\n"))
+
+  # Donde `deg_data` es el data.frame y contiene la columna logFC
+  out <- tagAppendChild(out,
+      plot_ly(
+          data = deg_data,
+          x = ~logFC,
+          type = "histogram",
+          nbinsx = 50,
+          marker = list(color = "#098", line = list(color = "white", width = 1))
+      ) %>% 
+      layout(
+          title = "log2 Fold Change Distribution",
+          xaxis = list(title = "log2 Fold Change"),
+          yaxis = list(title = "Number of genes"),
+          plot_bgcolor = "#ffffff",
+          paper_bgcolor = "#ffffff"
+      )
+  )
+    
+  out <- tagAppendChild(out, HTML(glue('
+    </div>
+  '), sep = "\n"))
+  
+  out <- tagAppendChild(out, HTML(glue('
+    <p style="margin-top: 37px; margin-bottom: 20px;">
+      Next, we present the <strong>MA Plot</strong>, which represents the relationship between the average expression intensity (logCPM) and the gene expression change (logFC). This plot is useful for identifying general patterns and detecting genes with significant changes across different expression levels.
+    </p>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <div class="plot-center">
+  '), sep = "\n"))
+
+  # Scatter plot interactivo
+  out <- tagAppendChild(out,
+    plot_ly() %>%
+      # Trace de puntos
+      add_markers(
+        data = deg_data,
+        x = ~logCPM,
+        y = ~logFC,
+        marker = list(color = "gray50", opacity = 0.5),
+        text = ~paste("Gen:", rownames(deg_data)),
+        hoverinfo = "text+x+y",
+        name = "Genes"
+      ) %>%
+      # Línea horizontal de referencia
+      add_lines(
+        x = range(deg_data$logCPM, na.rm = TRUE),
+        y = c(0, 0),
+        line = list(dash = "dash", color = "red"),
+        showlegend = FALSE,
+        inherit = FALSE
+      ) %>%
+      layout(
+        title = "MA Plot",
+        xaxis = list(title = "logCPM (Average expression level)"),
+        yaxis = list(title = "log2 Fold Change"),
+        plot_bgcolor = "#ffffff",
+        paper_bgcolor = "#ffffff"
+      )
+    )
+    
+  out <- tagAppendChild(out, HTML(glue('
+    </div>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <p style="margin-top: 37px; margin-bottom: 20px;">
+      We also display a plot comparing the <strong>number of genes identified as differentially expressed (DEG) versus those showing no significant changes (non-DEG)</strong>. This helps us understand the proportion and extent of the impact of the experiment on gene expression.
+    </p>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <div class="plot-center">
+  '), sep = "\n"))
+
+  # Crear gráfico interactivo de barras
+  out <- tagAppendChild(out,
+    plot_ly(
+      data = deg_summary,
+      x = ~grupo,
+      y = ~n,
+      type = "bar",
+      color = ~grupo,
+      colors = c("DEG" = "#e6dd35ff", "no-DEG" = "#E64B35FF")
+    ) %>% layout(
+      title = "Summary of Differentially Expressed Genes",
+      xaxis = list(title = ""),
+      yaxis = list(title = "Number of Genes"),
+      showlegend = FALSE,
+      plot_bgcolor = "#ffffff",
+      paper_bgcolor = "#ffffff"
+    )
+  )
+
+  out <- tagAppendChild(out, HTML(glue('
+    </div>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <p style="margin-top: 37px; margin-bottom: 20px;">
+      The following plot shows the number of differentially expressed genes classified as <strong>upregulated</strong> versus those <strong>downregulated</strong> in this comparison. 
+      This visualization allows for quick identification of the proportion of activated or repressed genes and facilitates the biological interpretation of the results.
+    </p>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <div class="plot-center">
+  '), sep = "\n"))
+
+  # Crear gráfico de barras de genes inhibidos frente a sobreexpresados
+  out <- tagAppendChild(out,
+    plot_ly(
+      data = deg_direction_summary,
+      x = ~direction,
+      y = ~n,
+      type = "bar",
+      color = ~direction,
+      colors = c("Sobreexpresados" = "#4c9", "Inhibidos" = "#d55")
+    ) %>% layout(
+      title = "DEG Genes: Upregulated vs Downregulated",
+      xaxis = list(title = ""),
+      yaxis = list(title = "Number of Genes"),
+      showlegend = FALSE,
+      plot_bgcolor = "#ffffff",
+      paper_bgcolor = "#ffffff"
+    )
+  )
+
+  out <- tagAppendChild(out, HTML(glue('
+    </div>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <p style="margin-top: 37px; margin-bottom: 20px;">
+      Finally, we present a plot of the <strong>Top N most relevant genes</strong>, ranked according to their adjusted significance value (FDR) or the magnitude of absolute expression change (|logFC|). This highlights the most important and potentially biologically significant genes in the analysis.
+    </p>
+  '), sep = "\n"))
+
+  out <- tagAppendChild(out, HTML(glue('
+    <div class="plot-center">
+  '), sep = "\n"))
+
+  # Crear gráfico de barras horizontales
+  out <- tagAppendChild(out,
+    plot_ly(
+      data = top_genes,
+      x = ~logFC,
+      y = ~Gene,
+      type = "bar",
+      orientation = "h",
+      marker = list(color = ifelse(top_genes$direction, "#4c9", "#d55"))
+    ) %>% layout(
+      title = "Top 10 Most Significant Genes",
+      xaxis = list(title = "log2 Fold Change"),
+      yaxis = list(title = "Gene"),
+      showlegend = FALSE,
+      plot_bgcolor = "#ffffff",
+      paper_bgcolor = "#ffffff"
+    )
+  )
+    
+  out <- tagAppendChild(out, HTML(glue('
+    </div>
+  '), sep = "\n"))
+
+}
+
+# Mostrar todo el contenido al final
+out
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider" style="margin-top: 50px;"></div>
+
+<p>
+  The results obtained in this phase provide a robust set of <strong>differentially expressed genes</strong> (DEGs), which serve as the basis for the 
+  <em>biological interpretation</em> of the experiment. In the following section, this information will be used to perform <strong>functional and enrichment analyses</strong> to uncover <em>biological processes, metabolic pathways, or molecular functions</em> significantly represented among the identified genes. This step is crucial for transforming statistical findings into <strong>biologically meaningful conclusions</strong>, expanding our understanding of the studied phenomenon.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

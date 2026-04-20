@@ -1,0 +1,560 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+params:
+  project_path: ""
+  amplicon_type: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 0: INICIO -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Insertar aquí en el caso de que fuera necesario -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo">
+  <h1>Bioinformatics Report</h1>
+  <h2>Metagenomic Analysis using Amplicons</h2>
+  <p>Bioinformatics Unit - IPBLN-CSIC - Granada</p>
+</div>
+
+<div class="portada-imagen">
+  <img src="resources/01-essential/01-images/tab0-inicio/metagenomics_amplicon_cover_report.png" alt="Metagenomics Amplicon Report Cover">
+</div>
+
+<!-- 
+<div class="portada-video">
+  <video autoplay loop muted playsinline>
+    <source src="resources/01-essential/01-images/tab0-inicio/metagenomics_amplicon_cover_report.mp4" type="video/mp4">
+    Metagenomics Amplicon Report Cover
+  </video>
+</div>
+-->
+
+<div class="flecha-abajo" style="margin: -20px auto -15px auto">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Introduction</h2>
+
+  <p>
+    <strong>Metagenomics</strong> is a discipline that enables the study of the composition and diversity of microbial communities directly from environmental, clinical, or experimental samples, without the need for laboratory cultivation. 
+    Through high-throughput sequencing of conserved regions of specific genes, it is possible to identify and characterize the microorganisms present, providing a global view of the structure and function of microbial ecosystems.
+  </p>
+
+  <p>
+    In the field of <strong>amplicon metagenomics</strong>, the main <strong>marker genes</strong> used are:
+  </p>
+
+  <ul>
+    <li><strong>16S rRNA</strong> <strong>&rArr;</strong> universal marker for the identification of bacteria and archaea, widely used in human, environmental, and clinical microbiome studies.</li>
+    <li><strong>18S rRNA</strong> <strong>&rArr;</strong> used to characterize the diversity of eukaryotes, including protozoa, algae, and other microeukaryotes.</li>
+    <li><strong>ITS (Internal Transcribed Spacer)</strong> <strong>&rArr;</strong> highly variable non-coding region, mainly used for the identification of fungi at genus and species level.</li>
+  </ul>
+
+  <p>
+    This report focuses on the analysis of microbial communities, mainly based on <strong>16S</strong> data, with the possibility of extension to <strong>18S</strong> and <strong>ITS</strong>. 
+    The presented results allow exploration of taxonomic composition, alpha and beta diversity, as well as the generation of hypotheses about the functional role of microorganisms in different experimental or environmental contexts.
+  </p>
+
+  <p>
+    This document has been designed in the <strong>Department of Bioinformatics at the Instituto de Parasitología y Biomedicina López-Neyra (IPBLN-CSIC, Granada)</strong>, with the aim of providing a <em>standardized, structured, and automated</em> format for the presentation of metagenomic results. 
+    Thanks to the integration of tools such as <strong>QIIME2</strong>, <strong>R</strong>, and <strong>Quarto</strong>, the report ensures <strong>reproducibility</strong>, <strong>traceability</strong>, and <strong>ease of sharing</strong> results with the scientific community.
+  </p>
+
+  <p>
+    Ultimately, this report aims to serve as a clear and visual platform for the interpretation of metagenomic data, facilitating both the exploration of results by researchers and scientific communication in collaborative projects.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 0px; background-color: transparent;"></div>
+
+<div style="height: 0px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this tab
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab0-seccion1">Report navigation</a>
+    </li>
+    <li>
+      <a href="#tab0-seccion2">User guide and chatbot usage</a>
+      <ul>
+        <li><a href="#tab0-seccion2.1">Intelligent assistant (chatbot)</a></li>
+        <li><a href="#tab0-seccion2.2">Proper opening and usage of the report</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#tab0-seccion3">Information and contact</a>
+    </li>
+  </ul>
+</div>
+
+
+<p>
+  Following this general introduction, the <strong>Home</strong> tab continues with several complementary sections that help the user navigate the report, understand how it works, and access additional information about the analysis.
+</p>
+
+<ul>
+  <li>
+    <strong>Report navigation &rArr;</strong> provides a structured overview of the different available sections, displaying interactive cards with direct access to each of them. This block serves as a starting point for navigating the report content in a visual and intuitive way.
+  </li>
+
+  <li>
+    <strong>User guide and chatbot usage &rArr;</strong> explains in a simple way how the report is organized and the purpose of each main tab (<em>Home, Summary and Analysis</em>). In addition, it describes the functionality of the <strong>integrated chatbot</strong> located in the bottom right corner, which allows quick queries about the results and the report content.
+  </li>
+
+  <li>
+    <strong>Information and contact &rArr;</strong> provides details about the team responsible for development and analysis, as well as links to useful resources, technical documentation, and the official portal of the <strong>CSIC Bioinformatics Unit</strong>. This section closes the <em>Home</em> tab by offering the reader the available communication and support channels.
+  </li>
+</ul>
+
+<p>
+  Altogether, these sections turn the <strong>Home</strong> tab into an introductory space that not only presents the scientific context of the analysis, but also guides the user in exploring the report and making the most of its interactive features.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab0-seccion1">
+  ➤ Navegación del informe
+</div>
+
+```{r, results="asis"}
+library(glue)
+
+# Leer parámetros de Quarto
+amplicon_type  <- params$amplicon_type
+report_version <- params$report_version
+
+# Inicializamos lista de tarjetas
+cards <- list()
+
+# Siempre Inicio
+cards <- append(cards, list(
+  list(icon = "fa-house", color = "blue", label = "Inicio",
+        link = "#",
+        desc = paste0(
+          "Tab for <strong>entry to the report</strong>, designed as a starting point for the user. ",
+          "Includes the <em>study cover</em> and a <strong>general introduction</strong> to <strong>metagenomics</strong> analysis, explaining the scientific context, study objectives, and key concepts addressed. ",
+          "Additionally, it provides a <strong>guiding overview of the report content</strong>, incorporating help sections such as <em>report navigation</em>, <em>user guide and chatbot usage</em>, and contact information, facilitating clear and guided exploration from the beginning."
+        ))
+))
+
+# Metodología solo en versión full
+if (report_version == 1) {
+  cards <- append(cards, list(
+    list(icon = "fa-gears", color = "orange", label = "Metodología",
+          link = "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab1-metodologia/metodologia.html#",
+          desc = paste0(
+            "Contains the <strong>technical</strong> and detailed aspects of the report. It describes the <em>pipelines used</em>, the <strong>software versions</strong> applied, and the <strong>configuration parameters</strong> implemented. ",
+            "Includes the integration of tools such as <strong>miARma-Seq</strong> for <em>initial read quality control</em> and <strong>QIIME2</strong> for <em>metagenomic analysis</em>.",
+            "It explains how <strong>read filtering</strong>, <strong>denoising</strong>, construction of <strong>abundance tables</strong>, analysis of <strong>alpha and beta diversity</strong>, <strong>taxonomic assignment</strong>, and <strong>functional prediction</strong> have been performed. ",
+            "This section serves as a guide to <strong>reproduce analyses in a modular and standardized manner</strong>."
+          ))
+  ))
+}
+
+# Añadir Resumen y Análisis según tipos
+add_analysis_cards <- function(types) {
+  for (t in types) {
+    base_path <- if (report_version == 1) {
+      "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version"
+    } else {
+      "resources/01-essential/03-scripts/02-quarto/02-english-language/02-compact-version"
+    }
+
+    resumen_link  <- paste0(base_path, "/tab2-resumen/tab2-1-resumen-", t, "/resumen.html#")
+    analisis_link <- paste0(base_path, "/tab3-analisis/tab3-1-analisis-", t, "/00-contexto.html#")
+
+    cards <<- append(cards, list(
+      list(icon = "fa-chart-line", color = "green", label = paste0("Resumen ", t),
+            link = resumen_link,
+            desc = paste0(
+              "Comprehensive summary of the results obtained for marker <code>", t, "</code>. ",
+              "Includes <strong>read quality metrics</strong>, <strong>ASV abundance</strong>, <strong>alpha and beta diversity</strong>, and highlighted graphical representations. ",
+              "Allows the reader to quickly obtain a <strong>global overview of the experiment</strong> and the main characteristics of the analyzed <em>microbial community</em>."
+            ))
+    ))
+
+    cards <<- append(cards, list(
+      list(icon = "fa-dna", color = "purple", label = paste0("Análisis ", t),
+            link = analisis_link,
+            desc = paste0(
+              "Complete and detailed analysis of marker <code>", t, "</code>. ",
+              "The <strong>step-by-step</strong> process is described: from <strong>sequence import</strong> and <strong>quality control</strong>, through <strong>denoising</strong>, construction of <strong>abundance tables</strong>, <strong>taxonomic assignment</strong>, calculation of <strong>diversity metrics</strong>, to <strong>functional prediction</strong> with tools such as <strong>PICRUSt2</strong>. ",
+              "Includes plots, interactive tables, and visual representations that allow understanding of the <em>structure of the microbial community</em>, identification of <strong>dominant taxa</strong>, and detection of significant differences between experimental conditions. ",
+              "This section provides the reader with all the necessary information for a <strong>comprehensive and reproducible analysis</strong> of the dataset."
+            ))
+    ))
+  }
+}
+
+# Mapear amplicon_type a marcadores
+amplicon_map <- list(
+  "1" = c("16S"),
+  "2" = c("18S"),
+  "3" = c("ITS"),
+  "4" = c("16S","18S"),
+  "5" = c("16S","ITS"),
+  "6" = c("18S","ITS"),
+  "7" = c("16S","18S","ITS")
+)
+
+add_analysis_cards(amplicon_map[[as.character(amplicon_type)]])
+
+# Construir HTML de tarjetas (el enlace queda SOLO en la etiqueta <a> dentro del <p>)
+card_htmls <- paste0(sapply(cards, function(card) {
+  glue::glue(
+    '<div class="navigation-card {card$color}">
+      <i class="fa-solid {card$icon} fa-3x" aria-hidden="true"></i>
+      <p><a href="{card$link}" class="nav-label-link" aria-label="{card$label}">{card$label}</a></p>
+    </div>'
+  )
+}), collapse = '\n')
+
+# Construir la lista de descripciones
+details_html <- paste0(sapply(cards, function(card) {
+  glue::glue('<li style="margin-bottom: 15px;"><strong>{card$label}</strong> <strong>&rArr;</strong> {card$desc}</li>')
+}), collapse = '\n')
+
+# Imprimir todo (results = "asis" asegurado en el chunk)
+cat(glue::glue('
+<p>
+  In this section, users can easily navigate through the different parts of the report using the buttons below. Each button links to a specific tab containing detailed information or summaries of the metagenomic analysis.
+</p>
+
+<div class="navigation-cards">
+{card_htmls}
+</div>
+
+<p>More specifically, each tab will address the following concepts:</p>
+
+<ul>
+{details_html}
+</ul>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab0-seccion2">
+  ➤ User guide and chatbot usage
+</div>
+
+<p>
+  This report has been designed to facilitate consultation and interpretation of the analysis results in a <strong>clear, visual, and intuitive</strong> way, allowing exploration without the need for technical knowledge or direct access to the files generated by the analysis pipeline.
+</p>
+
+<p>
+  All information presented in the report is generated automatically from the actual analysis results, ensuring that the displayed content is <strong>consistent, up-to-date, and faithful to the obtained data</strong>, thereby guaranteeing the consistency and traceability of the results.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 10px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab0-seccion2.1">
+  ❯ Interactive assistant (chatbot)
+</div>
+
+<p>
+  The report incorporates an <strong>interactive chatbot</strong>, accessible from the bottom right corner, aimed at providing support during the exploration of results and facilitating access to relevant information contained within the report itself.
+</p>
+
+<p>
+  This assistant allows quick searches within the available content, helping to locate sections, figures, or results of interest, and contributing to a faster understanding of the analysis without manually navigating through all tabs.
+</p>
+
+<p>
+  In the current version, the chatbot is in an <strong>early development stage</strong>, so its responses are simple and based on the existing report content. Nevertheless, its integration lays the foundation for future improvements aimed at providing more advanced and personalized interaction.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 10px; background-color: transparent;"></div>
+
+<div class="titulo4" id="tab0-seccion2.2">
+  ❯ Proper opening and usage of the report
+</div>
+
+<p>
+  To ensure the correct functioning of the chatbot and other interactive elements, the report must be opened via a <strong>local server</strong>. Directly opening the <code>index.html</code> file from the file system may limit the availability of these functionalities.
+</p>
+
+<p>
+  To simplify this process, the project includes a script that automates the opening of the report:
+</p>
+
+<p>
+  <code>resources/01-essential/03-scripts/06-bash/run_report_server.sh</code>
+</p>
+
+<p>
+  Running this script starts a local server and automatically opens the report in the browser, activating all interactive functions, including the chatbot.
+</p>
+
+<p>
+  Once opened in this way, the report can be explored normally, allowing the user to access results and use all available functionalities without restrictions.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab0-seccion3">
+  ➤ Information and contact
+</div>
+
+<p>
+  This report has been generated in a <strong>automated</strong> manner through the integration of <em>Quarto</em>, <em>R</em>, and reproducible pipelines, specifically designed for Amplicon Metagenomics analysis. Thanks to this approach, the presented results are <strong>consistent, traceable, and easy to share</strong>, ensuring that any user can explore the data with full confidence in its integrity.
+</p>
+
+<p>
+  The <strong>Information and contact</strong> tab provides users with quick access to key resources related to the report. Here, users can find communication channels to resolve technical questions, report issues, access the project source code, and consult additional documentation that facilitates understanding and leveraging the results.
+</p>
+
+<p>
+  For any inquiries regarding the report or support related to the analyses, you can contact the <strong>CSIC Bioinformatics team</strong> through the channels listed below. Each card provides direct access to the most relevant information in a visual and intuitive way.
+</p>
+
+<div class='contact-cards'>
+<div class='contact-card blue'>
+  <i class='fa-solid fa-globe fa-2x'></i>
+  <p><strong>Official website and contact</strong></p>
+  <a href='https://www.ipb.csic.es/servicios/Bioinformatica/index.html' target='_blank'>CSIC Bioinformatics Unit</a>
+</div>
+<div class='contact-card green'>
+  <i class='fa-solid fa-envelope fa-2x'></i>
+  <p><strong>Support email</strong></p>
+  <a href='mailto:bioinformatica@ipb.csic.es'>bioinformatica@ipb.csic.es</a>
+</div>
+<div class='contact-card purple'>
+  <i class='fa-brands fa-github fa-2x'></i>
+  <p><strong>Code repository</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe' target='_blank'>Project GitHub</a>
+</div>
+<div class='contact-card orange'>
+  <i class='fa-solid fa-book fa-2x'></i>
+  <p><strong>Documentation</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe/blob/main/06-info/0202_METAGENOMICS_AMPLICON_GUIDE.md' target='_blank'>User manual</a>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="resources/01-essential/03-scripts/04-javascript/chatbot.js"></script>
+<script type="module" src="resources/01-essential/03-scripts/04-javascript/script.js"></script>

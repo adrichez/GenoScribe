@@ -1,0 +1,93 @@
+project:
+  type: website
+  output-dir: report
+  render:
+    - index_en.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab1-metodologia/metodologia.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab2-resumen/tab2-1-resumen-16S/resumen.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/00-contexto.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/01-revision-inicial.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/02-control-calidad.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/03-generacion-asvs.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/04-taxonomia-filogenia.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/05-analisis-diferencial.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/06-diversidad-microbiana.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/07-prediccion-funcional.qmd
+    - resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/08-conclusiones.qmd
+
+resources:
+  - resources/**
+  - '!resources/01-essential/03-scripts/01-r/'
+  - '!resources/01-essential/03-scripts/05-python/'
+
+format:
+  html:
+    css: resources/01-essential/03-scripts/03-css/styles.css
+    theme: lux
+    toc: false
+    code-fold: false
+    code-tools: false
+    number-sections: false
+    page-layout: custom
+    smooth-scroll: true
+    highlight-style: a11y-dark
+    self-contained: false
+    copy-files: true
+    html: true
+
+include-in-header:
+  text: |-
+    <link rel="shortcut icon" href="resources/01-essential/01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="resources/01-essential/01-images/icons/favicon.ico">
+
+execute:
+  echo: false
+  warning: false
+  message: false
+  freeze: false
+  cache: true
+
+params:
+  project_path: ''
+  amplicon_type: ''
+  report_language: ''
+  report_version: ''
+
+website:
+  navbar:
+    title: |-
+      <img class='brand-logo' src='/resources/01-essential/01-images/icons/ipbln.png'>
+      <a class='brand-text' href='https://www.ipb.csic.es/servicios/Bioinformatica/index.html'>IPBLN</a>
+    right:
+      - text: Home
+        icon: house
+        href: "index_en.qmd"
+      - text: Methodology
+        icon: wrench
+        href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab1-metodologia/metodologia.qmd"
+      - text: 16S Summary
+        icon: clipboard-data
+        href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab2-resumen/tab2-1-resumen-16S/resumen.qmd"
+      - text: 16S Analysis
+        icon: bar-chart
+        menu:
+          - text: ➤ Contextual introduction
+            href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/00-contexto.qmd"
+          - text: 1. Initial review of samples and metadata
+            href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/01-revision-inicial.qmd"
+          - text: 2. Quality control and preprocessing
+            href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/02-control-calidad.qmd"
+          - text: 3. ASV generation and abundance table
+            href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/03-generacion-asvs.qmd"
+          - text: 4. Taxonomic assignment and phylogeny
+            href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/04-taxonomia-filogenia.qmd"
+          - text: 5. Differential abundance analysis
+            href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/05-analisis-diferencial.qmd"
+          - text: 6. Microbial diversity
+            href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/06-diversidad-microbiana.qmd"
+          - text: 7. Functional prediction
+            href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/07-prediccion-funcional.qmd"
+          - text: 8. Conclusions and perspectives
+            href: "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/tab3-1-analisis-16S/08-conclusiones.qmd"
+
+clean: false

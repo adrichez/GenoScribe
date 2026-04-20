@@ -1,0 +1,690 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  amplicon_type: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 2: RESUMEN 18S -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r}
+# Cargar librerías
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_metagenomics_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..", "..")
+ruta_metagenomics_pipeline_absoluta <- normalizePath(ruta_metagenomics_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas de resultados Nextflow
+ruta_nextflow_results <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results")
+ruta_proyecto_relativa <- file.path(ruta_metagenomics_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta de archivo MultiQC
+ruta_multiqc_data.json <- file.path(ruta_nextflow_results, "02-multiqc-report/results-multiqc-18S/multiqc_data/multiqc_data.json")
+
+# Cargar datos de MultiQC
+data <- fromJSON(ruta_multiqc_data.json, simplifyVector = FALSE)
+
+
+# Extraer datos de FastQC para obtener nombres de muestra
+fastqc_data <- data$report_general_stats_data$fastqc
+df <- bind_rows(fastqc_data, .id = "sample")
+
+# Número de archivos fastq
+n_fastq <- length(df$sample)
+
+# Limpiar nombres de muestra (_R1 / _R2)
+df <- df %>%
+  mutate(clean_sample = str_remove(sample, "_R[12].*$"))
+
+# Redondear columnas con la palabra "percent" a dos decimales
+df <- df %>%
+  mutate(across(contains("percent"), ~ round(., 2)))
+
+# Ruta para guardar archivos
+ruta_archives_tmp_resumen_18S <- file.path(ruta_metagenomics_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab2-resumen", "tab2-2-resumen-18S")
+
+# Ruta para guardar el dataframe creado
+ruta_estadisticas_globales_calidad_csv <- file.path(ruta_archives_tmp_resumen_18S, "estadisticas_globales_calidad.csv")
+
+# Guardar el dataframe como CSV
+write.csv(df, file = ruta_estadisticas_globales_calidad_csv, row.names = FALSE)
+
+
+# Número de muestras únicas
+unique_fastq <- unique(df$clean_sample)
+n_unique_fastq <- length(unique_fastq)
+
+# Fecha del informe (si está en el JSON; si no, ponemos Sys.Date())
+report_date <- if (!is.null(data$report_created)) {
+  data$report_created
+} else {
+  as.character(Sys.Date())
+}
+
+# Tecnología y parámetros (ajustarlo si varía entre experimentos)
+seq_tech <- "Illumina"
+seq_mode <- "Lecturas pareadas (paired-end)"
+read_length <- if ("avg_sequence_length" %in% names(df)) {
+  round(mean(as.numeric(df$avg_sequence_length), na.rm = TRUE), 0)
+} else NA
+
+
+# Rutas de la carpeta Def
+ruta_Def_18S <- file.path(params$project_path, "Resultados", "Def_18S")
+ruta_Def_18S_relativa <- file.path(ruta_proyecto_relativa, "Resultados", "Def_18S")
+
+ruta_Def_18S_sample_metadata <- file.path(ruta_Def_18S, "sample-metadata.tsv")
+ruta_Def_18S_sample_metadata_relativa <- file.path(ruta_Def_18S_relativa, "sample-metadata.tsv")
+
+
+# Leer el archivo TSV de metadatos
+Def_18S_sample_metadata_relativa <- read.delim(
+  ruta_Def_18S_sample_metadata_relativa,
+  header = TRUE,
+  stringsAsFactors = FALSE,
+  fill = TRUE
+)
+
+# Calcular en número de muestras únicas
+n_samples <- dim(Def_18S_sample_metadata_relativa)[1]
+
+# Calcular métricas
+metricas_metadata <- Def_18S_sample_metadata_relativa %>%
+  summarise(
+    n_Type = n_distinct(Type),
+    lista_Type = paste(unique(Type), collapse = ", "),
+    n_TypeII = n_distinct(TypeII),
+    lista_TypeII = paste(unique(TypeII), collapse = ", "),
+    n_tandas = n_distinct(tanda),
+    lista_tandas = paste(unique(tanda), collapse = ", ")
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab-unique">
+  <h1>Tab</h1>
+  <h2>Project Contextual Summary (18S)</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This tab provides an <strong>overview with context</strong> of the <strong>18S amplicon metagenomics</strong> project analyzed, starting from the <strong>general context</strong> and the characteristics of the <strong>samples analyzed</strong>, and then addressing the <strong>global quality statistics</strong> derived from the control of the obtained reads.
+  </p>
+
+  <p>
+    Initially, a detailed description of the <strong>unique samples</strong>, the <strong>main categories</strong> (<em>Type</em>) and <strong>subcategories</strong> (<em>TypeII</em>), the <strong>number of batches</strong>, the <strong>technology used</strong> (<em>Illumina paired-end</em>), and the <strong>average read length</strong> is presented. These metrics help understand the scope, diversity, and structure of the study, as well as the organization of the data for subsequent taxonomic and functional analyses.
+  </p>
+
+  <p>
+    Next, the main <strong>global quality metrics</strong> are summarized, such as <strong>total reads</strong>, <strong>GC percentage</strong>, <strong>duplicate reads</strong>, <strong>average length</strong>, and <strong>percentage of failed reads</strong>, with representative values calculated as medians or means as appropriate. 
+    These metrics are displayed both in <strong>visual cards</strong> for quick interpretation and in a <strong>detailed table by sample</strong>, allowing identification of variations or potential quality issues.
+  </p>
+
+  <p>
+    Overall, this section establishes the basis for assessing the <strong>quality</strong> and <strong>representativeness</strong> of the dataset before addressing deeper analyses of diversity, abundance, and functional prediction, and prepares the user to continue with the thorough exploration of the process in the <strong><a href="../../tab3-analisis/tab3-2-analisis-18S/00-contexto.html" class="normalink">Analysis</a></strong> tab.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of Contents for this Section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab2-intro">Project Contextual Summary</a>
+      <ul>
+        <li>
+          <a href="#tab2-seccion1">1<span>.</span> Context and Experimental Design</a>
+        </li>
+        <li>
+          <a href="#tab2-seccion2">2<span>.</span> Global Quality Statistics</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab2-intro">
+  Project Contextual Summary
+</div>
+
+<p>
+  This section provides an overview of the <strong>18S amplicon metagenomics</strong> experiment, starting with a description of the samples and their organization, followed by a preliminary analysis of the quality of the obtained reads. 
+  The goal is to offer an initial assessment of the dataset structure and global quality metrics, which are essential to ensure the reliability of subsequent analyses.
+</p>
+
+<p>
+  In section <strong>1. Context and Experimental Design</strong>, the main characteristics of the experiment are detailed, including the number of samples, the <strong>main categories (Type)</strong>, the <strong>subcategories (TypeII)</strong>, the number of batches, and the sequencing technology used. 
+  Then, in <strong>2. Global Quality Statistics</strong>, the key metrics obtained after read quality control are summarized, presented both visually through <strong>metric cards</strong> and in detailed tables per sample.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab2-seccion1">
+  1<span>.</span> Context and Experimental Design
+</div>
+
+```{r, results="asis"}
+# Texto descriptivo
+cat(glue::glue('
+<p>
+  An initial summary of the <strong>18S metagenomics</strong> experiment is presented, generated using <strong>{seq_tech}</strong> sequencing technology in <strong>{seq_mode}</strong> mode. The reads have an expected length of <strong>{read_length} base pairs</strong>, a key parameter that influences mapping ability and microbial diversity resolution.
+</p>
+
+<p>
+  To provide a clear and quick overview of the main dataset parameters, the most relevant general indicators of the samples and their distribution according to the metadata structure are presented below in the form of cards.
+</p>
+'), sep = "\n")
+
+
+# Tarjetas de metadatos
+cat('
+<div class="metric-cards">
+<div class="metric-card blue">
+  <h3>Total FASTQ Files</h3>
+  <p>', n_fastq, '</p>
+</div>
+<div class="metric-card green">
+  <h3>Unique FASTQ Files</h3>
+  <p>', n_unique_fastq, '</p>
+</div>
+<div class="metric-card yellow">
+  <h3>Unique Samples</h3>
+  <p>', n_samples, '</p>
+</div>
+<div class="metric-card orange">
+  <h3>Main Categories</h3>
+  <p>', metricas_metadata$n_Type, '</p>
+</div>
+<div class="metric-card red">
+  <h3>Subcategories</h3>
+  <p>', metricas_metadata$n_TypeII, '</p>
+</div>
+<div class="metric-card pink">
+  <h3>Number of Batches</h3>
+  <p>', metricas_metadata$n_tandas, '</p>
+</div>
+<div class="metric-card purple">
+  <h3>Expected Length</h3>
+  <p>', read_length, ' bp</p>
+</div>
+<div class="metric-card cyan">
+  <h3>Sequencing Mode</h3>
+  <p>', seq_mode, '</p>
+</div>
+<div class="metric-card gray">
+  <h3>Report Date</h3>
+  <p>', report_date, '</p>
+</div>
+</div>
+')
+
+
+# Tabla con distribución de muestras por condición
+cat(glue::glue('
+<p>
+  The experiment includes <strong>{n_fastq}</strong> FASTQ files, corresponding to <strong>{n_unique_fastq}</strong> unique samples if we ignore the distinction between read 1 and read 2 (R1/R2). On the other hand, according to the metadata file (<code>sample-metadata.tsv</code>), <strong>{n_samples}</strong> unique samples are recorded, organized according to their <strong>Main Types</strong>, <strong>Subtypes</strong>, and <strong>Batches</strong>. 
+  It is important to note that there is not always a direct 1:1 correspondence between the samples listed in the TSV and the FASTQ files: some samples may not have FASTQ files generated, and other FASTQ files may correspond to controls or replicates not included in the TSV.
+</p>
+
+<p>
+  The different values detected in the metadata file are shown below:
+</p>
+
+<ul>
+  <li><strong>Main Types (Type)</strong> <strong>&rArr;</strong> {metricas_metadata$lista_Type}</li>
+  <li><strong>Subtypes (TypeII)</strong> <strong>&rArr;</strong> {metricas_metadata$lista_TypeII}</li>
+  <li><strong>Batches</strong> <strong>&rArr;</strong> {metricas_metadata$lista_tandas}</li>
+</ul>
+
+<p>
+  The complete metadata table, including the relationship between each sample and its assigned categories, can be found at the following location:
+</p>
+
+<code>{ruta_Def_18S_sample_metadata}</code>
+
+<p>
+  And this would be given by:
+</p>
+'), sep = "\n")
+```
+
+```{r, results="asis"}
+# Tabla interactiva de metadatos
+library(DT)
+
+DT::datatable(
+  Def_18S_sample_metadata_relativa,
+  options = list(
+    scrollX = TRUE,
+    scrollY = "500px",
+    scrollCollapse = TRUE,
+    paging = FALSE,
+    lengthChange = FALSE,
+    info = FALSE,
+    dom = 'ft', # Solo tabla
+    language = list(
+      url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+    )
+  ),
+  class = 'stripe hover compact',
+  rownames = FALSE
+)
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_Def_18S_sample_metadata_relativa)) {
+
+  cat(glue::glue('
+  <p style="text-align:center; margin-top: 5px;">
+    <a href="{ruta_Def_18S_sample_metadata_relativa}" 
+      download="{basename(ruta_Def_18S_sample_metadata_relativa)}" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download "sample-metadata.tsv" file
+    </a>
+  </p>
+  \n\n'))
+}
+```
+
+```{r, results="asis"}
+cat(glue::glue('
+<p>
+  The naming convention used in <code>.fastq.gz</code> files allows unambiguous identification of each read and correct pairing of R1/R2 reads corresponding to the same sample. 
+  Generally, file names include project information, sample identifier, and read label (R1 or R2), which facilitates traceability from raw data to downstream analyses. 
+  This structure must be maintained consistently to avoid incorrect pairings or sample loss during the workflow.
+</p>
+
+<p>
+  Each <code>.fastq.gz</code> file corresponds to a <strong>SampleID</strong> present in the metadata file, ensuring the association between sequencing information and the experimental or classification categories used in the study. 
+  In this way, it is ensured that all samples are correctly represented and labeled for microbial diversity and abundance analysis.
+</p>
+
+<p>
+  The compilation date of this summary is <strong>{report_date}</strong>. This information is relevant for traceability and comparison between analyses, especially if processing is repeated using different versions of the pipeline, reference genome, or annotation.
+</p>
+
+<p>
+  Overall, this section provides a preliminary overview of the experiment and its organization. 
+</p>
+
+<p>
+  Next, in the following section, the global quality statistics of the samples will be presented, allowing a more quantitative and detailed assessment.
+</p>
+'), sep = "\n")
+```
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab2-seccion2">
+  2<span>.</span> Global Quality Statistics
+</div>
+
+```{r}
+library(dplyr)
+library(glue)
+library(purrr)
+
+# Asegurarse de que df tiene las columnas numéricas (si vienen como caracteres, convertir)
+# df$total_sequences <- as.numeric(df$total_sequences)
+# df$percent_gc <- as.numeric(df$percent_gc)
+# df$percent_duplicates <- as.numeric(df$percent_duplicates)
+# df$avg_sequence_length <- as.numeric(df$avg_sequence_length)
+# df$percent_fails <- as.numeric(df$percent_fails)
+
+# Calcular métricas
+metrics <- tibble::tibble(
+  nombre = c("Total Reads", "GC (%)", "Duplicate Reads",
+            "Average Length", "Failed Reads"),
+  valor = c(
+    round(median(df$total_sequences, na.rm = TRUE) / 1e6, 1),
+    round(mean(df$percent_gc, na.rm = TRUE), 1),
+    round(mean(df$percent_duplicates, na.rm = TRUE), 1),
+    round(mean(df$avg_sequence_length, na.rm = TRUE), 1),
+    round(mean(df$percent_fails, na.rm = TRUE), 1)
+  ),
+  unidad = c("millions", "%", "%", "bp", "%"),
+  color = c("blue", "green", "red", "orange", "yellow")
+)
+```
+
+<p>
+  This section presents the main metrics derived from quality control and alignment of 18S metagenomics reads. 
+  These indicators are essential for assessing data integrity and suitability before proceeding with gene expression analysis.
+</p>
+
+<p>
+  The central values for the sample set of the following key metrics are shown below in the form of visual cards:
+</p>
+
+```{r, results='asis'}
+cat(glue::glue('
+<ul>
+  <li>
+    <strong>Total Reads</strong> <strong>&rArr;</strong> median of the total number of sequences obtained per sample, expressed in <code>{metrics$valor[metrics$nombre == "Total de lecturas"]}{metrics$unidad[metrics$nombre == "Total de lecturas"]}</code>, indicating sequencing depth.
+  </li>
+  <li>
+    <strong>GC (%)</strong> <strong>&rArr;</strong> average guanine and cytosine content in the reads, expressed in <code>{metrics$valor[metrics$nombre == "GC (%)"]}{metrics$unidad[metrics$nombre == "GC (%)"]}</code>, indicating library representativeness.
+  </li>
+  <li>
+    <strong>Duplicate Reads (%)</strong> <strong>&rArr;</strong> average percentage of repeated sequences, <code>{metrics$valor[metrics$nombre == "Lecturas duplicadas"]}{metrics$unidad[metrics$nombre == "Lecturas duplicadas"]}</code>, which may indicate technical artifacts or low complexity.
+  </li>
+  <li>
+    <strong>Average Length (bp)</strong> <strong>&rArr;</strong> average read length, <code>{metrics$valor[metrics$nombre == "Longitud media"]} {metrics$unidad[metrics$nombre == "Longitud media"]}</code>, which affects mapping ability and resolution.
+  </li>
+  <li>
+    <strong>Failed Reads (%)</strong> <strong>&rArr;</strong> average proportion of reads discarded due to low quality during preprocessing, <code>{metrics$valor[metrics$nombre == "Lecturas fallidas"]}{metrics$unidad[metrics$nombre == "Lecturas fallidas"]}</code>.
+  </li>
+</ul>
+'), sep = "\n")
+```
+
+```{r, results='asis'}
+# Construir tarjetas HTML (cada tarjeta)
+cards <- purrr::pmap_chr(metrics, function(nombre, valor, unidad, color) {
+  glue::glue(
+    '<div class="metric-card {color}">
+      <h3>{nombre}</h3>
+      <p>{valor} {unidad}</p>
+    </div>'
+  )
+})
+
+# Unir y emitir todo con cat(glue::glue(...)) para que Quarto lo interprete como HTML "asis"
+html_all <- paste(cards, collapse = "\n")
+
+cat(glue::glue(
+  '<div class="metric-cards">
+{html_all}
+</div>'
+), sep = "\n")
+```
+
+<p>
+  Para complementar estos indicadores globales, se presenta a continuación una tabla detallada con las métricas calculadas por muestra individual, que permite identificar posibles desviaciones o muestras problemáticas que requieran revisión adicional.
+</p>
+
+```{r, results="asis"}
+# Tabla interactiva de metadatos
+library(DT)
+
+DT::datatable(
+  df,
+  options = list(
+    scrollX = TRUE,
+    scrollY = "500px",
+    scrollCollapse = TRUE,
+    paging = FALSE,
+    lengthChange = FALSE,
+    info = FALSE,
+    dom = 'ft', # Solo tabla
+    language = list(
+      url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+    )
+  ),
+  class = 'stripe hover compact',
+  rownames = FALSE
+)
+```
+
+```{r, results='asis'}
+if (file.exists(ruta_estadisticas_globales_calidad_csv)) {
+
+  cat(glue::glue('
+  <p style="text-align:center; margin-top: 5px;">
+    <a href="{ruta_estadisticas_globales_calidad_csv}" 
+      download="{basename(ruta_estadisticas_globales_calidad_csv)}" 
+      class="boton-file-download">
+      <i class="fa-solid fa-file-arrow-down"></i> Download file "estadisticas_globales_calidad.csv"
+    </a>
+  </p>
+  '), sep = "\n")
+}
+```
+
+<p>
+  Thus, once the general aspects of the summary and the global quality statistics have been reviewed in this tab, it is recommended to continue exploring the <a href="../../tab3-analisis/tab3-2-analisis-18S/00-contexto.html" class="normalink">Analysis</a> tab. There, a detailed and comprehensive walkthrough of the data processing is provided, allowing step-by-step visualization of each stage of the workflow.
+</p>
+
+<p>
+  In the <a href="../../tab3-analisis/tab3-2-analisis-18S/00-contexto.html" class="normalink">Analysis</a> tab, the workflow includes the initial review of samples and metadata, individual and collective quality control, alignment, and gene expression quantification. Advanced statistical analyses, normalization, post-normalization checks, differential analysis, functional and enrichment analyses are also presented, concluding with study conclusions and perspectives.
+</p>
+
+<p>
+  This detailed navigation facilitates validation of experiment quality and robustness, identification of potential issues, and a better understanding of the results presented in the general summary.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../../04-javascript/script.js"></script>

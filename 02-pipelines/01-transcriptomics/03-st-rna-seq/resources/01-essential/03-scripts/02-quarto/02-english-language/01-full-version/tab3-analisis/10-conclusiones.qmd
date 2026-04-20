@@ -1,0 +1,374 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 10. CONCLUSIONES Y PERSPECTIVAS -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Insertar aquí en el caso de que fuera necesario -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatic Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 10</h1>
+  <h2>Conclusions and Perspectives</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+  
+  <p>
+    After having thoroughly executed and evaluated all phases of the single cell bioinformatic <em>pipeline</em> —from raw data preprocessing to functional annotation and lineage enrichment—, this tenth and final module serves as the cornerstone of the study. Its purpose is to distill the immense amount of generated metrics into clear, structured, and directly applicable biological resolutions.
+  </p>
+
+  <p>
+    Unlike the previous chapters, focused on technical, statistical, and visual scrutiny, this final section offers a panoramic and translational view of the evaluated tissue ecosystem. First, it synthesizes the most relevant findings regarding cellular architecture and mechanisms altered by the experimental perturbation. Second, it outlines a strategic roadmap, proposing the next experimental and computational steps to advance clinical or basic research toward its definitive consolidation.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents of this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion10">10<span>.</span> Conclusions and Perspectives</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion10.1">10.1. Key Biological Conclusions</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion10.2">10.2. Perspectives and Future Directions</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion6">
+  10<span>.</span> Conclusions and Perspectives
+</div>
+
+<p>
+  This single cell transcriptomic study (<em>scRNA-seq</em>) has enabled the unprecedented resolution of the inherent complexity of the evaluated tissue ecosystem. By moving from global quantification (<em>Bulk RNA-seq</em>) to individual cell characterization, we have overcome the averaging effect of bulk sequencing, successfully dissecting cellular heterogeneity and the specific impact of the biological perturbation (Reference vs Test) within each population lineage.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion10.1">
+  10.1. Key Biological Conclusions
+</div>
+
+<p>
+  The integration of the different phases of the bioinformatic <em>pipeline</em> —from rigorous quality control and lineage inference to differential expression calculation and functional pathway mapping— allows us to distill the following structural and mechanistic findings:
+</p>
+
+<ul>
+  <li>
+    <strong>Identification of Cellular Architecture &rArr;</strong> Unsupervised analysis has revealed the true quantitative and qualitative composition of the sample. It has enabled the identification not only of the major cell populations, but also the delineation of subtle transitional states and the isolation of rare cell subtypes that would have been completely masked under a traditional transcriptomic approach.
+  </li>
+  <li>
+    <strong>Lineage Vulnerability and Resilience &rArr;</strong> Intrapopulation contrast has unequivocally shown that the mutation or experimental perturbation does not affect all cells of the tissue equally. While certain clusters exhibited massive transcriptomic reconfiguration, other lineages showed remarkable resilience, maintaining their basal homeostasis virtually intact under the same stimulus or genetic deficit.
+  </li>
+  <li>
+    <strong>Functional and Mechanistic Signatures &rArr;</strong> Functional enrichment analysis (ORA and GSEA), applied individually to each cluster, has precisely mapped which metabolic networks and signaling cascades were disrupted or overactivated. This provides direct mechanistic targets to explain the pathological or physiological phenotype observed at the macroscopic laboratory level.
+  </li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion10.2">
+  10.2. Perspectives and Future Directions
+</div>
+
+<p>
+  Although this bioinformatic report provides a comprehensive and rigorously validated analytical framework, single cell transcriptomics is, by its very nature, a hypothesis-generating discipline. To consolidate these <em>in silico</em> discoveries and scale the research to its next phases, we suggest the following lines of validation and exploration:
+</p>
+
+<ul>
+  <li>
+    <strong>Targeted Experimental Validation &rArr;</strong> It is highly recommended to empirically validate population markers (<em>cluster markers</em>) and the main DEGs identified using orthogonal techniques. Approaches such as Flow Cytometry (FACS), immunofluorescence, or differential RT-qPCR assays on previously purified populations will confirm the translation of these changes to the protein or tissue level.
+  </li>
+  <li>
+    <strong>Cellular Dynamics and Communication &rArr;</strong> At the computational level, the immense richness of the processed data opens the door to advanced <em>post-hoc</em> analyses. Notably, these include <strong>cell–cell communication</strong> analysis (ligand-receptor interactome, to uncover how the alteration of one lineage affects signaling in neighboring cells) and <strong>trajectory or pseudotime inference</strong>, crucial for understanding whether the mutation is blocking or accelerating the biological development of progenitor cells toward their mature states.
+  </li>
+  <li>
+    <strong>Multi-omic and Spatial Integration &rArr;</strong> To provide anatomical context to the gain or loss of cellular lineages, projecting these <em>scRNA-seq</em> profiles onto Spatial Transcriptomics platforms would allow topological mapping of where these cells interact within the tissue. Simultaneously, combining this with chromatin assays (<em>scATAC-seq</em>) would offer a comprehensive view of the epigenetic regulation governing and underlying these expression changes.
+  </li>
+</ul>
+
+<p>
+  <strong>Final Reflection:</strong> Ultimately, the structured results throughout this report represent a key milestone for understanding the molecular mechanisms and cellular dynamics of your biological model. The level of granularity achieved lays extraordinarily solid foundations both for drafting high-impact scientific publications and for the future design of targeted therapeutic or biotechnological applications.
+</p>
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo3" id="tab3-soporte">
+  ➤ Support and Contact
+</div>
+
+<p>
+  Single cell transcriptomic analysis generates an immense data ecosystem with high technical complexity. We understand that digesting this information and integrating it with laboratory results is an ongoing process. 
+</p>
+
+<p>
+  Therefore, for any methodological questions, inquiries about result interpretation, or the need to explore the data from new perspectives, the <strong>Bioinformatics Unit</strong> team is at your full disposal. We will be happy to assist you in the optimal exploitation of this resource and in planning your future research lines.
+</p>
+
+<div class='contact-cards' style="margin-top: 30px; margin-bottom: 40px;">
+<div class='contact-card blue'>
+  <i class='fa-solid fa-globe fa-2x'></i>
+  <p><strong>Official website and contact</strong></p>
+  <a href='https://www.ipb.csic.es/servicios/Bioinformatica/index.html' target='_blank'>CSIC Bioinformatics Unit</a>
+</div>
+<div class='contact-card green'>
+  <i class='fa-solid fa-envelope fa-2x'></i>
+  <p><strong>Support email</strong></p>
+  <a href='mailto:bioinformatica@ipb.csic.es'>bioinformatica@ipb.csic.es</a>
+</div>
+<div class='contact-card purple'>
+  <i class='fa-brands fa-github fa-2x'></i>
+  <p><strong>Code repository</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe' target='_blank'>Project GitHub</a>
+</div>
+<div class='contact-card orange'>
+  <i class='fa-solid fa-book fa-2x'></i>
+  <p><strong>Documentation</strong></p>
+  <a href='https://github.com/adrichez/GenoScribe/blob/main/06-info/0102_TRANSCRIPTOMICS_SC_RNA_SEQ_GUIDE.md' target='_blank'>User manual</a>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>

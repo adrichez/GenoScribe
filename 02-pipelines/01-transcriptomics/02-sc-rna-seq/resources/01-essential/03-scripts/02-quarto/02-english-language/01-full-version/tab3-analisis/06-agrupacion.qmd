@@ -1,0 +1,622 @@
+---
+title: "IPBLN Bioinformatics Report"
+
+include-in-header:
+  text: |
+    <link rel="shortcut icon" href="../../../../../01-images/icons/favicon.svg"/>
+    <link rel="icon" type="image/x-icon" href="../../../../../01-images/icons/favicon.ico">
+
+params:
+  project_path: ""
+  report_language: ""
+  report_version: ""
+---
+
+
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+<!--  TAB 3: ANÁLISIS | 6. AGRUPACIÓN DE POBLACIONES BIOLOGICAS -->
+<!-- &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& -->
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CHATBOT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{=html}
+<!-- Contenedor del chat -->
+<div id="chat-container">
+  <button id="chat-toggle"></button>
+  <div id="chat-box">
+    <div id="chat-info" class="chat-info">
+      <h1>
+        Mini Chat RAG (beta)
+      </h1>
+
+      <p>
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
+      </p>
+
+      <p>
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
+      </p>
+
+      <p>
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
+      </p>
+
+      <p>
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
+      </p>
+    </div>
+    <div id="chat-log"></div>
+    <input id="chat-input" type="text" placeholder="Escribe tu pregunta..."/>
+    <button id="chat-send" title="Enviar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  IMPORTACIONES -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<!-- Incluir Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CÓDIGO GLOBAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+#===================================================================================================================================================
+# CARGA DE LIBRERÍAS
+#===================================================================================================================================================
+
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(glue)
+library(fs)
+library(purrr)
+library(ggplot2)
+library(tidyr)
+library(plotly)
+library(htmltools)
+library(tidyverse)
+library(magrittr)
+library(DT)
+library(tibble)
+
+
+
+
+#===================================================================================================================================================
+# CONFIGURACIONES INICIALES
+#===================================================================================================================================================
+
+# Rutas clave
+ruta_qmd <- getwd()
+ruta_sc_rna_seq_pipeline <- file.path("..", "..", "..", "..", "..", "..", "..")
+ruta_sc_rna_seq_pipeline_absoluta <- normalizePath(ruta_sc_rna_seq_pipeline)
+nombre_proyecto <- basename(params$project_path)
+
+
+# Rutas del directorio de resultados de Nextflow
+ruta_nextflow_results <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results")
+
+# Rutas del directorio de datos del proyecto
+ruta_proyecto <- file.path(params$project_path)
+ruta_proyecto_relativa <- file.path(ruta_sc_rna_seq_pipeline, "resources", "02-nextflow-results", "01-project-data", nombre_proyecto)
+
+
+# Ruta para guardar los resultados de este archivo QMD dentro del directorio temporal para la pestaña "análisis"
+ruta_archives_tmp_agrupacion <- file.path(ruta_sc_rna_seq_pipeline, "resources", "01-essential", "02-archives", "02-tmp", "tab3-analisis", "06-agrupacion")
+
+# Asegurarse de crear directorio
+dir.create(ruta_archives_tmp_agrupacion)
+
+
+
+
+
+
+#===================================================================================================================================================
+# DIRECTORIO "ANALYSIS"
+#===================================================================================================================================================
+
+# Rutas de la carpeta "analysis" dentro del directorio del proyecto
+ruta_analysis <- file.path(ruta_proyecto, "analysis")
+ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "analysis")
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
+# DIRECTORIO "AGRUPACION" EN "ANALYSIS"
+#-------------------------------------------------------------------------------------------------------------------------------
+
+# Rutas al directorio de population_aggregation
+ruta_aggregation_abs <- file.path(ruta_analysis, "06_population_aggregation")
+ruta_aggregation_rel <- file.path(ruta_analysis_relativa, "06_population_aggregation")
+
+# Dataframe maestro que contendrá los archivos de todas las versiones
+versiones_aggregation_df <- NULL
+ultima_version_nombre <- NULL
+
+if (dir.exists(ruta_aggregation_abs)) {
+  
+  # Listar subcarpetas de primer nivel (ej. 01_version, 02_version)
+  subcarpetas_versiones <- list.dirs(ruta_aggregation_abs, recursive = FALSE, full.names = FALSE)
+  
+  if (length(subcarpetas_versiones) > 0) {
+    # Ordenar alfanuméricamente para garantizar que 02_version va después de 01_version
+    subcarpetas_versiones <- sort(subcarpetas_versiones)
+    
+    # Identificar el nombre exacto de la última versión
+    ultima_version_nombre <- subcarpetas_versiones[length(subcarpetas_versiones)]
+    
+    # Inicializar el dataframe vacío
+    versiones_aggregation_df <- data.frame()
+    
+    # Recorrer cada versión y extraer sus PDFs
+    for (v in subcarpetas_versiones) {
+      ruta_v_abs <- file.path(ruta_aggregation_abs, v)
+      ruta_v_rel <- file.path(ruta_aggregation_rel, v)
+      
+      pdfs_version <- list.files(ruta_v_abs, pattern = "\\.pdf$", ignore.case = TRUE, full.names = FALSE)
+      
+      if (length(pdfs_version) > 0) {
+        temp_df <- data.frame(
+          version = v,
+          is_latest = (v == ultima_version_nombre), # ¡Magia! Marca TRUE solo si es la última
+          file_name = pdfs_version,
+          ruta_absoluta = file.path(ruta_v_abs, pdfs_version),
+          ruta_relativa = file.path(ruta_v_rel, pdfs_version),
+          stringsAsFactors = FALSE
+        )
+        # Unir al dataframe maestro
+        versiones_aggregation_df <- rbind(versiones_aggregation_df, temp_df)
+      }
+    }
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TÍTULO Y RESUMEN CONTEXTUAL -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div class="informe-titulo-tab">
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatic Analysis</h2>
+</div>
+
+<div class="informe-titulo-seccion-unique">
+  <h1>Section 6</h1>
+  <h2>Grouping of Biological Populations</h2>
+</div>
+
+<div class="flecha-abajo">
+  ▼
+</div>
+
+
+<div class="informe-resumen">
+  <h2>Summary</h2>
+
+  <p>
+    This tab documents the <strong>Grouping of Biological Populations</strong> phase. After completing the cellular annotation stage—where subpopulations and maturation stages were identified with extreme granularity—the objective of this section is to consolidate the tissue into a robust and definitive biological model.
+  </p>
+
+  <p>
+    Although hyper-detailed segmentation (e.g., isolating each transient phase of thymic development) is essential to understand the tissue's basal heterogeneity, it often lacks the statistical and population power required for robust experimental contrasts. Therefore, the analysis requires a transition to functionally coherent groupings or "macro-compartments."
+  </p>
+
+  <p>
+    This consolidation process is not automatic, but iterative and empirical. Through working sessions and discussions between the bioinformatics unit and the principal research team, different <strong>grouping versions</strong> have been proposed and evaluated. In each iteration, related numerical clusters were collapsed, and maturation substages were unified, seeking the optimal balance between biological resolution and statistical feasibility.
+  </p>
+
+  <p>
+    Throughout this document, you can explore the visual history of these iterations through topological projections (UMAP). Both global tissue maps and projections segregated by experimental condition (<em>Split by Condition</em>) are presented, allowing direct visualization of major population changes.
+  </p>
+  
+  <p>
+    The final iteration presented in this section constitutes the <strong>definitive and consensus version</strong>. This consolidated map forms the structural foundation upon which, in the following report modules, the <strong>Differential Expression Analysis</strong> analyses and functional enrichment metrics will be performed.
+  </p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  TABLA DE CONTENIDOS -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 15px; background-color: transparent;"></div>
+
+<div class="titulo-toc">
+  Table of contents for this section
+</div>
+
+<div class="toc">
+  <ul>
+    <li>
+      <a href="#tab3-seccion6">6<span>.</span> Grouping of Biological Populations</a>
+      <ul>
+        <li>
+          <a href="#tab3-seccion6.1">6.1. Fundamentals of Phenotypic Consolidation</a>
+        </li>
+        <li>
+          <a href="#tab3-seccion6.2">6.2. Evolution and Topological Maps (Versions)</a>
+          </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  REDACCIÓN -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<div style="height: 25px; background-color: transparent;"></div>
+
+<div class="titulo1" id="tab3-seccion6">
+  6<span>.</span> Grouping of Biological Populations
+</div>
+
+<p>
+  Having completed the meticulous task of phenotypic inference documented in the previous module, we now possess a cellular catalog of extremely high resolution. However, in bioinformatics practice, the level of detail required to map the intricate development of a tissue is not always suitable for performing robust statistical comparisons across different experimental conditions.
+</p>
+
+<p>
+  This section illustrates the process of biological synthesis: the transition from a hyper-fragmented cellular map to a consolidated topological model. Throughout this document, we will trace the evolution of this grouping, exploring how joint decisions between the bioinformatics unit and the research team have shaped the various iterations (versions) of the population model until reaching the final consensus.
+</p>
+
+<p>
+  Before visualizing the trajectory of these topological versions and their respective spatial maps, it is essential to understand the statistical and analytical principles that both require and motivate this methodological restructuring. These concepts are detailed below in the first subsection.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion6.1">
+  6.1. Fundamentals of Phenotypic Consolidation
+</div>
+
+<p>
+  Consolidation or clustering of clusters is an indispensable strategic step that precedes any cross-comparative analysis (for example, comparing a <em>Knock-Out</em> condition against a <em>Wild-Type</em>). Its foundation is not arbitrary but rests on two main analytical pillars: statistical viability and the perspective of population dynamics.
+</p>
+
+<p>
+  <strong>1. The challenge of statistical power and technical noise &rArr;</strong> During the curated annotation phase, we were able to dissect the tissue into extremely precise transient sub-stages. However, when attempting to assess the effect of a mutation or treatment within a cluster containing only a few dozen cells, technical variance (the inherent noise of single-cell sequencing, such as <em>dropouts</em>) completely overshadows the true biological signal. By merging highly similar subpopulations into a larger "biological compartment," we drastically increase the sample size (the "N" of cells). This population boost provides differential expression algorithms with the statistical power necessary to detect robust significant genes, avoiding a flood of false negatives.
+</p>
+
+<p>
+  <strong>2. Visual validation of the experimental model &rArr;</strong> As a result of these strategic groupings, graphical reports are generated that materialize each new model proposal. As will be observed in the following subsection, for each clustering iteration, two fundamental spatial representations are invariably evaluated:
+</p>
+
+<ul>
+  <li>
+    <strong>Global Consolidated Map (<code>UMAP_clusters_combinados.pdf</code>) &rArr;</strong> A joint spatial projection that integrates all samples in the study, recoloring the tissue under the new grouped nomenclature. This report allows visual confirmation that the boundaries of the newly defined macro-populations exhibit strict topological and biological coherence.
+  </li>
+  <li>
+    <strong>Condition-Segregated Map (<code>UMAP_clusters_combinados_by_condition.pdf</code>) &rArr;</strong> This visualization breaks down the global map, spatially segregating cells according to their experimental group (for example, projecting the architecture of the <strong>Reference</strong> condition in one panel and that of the <strong>Test or <em>Test</em></strong> condition in another parallel panel). It constitutes a fundamental qualitative tool, as it facilitates the preliminary identification of macroscopic alterations: massive population expansions, blocks in ontogenic development, or severe cellular depletion induced by the study variable.
+  </li>
+</ul>
+
+<p>
+  With these theoretical foundations clear, we will proceed to explore how they have been empirically applied to our dataset, iterating through the different topological proposals until crystallizing in the population map that will govern the rest of the research.
+</p>
+
+
+
+
+
+
+
+
+
+
+<div style="height: 20px; background-color: transparent;"></div>
+
+<div class="titulo2" id="tab3-seccion6.2">
+  6.2. Evolution and Topological Maps (Versions)
+</div>
+
+<p>
+  The experimental design and the high biological complexity of the tissue often require multiple iterations before achieving the perfect population segmentation. This section documents the complete history of this process. Each "version" represents a clustering iteration proposed by the bioinformatics unit, which has subsequently been reviewed, discussed, and refined in collaboration with the research team.
+</p>
+
+<p>
+  From the following explorer, you can view and directly access the directories corresponding to each of the iterations generated during the project:
+</p>
+
+```{r, echo=FALSE, results="asis"}
+# 1. MOSTRAR BOX-FILES CON LAS CARPETAS DE VERSIONES
+if (!is.null(versiones_aggregation_df) && nrow(versiones_aggregation_df) > 0) {
+  
+  # Extraer las versiones únicas
+  versiones_unicas <- unique(versiones_aggregation_df$version)
+  
+  cat('<div class="box-files">\n<ul>\n')
+  for (v in versiones_unicas) {
+    # Reconstruir la ruta relativa de la carpeta
+    ruta_v_rel <- file.path(ruta_aggregation_rel, v)
+    cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', ruta_v_rel, v))
+  }
+  cat('</ul>\n</div>\n')
+  
+  cat(glue::glue('
+  <p class="text-center">
+    <a href="{ruta_aggregation_rel}" target="_blank" class="boton-files">
+      <i class="fa-solid fa-folder-open"></i> Explore root directory of Aggregation
+    </a>
+  </p>
+  '))
+  
+} else {
+  cat(glue::glue('
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Methodological Note</b><br>
+    No aggregation version folders were detected in the corresponding directory.
+  </div>
+  '), sep = "\n")
+}
+```
+
+<p>
+  Within each of these iterations, the analytical standard generates —at minimum— the two visual reports described in the previous theory:
+</p>
+
+<ul>
+  <li><code>UMAP_clusters_combinados.pdf</code>: Projection reflecting the global topology with the new grouped nomenclature.</li>
+  <li><code>UMAP_clusters_combinados_by_condition.pdf</code>: Segregated (<em>split</em>) projection that allows qualitative comparison of cell proportions and distribution across experimental conditions (e.g., WT versus KO).</li>
+</ul>
+
+<p>
+  Below, the resulting maps from each version are displayed chronologically. Pay special attention to the last iteration shown, as this constitutes the final consensus.
+</p>
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# 2. BUCLE DINÁMICO PARA MOSTRAR LAS VERSIONES Y SUS PDFs (Usando tagList)
+if (!is.null(versiones_aggregation_df) && nrow(versiones_aggregation_df) > 0) {
+  
+  out_versiones <- tagList()
+  versiones_unicas <- unique(versiones_aggregation_df$version)
+  
+  idx <- 1
+  for (v in versiones_unicas) {
+    
+    # Filtrar archivos específicos de esta versión
+    archivos_version <- versiones_aggregation_df[versiones_aggregation_df$version == v, ]
+    
+    # Comprobar si es la última versión usando la columna mágica que creamos en la cabecera
+    is_latest <- archivos_version$is_latest[1]
+    
+    # 2.1. Diseñar el Título y el Badge
+    if (is_latest) {
+      badge_html <- '<span style="background-color: #28a745; color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.65em; margin-left: 15px; vertical-align: middle; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(40,167,69,0.3);"><i class="fa-solid fa-check-circle"></i> FINAL VERSION (Final Consensus)</span>'
+    } else {
+      badge_html <- '<span style="background-color: #6c757d; color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.65em; margin-left: 15px; vertical-align: middle; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(108,117,125,0.3);"><i class="fa-solid fa-clock-rotate-left"></i> PRELIMINARY VERSION</span>'
+    }
+    
+    out_versiones <- tagAppendChild(out_versiones, HTML(glue::glue('
+      <div style="height: 15px; background-color: transparent;"></div>
+
+      <div class="titulo3" id="tab3-seccion6.2.{idx}" style="padding-bottom: 8px; line-height: 1.2;">
+        6.2.{idx}. Iteration: {v} {badge_html}
+      </div>
+    ')))
+    
+    # 2.2. Mensaje de contexto con estilo de texto normal e iconos coloreados
+    if (is_latest) {
+      out_versiones <- tagAppendChild(out_versiones, HTML('
+        <p style="margin-top: 18px; margin-bottom: 25px;">
+          <i class="fa-solid fa-flag-checkered" style="color: #28a745; font-size: 1.1em; margin-right: 5px;"></i> 
+          <strong>Adopted population model:</strong> This version represents the definitive biological consensus reached after evaluating previous iterations. The topology and phenotypic groupings defined here are structurally robust and will mathematically govern the differential expression contrasts by experimental condition that will be carried out in Section 7.
+        </p>
+
+        <p style="margin-top: 18px; margin-bottom: 25px;">
+          Below, the graphical reports (PDF files) hosted in this directory are displayed interactively, showing them sequentially for detailed exploration.
+        </p>
+      '))
+    
+    } else {
+        out_versiones <- tagAppendChild(out_versiones, HTML('
+          <p style="margin-top: 18px; margin-bottom: 25px;">
+            <i class="fa-solid fa-clock-rotate-left" style="color: #7f8c8d; font-size: 1.1em; margin-right: 5px;"></i> 
+            <strong>Exploratory preliminary version:</strong> This iteration constitutes an initial approximation generated during the topological analysis phase. It was reviewed, discussed, and refined by the bioinformatics unit and the research team, functionally evolving in subsequent iterations.
+          </p>
+          
+          <p style="margin-top: 18px; margin-bottom: 25px;">
+            Below, the graphical reports (PDF files) hosted in this directory are displayed interactively, showing them sequentially to illustrate this modeling phase.
+          </p>
+        '))
+    }
+    
+    # 2.3. Bucle interno: Renderizar iframes de los PDFs de esta versión
+    for (i in 1:nrow(archivos_version)) {
+      nombre_pdf <- archivos_version$file_name[i]
+      ruta_pdf <- archivos_version$ruta_relativa[i]
+      
+      out_versiones <- tagAppendChild(out_versiones, HTML(glue::glue('
+        <div style="border-top: 1px solid #276DC3; margin-top: 35px; padding-top: 18px;"></div>
+        
+        <p style="margin-top: 15px; margin-bottom: 18px;">
+          <i class="fa-solid fa-file-pdf" style="color: #276DC3;"></i> 
+          <strong>File:</strong> <code>{nombre_pdf}</code>
+        </p>
+        
+        <div class="iframe-container" style="margin-top: 15px; margin-bottom: 10px;">
+          <iframe src="{ruta_pdf}" frameborder="0" style="height: 700px; width: 100%;"></iframe>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 15px; margin-bottom: 45px;">
+          <a href="{ruta_pdf}" target="_blank" class="boton-iframe">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open map in new tab
+          </a>
+          <a href="{ruta_pdf}" download="{nombre_pdf}" class="boton-iframe-download">
+            <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+          </a>
+        </div>
+      ')))
+    }
+    
+    idx <- idx + 1
+  }
+  
+  out_versiones
+}
+```
+
+
+
+
+
+
+
+
+
+
+<div class="divider"></div>
+
+<p>
+  The consolidation of tissue topology into a definitive population model provides the experiment with the statistical architecture required to interrogate biology at a comparative level.
+</p>
+
+<p>
+  Once the different populations (e.g. precursors, mature cells, stroma, etc.) are structured and agreed upon, the analysis is ready to move from the descriptive exploration of the sample to the comparison of conditions. In the next stage, each of these population compartments will be isolated and subjected to a rigorous differential test, identifying which gene pathways are activated or repressed when comparing the <strong>Reference</strong> condition against the <strong>Test</strong> condition.
+</p>
+
+<p>
+  All this scrutiny on the transcriptional impact of the experimental variable is documented in the following module of the report: <strong><a href="07-expresion-diferencial.html" class="normalink">7. Differential Expression Analysis</a></strong>.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  FOOTER -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<footer>
+  <a href="#" class="arriba"><i class="fa-solid fa-angles-up"></i></a>
+</footer>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+<!--  CARGAR SCRIPTS DE JAVASCRIPT -->
+<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
+
+<script type="module" src="../../../../04-javascript/chatbot.js"></script>
+<script type="module" src="../../../../04-javascript/script.js"></script>
