@@ -2399,7 +2399,7 @@ Este sexto bloque de la carpeta `analysis` documenta la síntesis biológica y e
 
 <hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
-**Expresión Diferencial por Condición (`analysis/07_deg_conditions/`)**
+**Análisis de expresión diferencial (`analysis/07_deg_conditions/`)**
 
 ```plaintext
 │   ├── 07_deg_conditions
@@ -3570,11 +3570,11 @@ Incluye todos los archivos `.qmd` dentro de `tab3-analisis` y tiene como objetiv
    * Proyecciones basadas en atlas biológicos automatizados (ej. Tabula Muris, HPCA, Monaco).
    * Integración de diccionarios de curación manual experta en distintas resoluciones (*Etapa* y compartimentos macro o *Big Etapa*).
 * **06-agrupacion.qmd** **&rArr;** Agrupación de poblaciones biológicas:
-   * Consolidación topológica del tejido y segregación de proyecciones para comparar visualmente condiciones (ej. WT vs KO).
-* **07-expresion-diferencial.qmd** **&rArr;** Expresión diferencial por condición (WT vs KO):
-   * Contraste intra-poblacional de la perturbación génica (identificación de genes regulados al alza o a la baja en tipos celulares específicos).
+   * Consolidación del modelo definitivo. Muestra la evolución iterativa de las anotaciones hasta alcanzar el mapa topológico final consensuado, sirviendo como el marco inamovible sobre el que se ejecutarán los análisis de perturbación posteriores.
+* **07-expresion-diferencial.qmd** **&rArr;** Análisis de expresión diferencial:
+   * El epicentro estadístico para responder a las hipótesis de trabajo. Presenta una arquitectura bifocal: por un lado, ejecuta un *Pipeline Estándar* que contrasta el transcriptoma de la condición de prueba (Test) frente al estado basal (Referencia) dentro de cada linaje celular; y por otro, integra un bloque de *Análisis Dirigidos* para resolver diseños complejos o comparaciones *ad-hoc*. Esto permite identificar con precisión quirúrgica el catálogo de genes (DEGs) alterados por el experimento.
 * **08-enriquecimiento.qmd** **&rArr;** Análisis funcional y de enriquecimiento:
-   * Traducción de las listas de DEGs a vías metabólicas y procesos celulares alterados empleando bases de datos ontológicas (GO y KEGG).
+   * La interpretación sistémica de los datos. Proyecta las listas de DEGs alterados sobre bases del conocimiento global (como GO y KEGG) utilizando algoritmos avanzados (ORA y GSEA) para revelar qué rutas metabólicas, organelas o procesos de señalización se han visto comprometidos por la perturbación.
 * **09-extra.qmd** **&rArr;** Análisis personalizados y ad hoc:
     * Repositorio dinámico para exploraciones a medida solicitadas por el equipo investigador (validación de dianas terapéuticas, *FeaturePlots* específicos, etc.).
 * **10-conclusiones.qmd** **&rArr;** Síntesis del impacto biológico del estudio, hallazgos fundamentales y perspectivas futuras.

@@ -2402,7 +2402,7 @@ Este sexto bloque de la carpeta `analysis` documenta la síntesis biológica y e
 
 <hr style="border:none; height:1.5px; background-color:#777; width:100%; margin:35px 0 20px 0;">
 
-**Expresión Diferencial por Condición (`analysis/07_deg_conditions/`)**
+**Análisis de expresión diferencial (`analysis/07_deg_conditions/`)**
 
 ```plaintext
 │   ├── 07_deg_conditions
