@@ -2127,13 +2127,13 @@ A continuación, procederemos a ir describiendo parte por parte dicha estructura
 
 En este primer bloque de la carpeta `analysis` se almacenan todos los controles de calidad técnicos y biológicos generados durante las etapas iniciales. Para garantizar su correcta lectura, la jerarquía se divide en dos subdirectorios principales con normas específicas:
 
-* 📂 **`01_reads_qc/` &rArr; Calidad de lecturas (Opcional)**
+* 📂 **`01_reads_qc/` &rArr; Calidad de lecturas (Opcional):**
 Contiene la evaluación técnica de las lecturas crudas de secuenciación. En los análisis de Single-Cell este paso **puede dejarse vacío**, ya que habitualmente se prioriza el *web summary* de Cell Ranger. Si se incluyen datos, la estructura debe dividirse en:
   * 📁 **`fastp/` &rArr;** Como esta herramienta procesa las lecturas de forma conjunta, GenoScribe espera que los archivos individuales sigan estrictamente el patrón de nomenclatura **`{nombre_muestra}_fastp.html`** y **`{nombre_muestra}_fastp.json`**.
   * 📁 **`fastqc/` &rArr;** Al evaluar las lecturas de forma independiente, los archivos deben hacer referencia a la cadena (R1 o R2) y terminar obligatoriamente en **`{nombre_archivo}_fastqc.html`** y **`{nombre_archivo}_fastqc.zip`**.
   * 📊 **Integración de MultiQC (Común a ambos) &rArr;** Si se desea incorporar el reporte unificado en el informe interactivo, el archivo central debe llamarse exactamente **`multiqc_report.html`**. Es indispensable que esté acompañado de su respectiva carpeta **`multiqc_data/`** (con sus logs y JSONs internos) para que el visor no pierda la interactividad.
 
-* 📂 **`02_cells_qc/` &rArr; Viabilidad celular (Recomendado)**
+* 📂 **`02_cells_qc/` &rArr; Viabilidad celular (Recomendado):**
 Almacena los resultados biológicos del filtrado celular generado por Seurat (evaluando métricas clave como el porcentaje mitocondrial o la cantidad de genes detectados por célula). En este nivel, GenoScribe buscará de forma automatizada y estricta dos únicos archivos con exactamente estos nombres:
   * 📄 **`Pre_Quality_mergeSeurat.pdf` &rArr;** Gráficos de violín y dispersión antes de aplicar los filtros.
   * 📄 **`Post_Quality_mergeSeurat.pdf` &rArr;** Resultado gráfico tras la limpieza de la matriz.
@@ -2155,7 +2155,7 @@ Almacena los resultados biológicos del filtrado celular generado por Seurat (ev
 
 Este segundo bloque de la carpeta `analysis` está destinado a almacenar las proyecciones iniciales y los gráficos matemáticos (como el PCA) que justifican cuántas dimensiones espaciales se han conservado para el posterior análisis topológico. 
 
-* 📂 **`02_dim_reduction/` &rArr; Componentes Principales (Recomendado)**
+* 📂 **`02_dim_reduction/` &rArr; Componentes Principales (Recomendado):**
   A diferencia de las carpetas de Control de Calidad, este directorio funciona con una política de **lectura flexible**. GenoScribe iterará sobre cualquier archivo en formato `.pdf` que encuentre en su interior y lo representará de forma automática e interactiva en el informe (dentro de *iframes* visuales). 
   * 📄 **`ElbowPlot.pdf` / `DimHeatmap.pdf` / `FeatureScatter.pdf` &rArr;** Estos son los tres gráficos estándar que se recomienda incluir para visualizar la varianza de los componentes (son los que se describen por defecto en el propio informe). Sin embargo, **el nombre exacto no es restrictivo**; la herramienta los leerá independientemente de cómo se llamen y siempre que mantengan la extensión `.pdf`, los presentará de forma interactiva mediante un *iframe*.
   * 📄 **Otros formatos &rArr;** Si se introducen archivos con extensiones distintas (como `.png`, `.txt` o `.csv`), GenoScribe no los renderizará visualmente en los *iframes*, sino que únicamente los añadirá como una lista estática en el menú interactivo para su consulta o descarga.
@@ -2192,7 +2192,7 @@ La jerarquía interna se ha diseñado dividiendo el análisis en dos enfoques pr
 - **Merged (Unión simple):** Agrupación directa de las muestras sin aplicar correcciones estadísticas profundas por efecto lote.
 - **Integrated (Integración):** Agrupación tras aplicar algoritmos matemáticos (ej. Harmony, CCA) para corregir variaciones técnicas o biológicas entre muestras.
 
-* 📂 **`01_seurat_merged_clusters/` y `02_seurat_integrated_clusters/` &rArr; Estrategias de agrupamiento (Recomendado)**
+* 📂 **`01_seurat_merged_clusters/` y `02_seurat_integrated_clusters/` &rArr; Estrategias de agrupamiento (Recomendado):**
   Ambas ramas comparten exactamente la misma estructura interna y, al igual que en la reducción de dimensionalidad, funcionan con una **política de lectura flexible** (el nombre exacto de los archivos no es restrictivo):
   * 📁 **`01_cluster_umaps/` &rArr;** Destinado a las proyecciones bidimensionales. Se recomienda incluir gráficos como `UMAP_clusters.pdf`, `UMAP_all_cells_by_condition.pdf` o `UMAP_clusters_by_condition.pdf`, con estos nombres ya que son los que se describen para esta sección en el propio informe, aunque se podrán incluir archivos adicionales, siendo únicamente los que tengan formato `.pdf` los que se presenten de forma interactiva mediante *iframes*.
   * 📁 **`02_cluster_proportions/` &rArr;** Destinado a la evaluación de la abundancia celular entre condiciones. Se recomiendan visualizaciones como `BarPlot_clusters_count.pdf` o `dittoFreqPlot.pdf`, ya que son los que se comentan en el propio informe y de igual modo que anteriormente, se podrán incluir archivos adicionales, siendo únicamente los que tengan formato `.pdf` los que se presenten de forma interactiva mediante *iframes*
@@ -2279,7 +2279,7 @@ La jerarquía interna se ha diseñado dividiendo el análisis en dos enfoques pr
 
 Este cuarto bloque de la carpeta `analysis` está destinado a almacenar los marcadores genéticos característicos de cada subpoblación (es decir, los genes que se expresan diferencialmente en un clúster frente a todos los demás). Al igual que en la sección anterior, la jerarquía mantiene la división entre las estrategias de agrupamiento puro (*merged*) e integrado (*integrated*).
 
-* 📂 **`01_markers_seurat_merged_clusters/` y `02_markers_seurat_integrated_clusters/` &rArr; Marcadores por estrategia (Recomendado)**
+* 📂 **`01_markers_seurat_merged_clusters/` y `02_markers_seurat_integrated_clusters/` &rArr; Marcadores por estrategia (Recomendado):**
   A diferencia de las carpetas de reducción de dimensionalidad o clustering, en esta sección **la nomenclatura de los archivos es estrictamente obligatoria**. Para que GenoScribe pueda leer, emparejar automáticamente la tabla de resultados con su gráfico correspondiente y mostrarlos de forma iterativa y ordenada en el informe, los archivos deben seguir este formato exacto:
   * 📄 **Marcadores por clúster (`.tsv` y `.pdf`) &rArr;** Cada pareja de archivos debe nombrarse como **`markers_cluster_{X}_vs_all.tsv`** y **`markers_cluster_{X}_vs_all.pdf`** (donde `{X}` es el número identificador del clúster, ej. 0, 1, 2...). 
   * 📄 **Gráficos combinados (`.pdf`) &rArr;** Si se incluye un archivo global (todos los gráficos individuales agrupados en un único `.pdf` con el fin de poder explorar y compartir todos estos resultados de forma rápida), debe llamarse obligatoriamente **`markers_all_clusters_combined.pdf`**.
@@ -2346,13 +2346,13 @@ Este cuarto bloque de la carpeta `analysis` está destinado a almacenar los marc
 
 Este quinto módulo resulta fundamental para la traducción biológica del experimento, ya que permite asignar una identidad fenotípica (tipo celular, linaje o estadio) a cada clúster matemático previamente identificado. La estructura del directorio se bifurca en dos estrategias complementarias: predicciones automatizadas mediante atlas de referencia y curación manual experta.
 
-* 📂 **`01_automatic_dbs_annotation/` &rArr; Predicción por Bases de Datos (Opcional)**
+* 📂 **`01_automatic_dbs_annotation/` &rArr; Predicción por Bases de Datos (Opcional):**
   Almacena las asignaciones poblacionales sugeridas por algoritmos predictivos (como *SingleR*). Para que el informe integre correctamente las proyecciones UMAP y los catálogos de marcadores, los archivos deben cumplir estas reglas de nomenclatura:
   * 📄 **Mapas de anotación (`.pdf`) &rArr;** El sistema prioriza los archivos que contengan la cadena `_mergeSeurat.filter.pdf`, aunque procesará cualquier archivo `.pdf` válido. Estos documentos actúan como reportes multipágina que proyectan la topología (UMAP) de las etiquetas sugeridas por cada base de datos (ej. HPCA, Monaco, MouseRNAseq), acompañadas visualmente por la distribución de expresión de sus genes marcadores.
   * 📄 **Tablas de marcadores por identidad (`.tsv` o `.csv`) &rArr;** Para exponer la validación estadística de las etiquetas, los catálogos de genes diferenciales deben seguir el patrón **`{NombreDB}_{TipoCelular}_vs_allother.tsv`**.
   * 💡 **Lógica de emparejamiento:** El motor de GenoScribe asocia automáticamente cada tabla de marcadores con su reporte gráfico correspondiente basándose en el prefijo de la base de datos (ej. `GeneralCell_HPCA_...`).
 
-* 📂 **`02_manual_annotation/` &rArr; Curación Experta y Trazabilidad (Recomendado)**
+* 📂 **`02_manual_annotation/` &rArr; Curación Experta y Trazabilidad (Recomendado):**
   Contiene la anotación definitiva consensuada por los investigadores. Dada la naturaleza iterativa de este proceso, el directorio está diseñado para alojar un **histórico de versiones** que garantice la trazabilidad del modelo biológico.
   * 📁 **Versiones (`01_version`, `02_version`, ...) &rArr;** Cada iteración de la curación debe encapsularse en su propio directorio numerado. El informe auditará el historial completo, pero **desplegará y analizará exclusivamente la última versión** (ordenada alfabética/numéricamente) al considerarla el consenso definitivo.
   * 📁 **Niveles de Resolución:** Dentro de cada versión, los datos se estructuran preferiblemente en dos niveles jerárquicos (aunque si no se precisan, estas carpetas pueden omitirse o quedar vacías):
@@ -2387,7 +2387,7 @@ Este quinto módulo resulta fundamental para la traducción biológica del exper
 
 Este sexto bloque de la carpeta `analysis` documenta la síntesis biológica y estructural del proyecto. Tras la fase de anotación de alta granularidad, el objetivo es consolidar las subpoblaciones en un modelo de tejido robusto y definitivo, alcanzando el equilibrio óptimo entre la resolución biológica y la potencia estadística necesaria para los inminentes contrastes de expresión diferencial.
 
-* 📂 **`01_version/`, `02_version/`, ..., `{NN}_version/` ➜ Iteraciones de Consenso (Recomendado)**
+* 📂 **`01_version/`, `02_version/`, ..., `{NN}_version/` ➜ Iteraciones de Consenso (Recomendado):**
   Este sistema de directorios está diseñado para albergar el **histórico de agrupamientos** propuestos, evaluados y debatidos entre la unidad de bioinformática y el equipo investigador. 
   * 🔄 **Lógica de Versiones:** Las subcarpetas deben numerarse de forma secuencial (ej. `01_version`, `02_version`). GenoScribe identificará automáticamente el directorio con la numeración más alta como la **Versión Definitiva (Consenso Final)**, otorgándole un lugar destacado y prioritario en el informe interactivo.
   * 📄 **Mapas Topológicos Globales (`.pdf`) ➜** Se recomienda incluir proyecciones base como `UMAP_clusters_combinados.pdf`. Estos documentos reflejan la nueva nomenclatura unificada aplicada sobre la topología global del tejido.
@@ -3026,7 +3026,7 @@ Para adaptarse a cualquier diseño experimental, el directorio se divide ahora e
 
 Este octavo bloque representa la culminación interpretativa del análisis. Su objetivo principal es realizar la "traducción funcional" de los genes diferencialmente expresados (DEGs) identificados en el módulo anterior, proyectándolos sobre bases de conocimiento biológico para descubrir qué rutas metabólicas, procesos celulares y funciones moleculares han sido alterados por la variable de estudio. Al igual que la expresión diferencial, este directorio se bifurca en un espacio estándar y otro personalizado.
 
-* 📂 **`01_standard_comparisons/` &rArr; Pipeline de Análisis Estándar**
+* 📂 **`01_standard_comparisons/` &rArr; Pipeline de Análisis Estándar:**
   Mantiene una simetría arquitectónica total con el directorio homólogo de expresión diferencial (`07_deg_conditions`).
   * 📁 **`01_seurat_numeric_clusters/` y `02_automatic_dbs_clusters/` &rArr; Repositorios Exploratorios:** Garantizan la reproducibilidad metodológica por si el investigador decide auditar funcionalmente linajes preliminares.
   * 📁 **`03_manual_aggregated_named_clusters/` &rArr; El Núcleo Biológico (Definitivo):** Se centra en el modelo poblacional consensuado. Se organiza en **versiones numeradas** (`01_version`, `02_version`), priorizando GenoScribe la última de ellas. Dentro, hereda los tres contrastes biológicos definidos en el módulo 7 (`01_reference_vs_test_within_cluster`, etc.).
@@ -3034,7 +3034,7 @@ Este octavo bloque representa la culminación interpretativa del análisis. Su o
     Para lidiar con el enorme volumen de datos que genera el análisis funcional, la estructura estándar proporciona subcarpetas metodológicas (`01_ora` para *Over-Representation Analysis* y `02_gsea` para *Gene Set Enrichment Analysis*). A su vez, estas se subdividen en bases de datos (`01_go_bp`, `02_go_cc`, `03_go_mf`, `04_kegg`).
     * 💡 *Nota de flexibilidad:* Aunque esta subestructuración tan granular es **altamente recomendable** para mantener el orden, **no es estrictamente obligatoria**. Si el investigador lo prefiere, puede omitir estas subcarpetas y depositar los archivos directamente en el nivel superior.
 
-* 📂 **`02_custom_comparisons/` &rArr; Análisis Dirigidos y Flexibles (Ad-hoc)**
+* 📂 **`02_custom_comparisons/` &rArr; Análisis Dirigidos y Flexibles (Ad-hoc):**
   Espacio habilitado para explorar funcionalmente los diseños experimentales atípicos o preguntas específicas definidas en el módulo anterior.
   * 📁 **Nomenclatura requerida:** Las carpetas deben seguir el patrón secuencial **`[número]_[nombre]`** (por ejemplo, `01_CtsD_high_vs_CtsD_low`).
   * 💡 **Flexibilidad total:** En estas carpetas personalizadas, el usuario puede agrupar todos sus reportes (PDFs, Excel, TSV) en un único nivel sin necesidad de replicar el árbol complejo de ORA/GSEA/GO. El sistema leerá dinámicamente el contenido y construirá el explorador interactivo adaptándose a los archivos presentes.
@@ -3063,7 +3063,7 @@ Este octavo bloque representa la culminación interpretativa del análisis. Su o
 
 Este noveno y último bloque del directorio de análisis ha sido concebido como un ecosistema dinámico, flexible y modular. Su propósito es albergar todas aquellas exploraciones complementarias y peticiones *ad hoc* solicitadas expresamente por el equipo investigador que escapan al flujo de trabajo automatizado y estandarizado de las secciones anteriores.
 
-* 📂 **`09_extra/` &rArr; Repositorio de Exploración Dirigida (Opcional)**
+* 📂 **`09_extra/` &rArr; Repositorio de Exploración Dirigida (Opcional):**
   A diferencia de los módulos anteriores, este directorio no tiene un contenido biológico predefinido, sino que evoluciona en respuesta a las demandas específicas del proyecto (por ejemplo, validando hipótesis sobre dianas terapéuticas, revisando marcadores concretos o aislando linajes específicos). Para su correcta integración en el informe, la organización se rige por la siguiente lógica:
 
   * 📁 **Subdirectorios Numerados (Requisito Estricto) &rArr;** Es indispensable que las carpetas creadas dentro de este bloque sigan una nomenclatura numérica secuencial (ej. **`01_`**, **`02_`**, **`03_`**). GenoScribe utiliza exclusivamente estos prefijos para establecer el orden lógico de aparición en el informe. Además, el sistema procesará automáticamente el nombre de la carpeta para generar títulos de sección limpios y legibles (por ejemplo, transformando `01_specific_genes_of_interest` en el título *"Specific Genes Of Interest"*).
@@ -3163,19 +3163,19 @@ Este noveno y último bloque del directorio de análisis ha sido concebido como 
 
 Este directorio raíz actúa como el almacén central de la información "cruda" y los objetos procesados. Aunque contiene archivos de gran tamaño que no se renderizan directamente en el informe HTML, es la base sobre la cual se construye toda la lógica de GenoScribe.
 
-* 📂 **`01_raw_blc/` &rArr; Archivos Binarios (Opcional)**
+* 📂 **`01_raw_blc/` &rArr; Archivos Binarios (Opcional):**
   Destinado a los archivos BCL directos del secuenciador. GenoScribe/Quarto no utiliza este directorio para la generación del informe, por lo que puede dejarse vacío sin consecuencias.
 
-* 📂 **`02_fastq_cellranger/` &rArr; Resultados de Cell Ranger (Importante)**
+* 📂 **`02_fastq_cellranger/` &rArr; Resultados de Cell Ranger (Importante):**
   Contiene las secuencias y los informes de alineamiento inicial. Es vital para la trazabilidad técnica del proyecto:
   * 📄 **Archivos FASTQ &rArr;** Deben seguir el formato estándar **`{nombre}.fastq.gz`**.
   * 📁 **Directorios de muestra (ej. `SCS003_.../`) &rArr;** Quarto recorrerá de forma automática cada carpeta de muestra que encuentre en este nivel. El nombre de la carpeta es libre, pero su contenido interno es estricto.
   * 📄 **Informes técnicos &rArr;** Dentro de cada carpeta de muestra debe existir un subdirectorio llamado **`outs/`** que contenga obligatoriamente los archivos **`web_summary.html`** (informe de calidad de 10x) y **`metrics_summary.csv`** con sus nombres originales.
 
-* 📂 **`03_processed_objects/` &rArr; Objetos de Seurat (Recomendado)**
+* 📂 **`03_processed_objects/` &rArr; Objetos de Seurat (Recomendado):**
   Almacena los archivos binarios de R (**`.rds`**) con los objetos Seurat ya filtrados y procesados. Son fundamentales para que otros investigadores puedan cargar el análisis exactamente en el mismo punto en el que se generó el informe.
 
-* 📂 **`04_resources/` &rArr; Diccionarios, Metadatos y Documentación (Recomendado)**
+* 📂 **`04_resources/` &rArr; Diccionarios, Metadatos y Documentación (Recomendado):**
   Este es el compartimento logístico del proyecto y se divide en cuatro áreas:
   * 📁 **`01_metadata/` (Crítico) &rArr;** GenoScribe requiere obligatoriamente que aquí se encuentren los archivos **`fastq_mapping.tsv`** y **`sample_metadata.tsv`** con esos nombres exactos. Estos archivos vinculan las muestras con sus condiciones experimentales y metadatos clínicos.
   * 📁 **`02_annotations/` &rArr;** Dividido en `manual/` (para diccionarios de identidad celular, preferiblemente en **`.tsv`**) y `dbs/` (para las bases de datos de referencia). Los archivos aquí depositados se listarán de forma interactiva en el menú del informe; el formato de nombre es libre.
@@ -3202,19 +3202,19 @@ Este directorio raíz actúa como el almacén central de la información "cruda"
 
 Este último bloque de la estructura raíz contiene el motor lógico del proyecto. Aquí se almacena todo el código fuente necesario para ejecutar el análisis desde cero, garantizando que el estudio sea totalmente reproducible por otros investigadores o auditores.
 
-* 📂 **`01_main/` &rArr; Scripts Principales de Análisis (Recomendado)**
+* 📂 **`01_main/` &rArr; Scripts Principales de Análisis (Recomendado):**
   Contiene los archivos de R encargados de ejecutar el flujo completo de Seurat (desde la carga de la matriz hasta la generación de los resultados finales).
   * 📄 **Multiplicidad de enfoques:** Es posible incluir varios archivos (como `analisys_edu.R` o `analisys_gon.R`) si el proyecto ha requerido explorar diferentes metodologías, parámetros o caminos analíticos.
   * 📄 **Formato:** Los archivos deben tener estrictamente la extensión **`.R`**. Aunque el nombre es libre, se recomienda que sea descriptivo para facilitar la trazabilidad.
 
-* 📂 **`02_functions/` &rArr; Funciones Auxiliares y Modulares (Recomendado)**
+* 📂 **`02_functions/` &rArr; Funciones Auxiliares y Modulares (Recomendado):**
   Almacena scripts que contienen funciones predefinidas y personalizadas que son llamadas de forma recurrente por los scripts del directorio *main*. 
   * 📄 **Trazabilidad:** Al igual que el bloque anterior, es preferible que este directorio no esté vacío, ya que modularizar el código es una buena práctica bioinformática que simplifica la lectura de los procesos. Los archivos deben terminar en **`.R`**.
 
-* 📂 **`03_extra/` &rArr; Código Complementario (Opcional)**
+* 📂 **`03_extra/` &rArr; Código Complementario (Opcional):**
   Espacio destinado a scripts de apoyo, pruebas de concepto o scripts de limpieza de datos que no forman parte del flujo central de análisis. Al igual que el resto de la carpeta `scripts/`, este contenido no se utiliza directamente en la redacción automática del informe con Quarto, pero es esencial para la integridad del repositorio del proyecto.
 
-> 💡 **Conclusión de la estructura:** Con este último bloque, queda definida la organización integral de un proyecto de Transcriptómica Espacial en **GenoScribe**. Respetar esta jerarquía y las nomenclaturas aquí descritas asegura que el informe interactivo se genere con todos sus componentes perfectamente vinculados, ofreciendo una experiencia de navegación fluida y profesional.
+> 💡 **Conclusión de la estructura:** Con este último bloque, queda definida la organización integral de un proyecto de Single-Cell RNA-Seq en **GenoScribe**. Respetar esta jerarquía y las nomenclaturas aquí descritas asegura que el informe interactivo se genere con todos sus componentes perfectamente vinculados, ofreciendo una experiencia de navegación fluida y profesional.
 
 
 
