@@ -62,8 +62,7 @@
 
 El sistema está diseñado para evolucionar y expandirse, clasificando sus capacidades según el estado de implementación de sus módulos:
 
-- ✅ **Módulos Disponibles:** Análisis de *Bulk RNA-Seq*, *Single-Cell RNA-Seq (scRNA-Seq)* y *Metagenómica de Amplicones (16S/18S/ITS)*.
-- 🚧 **En Desarrollo:** *Transcriptómica Espacial (ST)*.
+- ✅ **Módulos Disponibles:** Análisis de *Bulk RNA-Seq*, *Single-Cell RNA-Seq (scRNA-Seq)*, *Transcriptómica Espacial (ST)* y *Metagenómica de Amplicones (16S/18S/ITS)*.
 - 📅 **Ampliaciones Previstas:** *Metagenómica Shotgun* y *Metatranscriptómica* (estructuras de directorio ya integradas para futura expansión).
 
 La herramienta central es una **aplicación Shiny** que permite al usuario proporcionar de forma sencilla los **parámetros necesarios para generar el informe**, como el directorio de los datos procesados, el nombre del experimento o la versión del reporte. A partir de esta entrada, el sistema activa el **pipeline correspondiente** ejecutándolo en local o dentro de un **contenedor aislado** (Apptainer/Docker), garantizando la **consistencia**, la **reproducibilidad** y el aislamiento total de las dependencias.

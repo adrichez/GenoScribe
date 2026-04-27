@@ -231,7 +231,7 @@ base_spanish_full = {
                             )
                         },
                         {
-                            "text": DoubleQuotedScalarString("7. Expresión diferencial por condición (WT vs KO)"),
+                            "text": DoubleQuotedScalarString("7. Análisis de expresión diferencial"),
                             "href": DoubleQuotedScalarString(
                                 "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/07-expresion-diferencial.qmd"
                             )
@@ -394,7 +394,7 @@ base_spanish_compact = {
                             )
                         },
                         {
-                            "text": DoubleQuotedScalarString("7. Expresión diferencial por condición (WT vs KO)"),
+                            "text": DoubleQuotedScalarString("7. Análisis de expresión diferencial"),
                             "href": DoubleQuotedScalarString(
                                 "resources/01-essential/03-scripts/02-quarto/01-spanish-language/02-compact-version/tab3-analisis/07-expresion-diferencial.qmd"
                             )
@@ -571,7 +571,7 @@ base_english_full = {
                             )
                         },
                         {
-                            "text": DoubleQuotedScalarString("7. Differential expression by condition (WT vs KO)"),
+                            "text": DoubleQuotedScalarString("7. Differential expression analysis"),
                             "href": DoubleQuotedScalarString(
                                 "resources/01-essential/03-scripts/02-quarto/02-english-language/01-full-version/tab3-analisis/07-expresion-diferencial.qmd"
                             )
@@ -734,7 +734,7 @@ base_english_compact = {
                             )
                         },
                         {
-                            "text": DoubleQuotedScalarString("7. Differential expression by condition (WT vs KO)"),
+                            "text": DoubleQuotedScalarString("7. Differential expression analysis"),
                             "href": DoubleQuotedScalarString(
                                 "resources/01-essential/03-scripts/02-quarto/02-english-language/02-compact-version/tab3-analisis/07-expresion-diferencial.qmd"
                             )
