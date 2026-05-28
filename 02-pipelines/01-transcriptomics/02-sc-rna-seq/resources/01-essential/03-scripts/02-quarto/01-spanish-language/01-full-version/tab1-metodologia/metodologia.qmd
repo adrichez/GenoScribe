@@ -853,7 +853,7 @@ if (length(list_scripts_functions) > 0) {
 </div>
 
 <p>
-  Una vez completadas todas las etapas del flujo de análisis de <strong>Single-Cell RNA-Seq</strong> mediante con las herramientas anteriormente vistas, los resultados se organizan en una <strong>estructura de directorios</strong> que sirve como base para la generación de este informe automatizado. 
+  Una vez completadas todas las etapas del flujo de análisis de <strong>Single-Cell RNA-Seq</strong> mediante las herramientas anteriormente vistas, los resultados se organizan en una <strong>estructura de directorios</strong> que sirve como base para la generación de este informe automatizado. 
   Esta organización incluye archivos intermedios, resultados finales y metadatos asociados a cada módulo del pipeline, garantizando la trazabilidad y la reproducibilidad del análisis completo.
 </p>
 

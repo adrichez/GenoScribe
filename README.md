@@ -180,7 +180,8 @@ Antes de utilizar el sistema, asegúrese de contar con los siguientes elementos 
   * **CPU**: ≥ 4 núcleos.
   * **Almacenamiento**: ≥ 30 GB libres (la imagen del contenedor pesa unos 16 GB para la versión en docker y unos 4 GB para el archivo `.sif` de Apptainer).
 
-> 💡 Con estos requisitos cumplidos, la instalación y ejecución del sistema es directa y garantiza que todos los elementos interactivos de los informes funcionen de manera correcta y reproducible.
+> [!NOTE]
+> Con estos requisitos cumplidos, la instalación y ejecución del sistema es directa y garantiza que todos los elementos interactivos de los informes funcionen de manera correcta y reproducible.
 
 
 
@@ -227,7 +228,8 @@ El **diagrama de flujo** ilustra de forma esquemática las decisiones y rutas qu
   * Contenedores disponibles en **Docker** o **Apptainer** (este último más común en HPC y recomendado).
   * Interacción mediante **terminal (CLI, Shell)** o **interfaz gráfica (GUI, Shiny)**.
 
-> 💡 **Consejo:** Ejecutar siempre dentro de un **contenedor** garantiza **reproducibilidad**, aislamiento de dependencias y facilita la gestión. La ejecución directa (sin contenedor) se recomienda solo para pruebas o debugging.
+> [!TIP]
+> Ejecutar siempre dentro de un **contenedor** garantiza **reproducibilidad**, aislamiento de dependencias y facilita la gestión. La ejecución directa (sin contenedor) se recomienda solo para pruebas o debugging.
 > En HPC/Cloud pueden requerirse pasos adicionales, como cargar **módulos del sistema** o configurar variables de entorno, para asegurar que todas las dependencias estén disponibles.
 
 Una vez que el usuario decide dónde ejecutar **GenoScribe** y si usar o no un contenedor, este, debe completar un **formulario** con el fin de proporcionar los **parámetros necesarios** para generar el informe. Este formulario puede completarse mediante dos interfaces:
@@ -355,7 +357,8 @@ El siguiente **GIF** ofrece una visión dinámica del flujo principal: inicio de
   <img src="06-info/assets/02-analyses/01-transcriptomics/01-bulk-rna-seq/transcriptomics_bulk_rna_seq_demo_process.gif" alt="Demostración flujo de trabajo GenoScribe" width="65%" style="border-radius: 10px;">
 </p>
 
-> 💡 **Nota:** Este GIF es una **guía visual rápida** y no muestra todos los pasos intermedios ni outputs secundarios. Para información completa, incluyendo **entradas, salidas y parámetros específicos**, consulte las [Guías de usuario extendidas](06-info).
+> [!NOTE]
+> Este GIF es una **guía visual rápida** y no muestra todos los pasos intermedios ni outputs secundarios. Para información completa, incluyendo **entradas, salidas y parámetros específicos**, consulte las [Guías de usuario extendidas](06-info).
 
 
 
@@ -371,7 +374,8 @@ El siguiente **GIF** ofrece una visión dinámica del flujo principal: inicio de
 
 Esta sección explica cómo poner en marcha **GenoScribe** de forma rápida, reproducible y flexible. Incluye la **descarga del repositorio, preparación del entorno, construcción/obtención de la imagen/contenedor y ejecución de pipelines**, con opciones adaptadas a distintos niveles de usuario y tipos de infraestructura (PC, HPC o nube).
 
-> ⚡ Para información más detallada sobre cada tipo de análisis y flujos específicos, revise las guías completas en `06-info/`.
+> [!NOTE]
+> Para información más detallada sobre cada tipo de análisis y flujos específicos, revise las guías completas en `06-info/`.
 
 
 
@@ -426,7 +430,8 @@ Los datos de prueba ubicados en la carpeta `05-examples/02-reports/` son pesados
 git lfs pull
 ```
 
-> 💡 **Ventaja:** facilita la instalación de futuras actualizaciones de la herramienta con un solo comando, ideal para usuarios que planean usar el sistema regularmente.
+> [!NOTE]
+> **Ventaja:** facilita la instalación de futuras actualizaciones de la herramienta con un solo comando, ideal para usuarios que planean usar el sistema regularmente.
 
 
 
@@ -440,7 +445,8 @@ Para un uso puntual o en sistemas sin Git, se puede descargar el ZIP directament
 2. Pulse **Code &rArr; Download ZIP**.
 3. Descomprime y accede a la carpeta desde la terminal.
 
-> 💡 Nota: esta opción es más limitada para actualizaciones, pero útil para pruebas rápidas o entornos donde Git no está disponible. Además hay que tener en cuenta que mediante esta opción no se obtendrán los archivos grandes almacenados con Git LFS.
+> [!NOTE]
+> Esta opción es más limitada para actualizaciones, pero útil para pruebas rápidas o entornos donde Git no está disponible. Además hay que tener en cuenta que mediante esta opción no se obtendrán los archivos grandes almacenados con Git LFS.
 
 
 
@@ -489,7 +495,8 @@ Cada enfoque ofrece **dos modos de ejecución**:
   * Permite automatización avanzada y ejecución por lotes de datos.
   * Genera informes HTML de forma reproducible, sin necesidad de interacción visual.
 
-> 🔹 Nota: Emplear la **interfaz gráfica** puede ser más lento que usar la **línea de comandos** con grandes volúmenes de datos. Apptainer, orientado a HPC, suele ejecutarse vía CLI, dado que abrir la interfaz gráfica en un entorno HPC puede requerir pasos adicionales, los cuales se explicarán más adelante, pero aún así, esto es totalmente posible si se desea.
+> [!NOTE]
+> Emplear la **interfaz gráfica** puede ser más lento que usar la **línea de comandos** con grandes volúmenes de datos. Apptainer, orientado a HPC, suele ejecutarse vía CLI, dado que abrir la interfaz gráfica en un entorno HPC puede requerir pasos adicionales, los cuales se explicarán más adelante, pero aún así, esto es totalmente posible si se desea.
 
 
 
@@ -511,7 +518,8 @@ Cada enfoque ofrece **dos modos de ejecución**:
 * **🖼️ Interfaz gráfica (Shiny, GUI)** **&rArr;** idéntico al contenedor, permite interacción visual y guiada.
 * **⌨️ Terminal (CLI, Shell)** **&rArr;** ejecución directa desde terminal, rápida y automatizable.
 
-> 🔹 Nota: La **interfaz gráfica de Shiny** es una capa visual creada mediante un script de R sobre Nextflow, facilitando la selección de parámetros. Emplear la **línea de comandos** permite una ejecución directa y rápida, tanto en local como en contenedor, aunque más rudimentaria.
+> [!NOTE]
+> La **interfaz gráfica de Shiny** es una capa visual creada mediante un script de R sobre Nextflow, facilitando la selección de parámetros. Emplear la **línea de comandos** permite una ejecución directa y rápida, tanto en local como en contenedor, aunque más rudimentaria.
 
 
 
@@ -568,7 +576,8 @@ Esto descargará la imagen directamente a su sistema Docker, lista para usarse.
 
 Y así, una vez que se dispone de la imagen Docker, se puede proceder a ejecutar los scripts de lanzamiento que se describen en la siguiente sección.
 
-> 🔹 Nota: Siempre es recomendable descargar la imagen preconstruida para evitar tiempos de construcción largos y asegurar que se cuenta con la versión más reciente y estable.
+> [!NOTE]
+> Siempre es recomendable descargar la imagen preconstruida para evitar tiempos de construcción largos y asegurar que se cuenta con la versión más reciente y estable.
 
 
 
@@ -619,7 +628,8 @@ Donde:
 * `docker-daemon://` **&rArr;** indica que Apptainer tomará la imagen directamente desde el daemon de Docker local.
 * `genoscribe-lab.sif` **&rArr;** será el contenedor Apptainer resultante, listo para ejecutarse en entornos HPC.
 
-> 🔹 Nota: Esta opción requiere Docker instalado y en ejecución, pero garantiza que la imagen Apptainer sea idéntica a la Docker.
+> [!IMPORTANT]
+> Esta opción requiere Docker instalado y en ejecución, pero garantiza que la imagen Apptainer sea idéntica a la Docker.
 
 
 <br>
@@ -637,7 +647,8 @@ apptainer pull genoscribe-lab.sif docker://adrichez/genoscribe:latest
 * Apptainer descargará la imagen desde Docker Hub y la convertirá automáticamente en `.sif`.
 * Esta es la opción **recomendada** por su simplicidad y reproducibilidad.
 
-> 🔹 Nota: Se necesita conexión a Internet y permisos de escritura en el directorio donde se generará `genoscribe-lab.sif`.
+> [!IMPORTANT]
+> Se necesita conexión a Internet y permisos de escritura en el directorio donde se generará `genoscribe-lab.sif`.
 
 
 <br>
@@ -669,7 +680,8 @@ Así, algunas de las ventajas de esta opción son:
 * Ideal para usuarios que solo quieren ejecutar GenoScribe sin preocuparse por la creación de imágenes.
 * Recomendable verificar la fuente y la integridad de la imagen antes de usarla en producción.
 
-> 🔹 Nota: Este método es especialmente útil en entornos HPC donde no se permite construir imágenes localmente o se carece de permisos de administrador.
+> [!TIP]
+> Este método es especialmente útil en entornos HPC donde no se permite construir imágenes localmente o se carece de permisos de administrador.
 
 
 
@@ -723,7 +735,8 @@ cd GenoScribe/04-launch/01-local/
 
 Este script iniciará el servidor Shiny en el puerto configurado (por defecto `localhost:3838`) y abriendo automáticamente dicho formulario en el navegador web predeterminado con la finalidad de proporcionar los parámetros necesarios para generar los informes. Además, si por cualquier caso no se abre automáticamente, se puede acceder manualmente a través de la URL: 👉 **[http://localhost:3838/app](http://localhost:3838/app)**.
 
-> 🔹 **Nota:** asegúrese de tener instaladas todas las dependencias de R indicadas en la sección de instalación, así como permisos de ejecución para el script (`chmod +x` si fuera necesario).
+> [!IMPORTANT]
+> Asegúrese de tener instaladas todas las dependencias de R indicadas en la sección de instalación, así como permisos de ejecución para el script (`chmod +x` si fuera necesario).
 
 
 
@@ -756,8 +769,11 @@ El script realiza automáticamente los siguientes pasos:
 
 De igual modo que anteriormente, este script abrirá automáticamente la aplicación Shiny en el navegador predeterminado. Si no lo hace, puede acceder manualmente a través de: 👉 **[http://localhost:3838/app](http://localhost:3838/app)**.
 
-> 🔹 **Ventaja:** no se requiere disponer de dependencias locales, ya que todo se ejecuta dentro del contenedor.
-> 🔹 **Nota:** asegúrese de que el servicio Docker esté activo antes de ejecutar el script.
+> [!NOTE]
+> No se requiere disponer de dependencias locales, ya que todo se ejecuta dentro del contenedor.
+
+> [!IMPORTANT]
+> Asegúrese de que el servicio Docker esté activo antes de ejecutar el script.
 
 
 <br>
@@ -798,8 +814,11 @@ ssh -L 3838:localhost:3838 -J user@halowan.ipb.csic.es user@nodo0X
 
 Donde `user` es su nombre de usuario en el cluster y `nodo0X` es el nodo donde se está ejecutando la aplicación. Una vez realizado esto, ya sí podrá acceder al formulario web desde su navegador local en el enlace indicado anteriormente.
 
-> 🔹 **Ventaja:** permite ejecutar GenoScribe en sistemas sin Docker, manteniendo la reproducibilidad y sin requerir permisos de root.
-> 🔹 **Recomendación:** use esta opción en clústeres, servidores multiusuario o infraestructuras con control estricto de software.
+> [!NOTE]
+> Permite ejecutar GenoScribe en sistemas sin Docker, manteniendo la reproducibilidad y sin requerir permisos de root.
+
+> [!TIP]
+> Use esta opción en clústeres, servidores multiusuario o infraestructuras con control estricto de software.
 
 
 
@@ -841,7 +860,8 @@ cd GenoScribe/04-launch/01-local/
 Durante la ejecución, el script mostrará en la terminal las distintas opciones disponibles y solicitará la introducción de los valores correspondientes.
 Una vez completado el formulario, el sistema iniciará automáticamente el pipeline o flujo de trabajo especificado.
 
-> 🔹 **Nota:** asegúrese de tener instaladas las dependencias necesarias de R y bash indicadas en la sección de instalación, así como permisos de ejecución para el script (`chmod +x` si fuera necesario).
+> [!IMPORTANT]
+> Asegúrese de tener instaladas las dependencias necesarias de R y bash indicadas en la sección de instalación, así como permisos de ejecución para el script (`chmod +x` si fuera necesario).
 
 
 <br>
@@ -874,8 +894,11 @@ El script realiza automáticamente las siguientes tareas:
 
 Durante la ejecución, los resultados generados se guardarán automáticamente en los directorios montados desde el sistema local, garantizando la persistencia de los datos.
 
-> 🔹 **Ventaja:** no requiere tener instaladas dependencias locales, y se ejecuta en un entorno controlado y reproducible.
-> 🔹 **Nota:** asegúrese de que el servicio Docker esté activo antes de ejecutar el script.
+> [!NOTE]
+> No requiere tener instaladas dependencias locales, y se ejecuta en un entorno controlado y reproducible.
+
+> [!IMPORTANT]
+> Asegúrese de que el servicio Docker esté activo antes de ejecutar el script.
 
 
 <br>
@@ -909,8 +932,11 @@ El script ejecuta internamente el siguiente flujo:
 En el caso de ejecutarse en un **clúster remoto**, el usuario puede conectarse mediante SSH y lanzar la aplicación directamente en el nodo de cómputo.
 No se requiere túnel ni entorno gráfico, ya que toda la interacción ocurre por línea de comandos.
 
-> 🔹 **Ventaja:** ejecución 100 % reproducible y segura en entornos sin Docker ni permisos de root.
-> 🔹 **Recomendación:** utilice esta opción para automatizar procesos o integrarla en flujos de análisis programados.
+> [!NOTE]
+> Ejecución 100 % reproducible y segura en entornos sin Docker ni permisos de root.
+
+> [!TIP]
+> Utilice esta opción para automatizar procesos o integrarla en flujos de análisis programados.
 
 
 
@@ -950,7 +976,8 @@ cd GenoScribe/04-launch/01-local/
 
 El script verificará silenciosamente que todas las rutas existan y que no falte ningún argumento obligatorio antes de arrancar el pipeline subyacente de Nextflow.
 
-> 🔹 **Ventaja:** Automatización total sin esperas en la terminal.
+> [!NOTE]
+> **Ventaja:** Automatización total sin esperas en la terminal.
 
 
 <br>
@@ -972,7 +999,8 @@ El script realiza automáticamente las siguientes tareas:
 2.  Parsea los argumentos y levanta el contenedor montando los volúmenes correspondientes.
 3.  Ejecuta el pipeline en segundo plano y almacena los resultados en el directorio de su proyecto.
 
-> 🔹 **Ventaja:** Trazabilidad, aislamiento absoluto y nula intervención del usuario.
+> [!NOTE]
+> **Ventaja:** Trazabilidad, aislamiento absoluto y nula intervención del usuario.
 
 
 <br>
@@ -1020,9 +1048,14 @@ sbatch job_genoscribe.sh
 
 El gestor de colas se encargará de asignarle los recursos, ejecutar GenoScribe de forma transparente en el nodo correspondiente, y **enviarle un correo electrónico** cuando su informe esté terminado y listo para ser consultado en su carpeta de proyecto.
 
-> 🔹 **Ventaja:** Permite lanzar y encolar múltiples informes de forma simultánea, gestionando eficientemente los recursos del clúster sin bloquear el terminal del usuario.
-> 🔹 **Recomendación:** Guarde plantillas de sus scripts `sbatch` para futuros proyectos, cambiando únicamente la línea de ejecución de parámetros.
-> 💡 **Tip avanzado:** Si en algún momento no recuerda qué número correspondía a cada opción, puede ejecutar cualquiera de los scripts directos añadiendo la bandera `--help` (ej. `./run_app_shell_direct.sh --help`) para imprimir por pantalla el glosario completo de opciones y advertencias de sintaxis.
+> [!NOTE]
+> Permite lanzar y encolar múltiples informes de forma simultánea, gestionando eficientemente los recursos del clúster sin bloquear el terminal del usuario.
+
+> [!TIP]
+> Guarde plantillas de sus scripts `sbatch` para futuros proyectos, cambiando únicamente la línea de ejecución de parámetros.
+
+> [!TIP]
+> Si en algún momento no recuerda qué número correspondía a cada opción, puede ejecutar cualquiera de los scripts directos añadiendo la bandera `--help` (ej. `./run_app_shell_direct.sh --help`) para imprimir por pantalla el glosario completo de opciones y advertencias de sintaxis.
 
 
 
@@ -1046,7 +1079,8 @@ Estos scripts están diseñados para facilitar tareas comunes de mantenimiento, 
 * **`docker_cleanup.sh`** **&rArr;** sirve para parar y eliminar contenedores Docker antiguos o no utilizados si se desea, al igual que imágenes huérfanas con el fin de liberar espacio en disco.
 * **`apptainer_cleanup.sh`** **&rArr;** opción de eliminar imágenes Apptainer `.sif` antiguas o no utilizadas para mantener el entorno limpio.
 
-> 💡 Mantener el entorno limpio y con control total sobre pipelines y outputs garantiza reproducibilidad y facilita la gestión de proyectos bioinformáticos complejos.
+> [!TIP]
+> Mantener el entorno limpio y con control total sobre pipelines y outputs garantiza reproducibilidad y facilita la gestión de proyectos bioinformáticos complejos.
 
 
 
@@ -1085,7 +1119,8 @@ A continuación, se detalla el índice de manuales específicos divididos por ca
 🔬 **3. Metatranscriptómica**
   * [🧪 **3.1. Shotgun Metatranscriptomics**](06-info/0301_METATRANSCRIPTOMICS_SHOTGUN_GUIDE.md) **&rArr;** Guía para el análisis de la expresión génica activa en ecosistemas microbianos, integrando "quién está ahí" con "qué rutas metabólicas están activas".
 
-> 💡 **Nota:** Esta estructura jerárquica permite al usuario **consultar rápidamente la guía adecuada** según su disciplina experimental, comprender el flujo completo y profundizar en los detalles técnicos sin perder la visión global de la suite. Cada manual está pensado para acompañar al investigador desde la **configuración inicial** hasta la **exploration del reporte interactivo**, asegurando reproducibilidad absoluta en todos los análisis.
+> [!NOTE]
+> Esta estructura jerárquica permite al usuario **consultar rápidamente la guía adecuada** según su disciplina experimental, comprender el flujo completo y profundizar en los detalles técnicos sin perder la visión global de la suite. Cada manual está pensado para acompañar al investigador desde la **configuración inicial** hasta la **exploration del reporte interactivo**, asegurando reproducibilidad absoluta en todos los análisis.
 
 
 
@@ -1184,7 +1219,8 @@ Para facilitar una evaluación inmediata del sistema, cada disciplina cuenta con
 
 <br>
 
-> 💡 **Nota:** Estos repositorios son la forma más rápida de evaluar la **interactividad, claridad visual y trazabilidad** de los reportes generados por **GenoScribe**. Permiten comprender el flujo de trabajo real y los resultados finales sin necesidad de realizar ninguna instalación o configuración local.
+> [!NOTE]
+> Estos repositorios son la forma más rápida de evaluar la **interactividad, claridad visual y trazabilidad** de los reportes generados por **GenoScribe**. Permiten comprender el flujo de trabajo real y los resultados finales sin necesidad de realizar ninguna instalación o configuración local.
 
 
 
