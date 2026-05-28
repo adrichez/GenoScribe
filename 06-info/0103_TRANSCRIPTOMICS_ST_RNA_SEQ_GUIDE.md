@@ -1335,7 +1335,8 @@ Esta es la forma estándar de trabajo en **HPC y supercomputación**. En un ento
 
 Al poder pasarle todos los parámetros a Apptainer en una sola línea, GenoScribe se convierte en un comando más dentro de un archivo de trabajo (`.sh`).
 
-**⚠️ Importante:** Para que el sistema resuelva correctamente las rutas internas relativas del repositorio, es **estrictamente necesario** que el script de SLURM haga un `cd` al directorio donde se encuentra el script `run_app_shell_direct.sh` antes de invocarlo.
+> [!IMPORTANT]
+> Para que el sistema resuelva correctamente las rutas internas relativas del repositorio, es **estrictamente necesario** que el script de SLURM haga un `cd` al directorio donde se encuentra el script `run_app_shell_direct.sh` antes de invocarlo.
 
 A continuación se muestra un ejemplo de archivo **`job_genoscribe.sh`** listo para enviar a la cola:
 
@@ -1518,10 +1519,10 @@ O bien, accediendo primeramente al **directorio donde se encuentra el script** p
 <br>
 
 > [!TIP]
-> **Recomendación:** ejecutar `run_cleaning.sh` antes de un nuevo análisis garantiza un entorno libre de residuos y evita errores inesperados.
+> Ejecutar `run_cleaning.sh` antes de un nuevo análisis garantiza un entorno libre de residuos y evita errores inesperados.
 
 > [!CAUTION]
-> **Precaución:** este script elimina ficheros de forma irreversible, por lo que se recomienda revisar su contenido antes de ejecutarlo en proyectos con datos importantes.
+> Este script elimina ficheros de forma irreversible, por lo que se recomienda revisar su contenido antes de ejecutarlo en proyectos con datos importantes.
 
 
 
@@ -1628,10 +1629,10 @@ cd GenoScribe/04-launch/03-apptainer/
 <br>
 
 > [!TIP]
-> **Recomendación:** ejecutar estos scripts cuando se quiera liberar espacio y no se vaya a ejecutar GenoScribe en un periodo cercano.
+> Ejecutar estos scripts cuando se quiera liberar espacio y no se vaya a ejecutar GenoScribe en un periodo cercano.
 
 > [!CAUTION]
-> **Precaución:** estos scripts eliminan imágenes y contenedores de forma irreversible, por lo que se recomienda estar seguro de que ya no se necesitan antes de ejecutarlos. Una vez eliminados, el proceso de reconstrucción o descarga puede llevar tiempo y ser costoso en recursos.
+> Estos scripts eliminan imágenes y contenedores de forma irreversible, por lo que se recomienda estar seguro de que ya no se necesitan antes de ejecutarlos. Una vez eliminados, el proceso de reconstrucción o descarga puede llevar tiempo y ser costoso en recursos.
 
 
 
@@ -2413,7 +2414,7 @@ Este quinto módulo resulta fundamental para la traducción biológica del exper
 > Al igual que en módulos anteriores, la ausencia de archivos en un directorio no interrumpirá la ejecución del informe; el sistema lo detectará automáticamente y desplegará un mensaje informativo indicando que la carpeta está vacía.
 
 > [!TIP]
-> **Sobre los archivos (Recomendado, no crítico):**
+> **Sobre los archivos (recomendado, no crítico):**
 > A diferencia de versiones previas, no utilizar los sufijos específicos (`_mergeSeurat.filter.pdf`, `_vs_allother.tsv`, `_manual.pdf` o `_manual_big_etapa.pdf`) **no generará un error crítico**. El sistema es flexible y logrará procesar y renderizar los mapas (*iframes*) y las tablas. No obstante, **se recomienda encarecidamente** seguir la nomenclatura, ya que permite a los scripts de Quarto extraer la información y formatear los títulos del informe de forma óptima y limpia. Si se omiten los sufijos, los archivos se representarán igual o, en el peor de los casos, quedarán a disposición del usuario en los listados interactivos de exploración, pero su título visible podría no ser tan estético.
 
 > [!IMPORTANT]
