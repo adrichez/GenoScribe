@@ -227,7 +227,8 @@ Uno de los principales retos de los análisis espaciales es que los resultados s
 - Permite **reproducibilidad**: cualquier investigador puede volver a ejecutar el análisis con los mismos parámetros y obtener el mismo informe.  
 - Hace que la **bioinformática espacial sea más accesible**, transformando datos complejos en **conocimiento visual y compartible**.  
 
-> 💡 **En resumen:** GenoScribe no solo ejecuta análisis, sino que **traduce la complejidad espacial en información útil y comunicable**.
+> [!NOTE]
+> **En resumen:** GenoScribe no solo ejecuta análisis, sino que **traduce la complejidad espacial en información útil y comunicable**.
 
 
 
@@ -500,7 +501,8 @@ Antes de utilizar el sistema y ejecutar el pipeline de **Transcriptómica Espaci
   * **CPU**: ≥ 4 núcleos.
   * **Almacenamiento**: ≥ 30 GB libres (la imagen del contenedor pesa unos 16 GB para la versión en docker y unos 4 GB para el archivo `.sif` de Apptainer).
 
-> 💡 Con estos requisitos cumplidos, la instalación y ejecución del sistema es directa y garantiza que todos los elementos interactivos de los informes funcionen de manera correcta y reproducible.
+> [!NOTE]
+> Con estos requisitos cumplidos, la instalación y ejecución del sistema es directa y garantiza que todos los elementos interactivos de los informes funcionen de manera correcta y reproducible.
 
 
 
@@ -547,7 +549,8 @@ El siguiente **diagrama de flujo esquemático** representa las rutas disponibles
   * Contenedores disponibles en **Docker** o **Apptainer** (este último más común en HPC y recomendado).
   * Interacción mediante **terminal (CLI, Shell)** o **interfaz gráfica (GUI, Shiny)**.
 
-> 💡 **Consejo:** Ejecutar siempre dentro de un **contenedor** garantiza **reproducibilidad**, aislamiento de dependencias y facilita la gestión. La ejecución directa (sin contenedor) se recomienda solo para pruebas o debugging.
+> [!TIP]
+> **Consejo:** Ejecutar siempre dentro de un **contenedor** garantiza **reproducibilidad**, aislamiento de dependencias y facilita la gestión. La ejecución directa (sin contenedor) se recomienda solo para pruebas o debugging.
 > En HPC/Cloud pueden requerirse pasos adicionales, como cargar **módulos del sistema** o configurar variables de entorno, para asegurar que todas las dependencias estén disponibles.
 
 Una vez que el usuario ha definido el entorno de ejecución de **GenoScribe** (local o clúster) y ha decidido si emplear o no la tecnología de contenedores, el siguiente paso es proporcionar los **parámetros de configuración** que orquestarán el análisis. Esta interacción puede llevarse a cabo a través de dos interfaces distintas:
@@ -676,7 +679,8 @@ El siguiente **GIF** ofrece una visión dinámica del flujo principal: inicio de
   <img src="assets/02-analyses/01-transcriptomics/01-bulk-rna-seq/transcriptomics_bulk_rna_seq_demo_process.gif" alt="Demostración flujo de trabajo GenoScribe" width="65%" style="border-radius: 10px;">
 </p>
 
-> 💡 **Nota:** Este GIF es una **guía visual rápida** y no muestra todos los pasos intermedios ni outputs secundarios. Para información completa, incluyendo **entradas, salidas y parámetros específicos**, continuar leyendo más adelante, donde se profundizará con más detalle en estos aspectos.
+> [!NOTE]
+> **Nota:** Este GIF es una **guía visual rápida** y no muestra todos los pasos intermedios ni outputs secundarios. Para información completa, incluyendo **entradas, salidas y parámetros específicos**, continuar leyendo más adelante, donde se profundizará con más detalle en estos aspectos.
 
 
 
@@ -731,7 +735,8 @@ git lfs pull
 
 Estos archivos se encuentran almacenados con **Git LFS (Large File Storage)** debido a su tamaño, por lo que es necesario tener instalado Git LFS previamente. Para más información sobre su instalación, consulte [https://git-lfs.github.com/](https://git-lfs.github.com/).
 
-> 💡 Ventaja: facilita actualizaciones y control de versiones, ideal para usuarios que planean ejecutar el sistema regularmente o integrar nuevas funcionalidades.
+> [!NOTE]
+> **Ventaja:** facilita actualizaciones y control de versiones, ideal para usuarios que planean ejecutar el sistema regularmente o integrar nuevas funcionalidades.
 
 
 
@@ -745,7 +750,8 @@ Para un uso puntual o en sistemas sin Git, se puede descargar el ZIP directament
 2. Pulse **Code &rArr; Download ZIP**.
 3. Descomprime y accede a la carpeta desde la terminal.
 
-> 💡 Nota: esta opción es más limitada para actualizaciones, pero útil para pruebas rápidas o entornos donde Git no está disponible. Además hay que tener en cuenta que mediante esta opción no se obtendrán los archivos grandes almacenados con Git LFS.
+> [!NOTE]
+> Esta opción es más limitada para actualizaciones, pero útil para pruebas rápidas o entornos donde Git no está disponible. Además hay que tener en cuenta que mediante esta opción no se obtendrán los archivos grandes almacenados con Git LFS.
 
 
 
@@ -773,7 +779,8 @@ Si se ejecuta GenoScribe dentro de un contenedor, **todas las dependencias ya es
 * MultiQC para resumen de calidad de secuencias.
 * Miniconda/Mamba y entornos específicos para análisis (por ejemplo, `genoscribe` environment).
 
-> ✅ **Ventaja:** el contenedor garantiza un entorno reproducible y controlado, sin conflictos de dependencias. Esta es la opción **recomendada** para la ejecución de pipelines, tanto en local como en HPC o nube.
+> [!NOTE]
+> **Ventaja:** el contenedor garantiza un entorno reproducible y controlado, sin conflictos de dependencias. Esta es la opción **recomendada** para la ejecución de pipelines, tanto en local como en HPC o nube.
 
 
 
@@ -790,7 +797,8 @@ Ejecutar GenoScribe directamente en el sistema local requiere instalar manualmen
 * **Conda / Mamba** **&rArr;** para gestión de entornos y creación de entornos específicos (por ejemplo, `env_genoscribe.yml`).
 * **Paquetes del sistema** **&rArr;** herramientas de compilación (`libssl-dev`, `libcurl4-openssl-dev`, `libxml2-dev`, `pkg-config`), Java (`openjdk-17-jre-headless`), utilidades (`curl`, `git`, `unzip`, `nano`, `less`).
 
-> ⚠️ **Nota:** esta opción es más propensa a errores de instalación y conflictos de dependencias, y se recomienda principalmente **para depuración, desarrollo o pruebas rápidas**. Para análisis reproducibles y robustos, el uso de contenedores es siempre preferible.
+> [!NOTE]
+> Esta opción es más propensa a errores de instalación y conflictos de dependencias, y se recomienda principalmente **para depuración, desarrollo o pruebas rápidas**. Para análisis reproducibles y robustos, el uso de contenedores es siempre preferible.
 
 
 
@@ -801,7 +809,8 @@ Ejecutar GenoScribe directamente en el sistema local requiere instalar manualmen
 1. **Contenedor** **&rArr;** opción recomendada, ideal para producción, local/HPC/nube o ejecución repetida: reproducible, seguro y listo para usar.
 2. **Local sin contenedor** **&rArr;** solo para pruebas, desarrollo o depuración: requiere instalación manual de todas las dependencias y configuración cuidadosa del entorno.
 
-> 💡 **Consejo práctico:** aunque se ofrece la opción de ejecución local sin contenedor, **la instalación y mantenimiento de dependencias puede ser compleja**. Construir y ejecutar el contenedor simplifica enormemente este proceso y asegura resultados consistentes.
+> [!TIP]
+> **Consejo práctico:** aunque se ofrece la opción de ejecución local sin contenedor, **la instalación y mantenimiento de dependencias puede ser compleja**. Construir y ejecutar el contenedor simplifica enormemente este proceso y asegura resultados consistentes.
 
 
 
@@ -858,7 +867,8 @@ Esto descargará la imagen directamente a su sistema Docker, lista para usarse.
 
 Y así, una vez que se dispone de la imagen Docker, se puede proceder a ejecutar los scripts de lanzamiento que se describen en la siguiente sección.
 
-> 🔹 Nota: Siempre es recomendable descargar la imagen preconstruida para evitar tiempos de construcción largos y asegurar que se cuenta con la versión más reciente y estable.
+> [!NOTE]
+> Siempre es recomendable descargar la imagen preconstruida para evitar tiempos de construcción largos y asegurar que se cuenta con la versión más reciente y estable.
 
 
 
@@ -909,7 +919,8 @@ Donde:
 * `docker-daemon://` **&rArr;** indica que Apptainer tomará la imagen directamente desde el daemon de Docker local.
 * `genoscribe-lab.sif` **&rArr;** será el contenedor Apptainer resultante, listo para ejecutarse en entornos HPC.
 
-> 🔹 Nota: Esta opción requiere Docker instalado y en ejecución, pero garantiza que la imagen Apptainer sea idéntica a la Docker.
+> [!IMPORTANT]
+> Esta opción requiere Docker instalado y en ejecución, pero garantiza que la imagen Apptainer sea idéntica a la Docker.
 
 
 <br>
@@ -927,7 +938,8 @@ apptainer pull genoscribe-lab.sif docker://adrichez/genoscribe:latest
 * Apptainer descargará la imagen desde Docker Hub y la convertirá automáticamente en `.sif`.
 * Esta es la opción **recomendada** por su simplicidad y reproducibilidad.
 
-> 🔹 Nota: Se necesita conexión a Internet y permisos de escritura en el directorio donde se generará `genoscribe-lab.sif`.
+> [!WARNING]
+> Se necesita conexión a Internet y permisos de escritura en el directorio donde se generará `genoscribe-lab.sif`.
 
 
 <br>
@@ -959,7 +971,8 @@ Así, algunas de las ventajas de esta opción son:
 * Ideal para usuarios que solo quieren ejecutar GenoScribe sin preocuparse por la creación de imágenes.
 * Recomendable verificar la fuente y la integridad de la imagen antes de usarla en producción.
 
-> 🔹 Nota: Este método es especialmente útil en entornos HPC donde no se permite construir imágenes localmente o se carece de permisos de administrador.
+> [!NOTE]
+> Este método es especialmente útil en entornos HPC donde no se permite construir imágenes localmente o se carece de permisos de administrador.
 
 
 
@@ -969,7 +982,8 @@ Así, algunas de las ventajas de esta opción son:
 
 El flujo completo, desde la **construcción de la imagen hasta la generación del informe con la interfaz gráfica de Shiny**, se puede visualizar en el **GIF de ejemplo** mostrado en el apartado anterior de **<a href="#section-3.3">Demostración visual</a>**. En ese caso específico, dicha imagen se construyó de manera local a partir del Dockerfile, pero como ya hemos mencionado antiormente, existen distintas formas de obtener la imagen del contenedor (tanto Docker como Apptainer).
 
-> 📌 Ilustra todo el proceso de preparación del entorno, permitiendo comprender de manera visual la secuencia de pasos recomendada.
+> [!NOTE]
+> Ilustra todo el proceso de preparación del entorno, permitiendo comprender de manera visual la secuencia de pasos recomendada.
 
 
 
@@ -1032,7 +1046,8 @@ cd GenoScribe/04-launch/01-local/
 
 Este script iniciará el servidor Shiny en el puerto configurado (por defecto `localhost:3838`) y abriendo automáticamente dicho formulario en el navegador web predeterminado con la finalidad de proporcionar los parámetros necesarios para generar los informes. Además, si por cualquier caso no se abre automáticamente, se puede acceder manualmente a través de la URL: 👉 **[http://localhost:3838/app](http://localhost:3838/app)**.
 
-> 🔹 **Nota:** asegúrese de tener instaladas todas las dependencias de R indicadas en la sección de instalación, así como permisos de ejecución para el script (`chmod +x` si fuera necesario).
+> [!IMPORTANT]
+> Asegúrese de tener instaladas todas las dependencias de R indicadas en la sección de instalación, así como permisos de ejecución para el script (`chmod +x` si fuera necesario).
 
 
 
@@ -1065,8 +1080,11 @@ El script realiza automáticamente los siguientes pasos:
 
 De igual modo que anteriormente, este script abrirá automáticamente la aplicación Shiny en el navegador predeterminado. Si no lo hace, puede acceder manualmente a través de: 👉 **[http://localhost:3838/app](http://localhost:3838/app)**.
 
-> 🔹 **Ventaja:** no se requiere disponer de dependencias locales, ya que todo se ejecuta dentro del contenedor.
-> 🔹 **Nota:** asegúrese de que el servicio Docker esté activo antes de ejecutar el script.
+> [!NOTE]
+> **Ventaja:** no se requiere disponer de dependencias locales, ya que todo se ejecuta dentro del contenedor.
+
+> [!IMPORTANT]
+> Asegúrese de que el servicio Docker esté activo antes de ejecutar el script.
 
 
 
@@ -1108,8 +1126,11 @@ ssh -L 3838:localhost:3838 -J user@halowan.ipb.csic.es user@nodo0X
 
 Donde `user` es su nombre de usuario en el cluster y `nodo0X` es el nodo donde se está ejecutando la aplicación. Una vez realizado esto, ya sí podrá acceder al formulario web desde su navegador local en el enlace indicado anteriormente.
 
-> 🔹 **Ventaja:** permite ejecutar GenoScribe en sistemas sin Docker, manteniendo la reproducibilidad y sin requerir permisos de root.
-> 🔹 **Recomendación:** use esta opción en clústeres, servidores multiusuario o infraestructuras con control estricto de software.
+> [!IMPORTANT]
+> **Ventaja:** permite ejecutar GenoScribe en sistemas sin Docker, manteniendo la reproducibilidad y sin requerir permisos de root.
+
+> [!TIP]
+> **Recomendación:** use esta opción en clústeres, servidores multiusuario o infraestructuras con control estricto de software.
 
 
 
@@ -1155,7 +1176,8 @@ cd GenoScribe/04-launch/01-local/
 Durante la ejecución, el script mostrará en la terminal las distintas opciones disponibles y solicitará la introducción de los valores correspondientes.
 Una vez completado el formulario, el sistema iniciará automáticamente el pipeline o flujo de trabajo especificado.
 
-> 🔹 **Nota:** asegúrese de tener instaladas las dependencias necesarias de R y bash indicadas en la sección de instalación, así como permisos de ejecución para el script (`chmod +x` si fuera necesario).
+> [!IMPORTANT]
+> Aegúrese de tener instaladas las dependencias necesarias de R y bash indicadas en la sección de instalación, así como permisos de ejecución para el script (`chmod +x` si fuera necesario).
 
 
 
@@ -1189,8 +1211,11 @@ El script realiza automáticamente las siguientes tareas:
 
 Durante la ejecución, los resultados generados se guardarán automáticamente en los directorios montados desde el sistema local, garantizando la persistencia de los datos.
 
-> 🔹 **Ventaja:** no requiere tener instaladas dependencias locales, y se ejecuta en un entorno controlado y reproducible.
-> 🔹 **Nota:** asegúrese de que el servicio Docker esté activo antes de ejecutar el script.
+> [!NOTE]
+> **Ventaja:** no requiere tener instaladas dependencias locales, y se ejecuta en un entorno controlado y reproducible.
+
+> [!IMPORTANT]
+> Asegúrese de que el servicio Docker esté activo antes de ejecutar el script.
 
 
 
@@ -1225,8 +1250,11 @@ El script ejecuta internamente el siguiente flujo:
 En el caso de ejecutarse en un **clúster remoto**, el usuario puede conectarse mediante SSH y lanzar la aplicación directamente en el nodo de cómputo.
 No se requiere túnel ni entorno gráfico, ya que toda la interacción ocurre por línea de comandos.
 
-> 🔹 **Ventaja:** ejecución 100 % reproducible y segura en entornos sin Docker ni permisos de root.
-> 🔹 **Recomendación:** utilice esta opción para automatizar procesos o integrarla en flujos de análisis programados.
+> [!NOTE]
+> **Ventaja:** ejecución 100 % reproducible y segura en entornos sin Docker ni permisos de root.
+
+> [!TIP]
+> **Recomendación:** utilice esta opción para automatizar procesos o integrarla en flujos de análisis programados.
 
 
 
@@ -1270,7 +1298,8 @@ cd GenoScribe/04-launch/01-local/
 
 El script verificará silenciosamente que todas las rutas existan y que no falte ningún argumento obligatorio antes de arrancar el pipeline subyacente de Nextflow.
 
-> 🔹 **Ventaja:** Automatización total sin esperas en la terminal.
+> [!NOTE]
+> **Ventaja:** Automatización total sin esperas en la terminal.
 
 
 
@@ -1293,7 +1322,8 @@ El script realiza automáticamente las siguientes tareas:
 2.  Parsea los argumentos y levanta el contenedor montando los volúmenes correspondientes.
 3.  Ejecuta el pipeline en segundo plano y almacena los resultados en el directorio de su proyecto.
 
-> 🔹 **Ventaja:** Trazabilidad, aislamiento absoluto y nula intervención del usuario.
+> [!NOTE]
+> **Ventaja:** Trazabilidad, aislamiento absoluto y nula intervención del usuario.
 
 
 
@@ -1342,9 +1372,14 @@ sbatch job_genoscribe.sh
 
 El gestor de colas se encargará de asignarle los recursos, ejecutar GenoScribe de forma transparente en el nodo correspondiente, y **enviarle un correo electrónico** cuando su informe esté terminado y listo para ser consultado en su carpeta de proyecto.
 
-> 🔹 **Ventaja:** Permite lanzar y encolar múltiples informes de forma simultánea, gestionando eficientemente los recursos del clúster sin bloquear el terminal del usuario.
-> 🔹 **Recomendación:** Guarde plantillas de sus scripts `sbatch` para futuros proyectos, cambiando únicamente la línea de ejecución de parámetros.
-> 💡 **Tip avanzado:** Si en algún momento no recuerda qué número correspondía a cada opción, puede ejecutar cualquiera de los scripts directos añadiendo la bandera `--help` (ej. `./run_app_shell_direct.sh --help`) para imprimir por pantalla el glosario completo de opciones y advertencias de sintaxis.
+> [!NOTE]
+> **Ventaja:** Permite lanzar y encolar múltiples informes de forma simultánea, gestionando eficientemente los recursos del clúster sin bloquear el terminal del usuario.
+
+> [!TIP]
+> **Recomendación:** Guarde plantillas de sus scripts `sbatch` para futuros proyectos, cambiando únicamente la línea de ejecución de parámetros.
+
+> [!TIP]
+> **Tip avanzado:** Si en algún momento no recuerda qué número correspondía a cada opción, puede ejecutar cualquiera de los scripts directos añadiendo la bandera `--help` (ej. `./run_app_shell_direct.sh --help`) para imprimir por pantalla el glosario completo de opciones y advertencias de sintaxis.
 
 
 
@@ -1368,7 +1403,8 @@ Estos scripts están diseñados para facilitar tareas comunes de mantenimiento, 
 * **`docker_cleanup.sh`** **&rArr;** sirve para parar y eliminar contenedores Docker antiguos o no utilizados si se desea, al igual que imágenes huérfanas con el fin de liberar espacio en disco.
 * **`apptainer_cleanup.sh`** **&rArr;** opción de eliminar imágenes Apptainer `.sif` antiguas o no utilizadas para mantener el entorno limpio.
 
-> 💡 Mantener el entorno limpio y con control total sobre pipelines y outputs garantiza reproducibilidad y facilita la gestión de proyectos bioinformáticos complejos.
+> [!TIP]
+> Mantener el entorno limpio y con control total sobre pipelines y outputs garantiza reproducibilidad y facilita la gestión de proyectos bioinformáticos complejos.
 
 A continuación, más en detalle, se describen en detalle los scripts de limpieza y depuración, explicando su funcionalidad, estructura y modo de uso.
 
@@ -1481,8 +1517,11 @@ O bien, accediendo primeramente al **directorio donde se encuentra el script** p
 
 <br>
 
-> 💡 **Recomendación:** ejecutar `run_cleaning.sh` antes de un nuevo análisis garantiza un entorno libre de residuos y evita errores inesperados.
-> ⚠️ **Precaución:** este script elimina ficheros de forma irreversible, por lo que se recomienda revisar su contenido antes de ejecutarlo en proyectos con datos importantes.
+> [!TIP]
+> **Recomendación:** ejecutar `run_cleaning.sh` antes de un nuevo análisis garantiza un entorno libre de residuos y evita errores inesperados.
+
+> [!CAUTION]
+> **Precaución:** este script elimina ficheros de forma irreversible, por lo que se recomienda revisar su contenido antes de ejecutarlo en proyectos con datos importantes.
 
 
 
@@ -1534,7 +1573,8 @@ cd GenoScribe/04-launch/03-apptainer/
 
 <br>
 
-> 💡 Nota: Para depuración avanzada, `access_container.sh` ofrece control directo sobre el contenedor sin modificar los pipelines principales.
+> [!NOTE]
+> Para depuración avanzada, `access_container.sh` ofrece control directo sobre el contenedor sin modificar los pipelines principales.
 
 
 
@@ -1587,8 +1627,11 @@ cd GenoScribe/04-launch/03-apptainer/
 
 <br>
 
-> 💡 **Recomendación:** ejecutar estos scripts cuando se quiera liberar espacio y no se vaya a ejecutar GenoScribe en un periodo cercano.
-> ⚠️ **Precaución:** estos scripts eliminan imágenes y contenedores de forma irreversible, por lo que se recomienda estar seguro de que ya no se necesitan antes de ejecutarlos. Una vez eliminados, el proceso de reconstrucción o descarga puede llevar tiempo y ser costoso en recursos.
+> [!TIP]
+> **Recomendación:** ejecutar estos scripts cuando se quiera liberar espacio y no se vaya a ejecutar GenoScribe en un periodo cercano.
+
+> [!CAUTION]
+> **Precaución:** estos scripts eliminan imágenes y contenedores de forma irreversible, por lo que se recomienda estar seguro de que ya no se necesitan antes de ejecutarlos. Una vez eliminados, el proceso de reconstrucción o descarga puede llevar tiempo y ser costoso en recursos.
 
 
 
@@ -1601,7 +1644,8 @@ cd GenoScribe/04-launch/03-apptainer/
 
 Para visualizar el **proceso completo de ejecución**, desde la construcción de la imagen del contenedor hasta la obtención del informe final, se puede consultar, al igual que en apartado anterior, el **GIF de ejemplo** en la sección **<a href="#section-3.3">3.3. Demostración visual</a>**.
 
-> 📌 **Nota:** este GIF sirve como guía visual para entender el flujo recomendado, aunque los comandos pueden ejecutarse directamente en terminal para usuarios avanzados.
+> [!NOTE]
+> Este GIF sirve como guía visual para entender el flujo recomendado, aunque los comandos pueden ejecutarse directamente en terminal para usuarios avanzados.
 
 
 
@@ -1784,7 +1828,8 @@ Así, una vez realizado todo el análisis bioinformático correspondiente para *
 
 <br>
 
-> ⚠️ **Reglas críticas para la correcta integración:**
+> [!IMPORTANT]
+> **Reglas críticas para la correcta integración:**
 > 
 > 1. **Estructura inamovible:** GenoScribe asume que si se ha realizado un paso (ej. Análisis funcional GSEA para KEGG), la ruta exacta `.../08_enrichment/.../02_gsea/04_kegg/` existirá. De faltar directorios, la herramienta podría omitir la generación de esas secciones en el informe interactivo.
 > 2. **Control de Versiones (`01_version`, `02_version`):** En fases iterativas (como la agrupación manual de poblaciones o el cálculo de contrastes DEGs `wt_vs_ko_within_cluster`, `wt_between_clusters_pairwise`), las carpetas deben numerarse secuencialmente (`01_version`, `02_version`, etc.). Esto permite a GenoScribe rastrear la evolución del análisis y presentar los datos ordenados cronológicamente.
@@ -2138,7 +2183,8 @@ Almacena los resultados biológicos del filtrado celular generado por Seurat (ev
   * 📄 **`Pre_Quality_mergeSeurat.pdf` &rArr;** Gráficos de violín y dispersión antes de aplicar los filtros.
   * 📄 **`Post_Quality_mergeSeurat.pdf` &rArr;** Resultado gráfico tras la limpieza de la matriz.
 
-> ⚠️ **Nota:** Modificar estos nombres provocará un error al presentar estos archivos en el informe final.
+> [!NOTE]
+> Modificar estos nombres provocará un error al presentar estos archivos en el informe final.
 
 
 
@@ -2160,7 +2206,8 @@ Este segundo bloque de la carpeta `analysis` está destinado a almacenar las pro
   * 📄 **`ElbowPlot.pdf` / `DimHeatmap.pdf` / `FeatureScatter.pdf` &rArr;** Estos son los tres gráficos estándar que se recomienda incluir para visualizar la varianza de los componentes (son los que se describen por defecto en el propio informe). Sin embargo, **el nombre exacto no es restrictivo**; la herramienta los leerá independientemente de cómo se llamen y siempre que mantengan la extensión `.pdf`, los presentará de forma interactiva mediante un *iframe*.
   * 📄 **Otros formatos &rArr;** Si se introducen archivos con extensiones distintas (como `.png`, `.txt` o `.csv`), GenoScribe no los renderizará visualmente en los *iframes*, sino que únicamente los añadirá como una lista estática en el menú interactivo para su consulta o descarga.
 
-  > ⚠️ **Nota:** Este directorio puede dejarse completamente vacío sin que el pipeline global devuelva ningún error, aunque su inclusión es altamente recomendada para la correcta evaluación técnica del *clustering*.
+> [!NOTE]
+> Este directorio puede dejarse completamente vacío sin que el pipeline global devuelva ningún error, aunque su inclusión es altamente recomendada para la correcta evaluación técnica del *clustering*.
 
 
 
@@ -2199,7 +2246,8 @@ La jerarquía interna se ha diseñado dividiendo el análisis en dos enfoques pr
   * 📄 **Representación visual (`.pdf`) &rArr;** GenoScribe iterará sobre cualquier archivo `.pdf` que se encuentre en estas carpetas y lo incrustará automáticamente de forma interactiva en *iframes* dentro del informe.
   * 📄 **Otros formatos (`.csv`, `.txt`) &rArr;** Si se incluyen tablas numéricas (como `cluster_differences_by_counts.csv`), el informe no las renderizará visualmente en los *iframes*, pero las listará de forma organizada en el menú interactivo para facilitar su consulta y descarga.
 
-  > ⚠️ **Nota:** Toda esta sección es recomendada, pero no obligatoria (como prácticamente todas). El pipeline no devolverá errores si un directorio completo o una subcarpeta se deja vacía (como ocurre en este ejemplo con el directorio `01_seurat_merged_clusters/02_cluster_proportions/`), simplemente se omitirá su representación en el reporte interactivo.
+> [!NOTE]
+> Toda esta sección es recomendada, pero no obligatoria (como prácticamente todas). El pipeline no devolverá errores si un directorio completo o una subcarpeta se deja vacía (como ocurre en este ejemplo con el directorio `01_seurat_merged_clusters/02_cluster_proportions/`), simplemente se omitirá su representación en el reporte interactivo.
 
 
 
@@ -2285,7 +2333,8 @@ Este cuarto bloque de la carpeta `analysis` está destinado a almacenar los marc
   * 📄 **Gráficos combinados (`.pdf`) &rArr;** Si se incluye un archivo global (todos los gráficos individuales agrupados en un único `.pdf` con el fin de poder explorar y compartir todos estos resultados de forma rápida), debe llamarse obligatoriamente **`markers_all_clusters_combined.pdf`**.
   * 📄 **Tablas globales (`.csv` o `.xlsx`) &rArr;** En algunos casos, como en este ejemplo específico, se pueden incluir archivos adicionales, como resúmenes unificados (**`markers_by_cluster.csv`**, con cualquier otro nombre) para que se listen en el menú interactivo con el resto de archivos. Estos serían archivos adicionales que no se representarían de forma interactiva en *tablas* o *iframes*, ya que solo lo hacen los archivos que cumplen el formato anterior, pero igualmente se podrían incluir para completar el direcorio.
 
-  > ⚠️ **Nota de tolerancia:** Esta pestaña es recomendada, pero el sistema está diseñado para ser flexible con el contenido. El pipeline no fallará si una de las carpetas está vacía, ni tampoco si se incluye el gráfico combinado pero faltan los individuales (o viceversa). **El único escenario donde se romperá la lectura del informe es si los archivos se incluyen pero no respetan el patrón de nomenclatura predefinido**, ya que el código no sabrá cómo emparejarlos.
+> [!NOTE]
+> *Nota de tolerancia:** Esta pestaña es recomendada, pero el sistema está diseñado para ser flexible con el contenido. El pipeline no fallará si una de las carpetas está vacía, ni tampoco si se incluye el gráfico combinado pero faltan los individuales (o viceversa). **El único escenario donde se romperá la lectura del informe es si los archivos se incluyen pero no respetan el patrón de nomenclatura predefinido**, ya que el código no sabrá cómo emparejarlos.
 
 
 
@@ -2359,13 +2408,15 @@ Este quinto módulo resulta fundamental para la traducción biológica del exper
     * 📁 **`01_etapa/` (Resolución Fina) &rArr;** Diseñada para identidades celulares de máxima granularidad. Es recomendable nombrar los archivos como **`Cell_type_{Nombre}_manual_etapa.pdf`** o simplemente **`Cell_type_{Nombre}.pdf`**. Suelen contener *FeaturePlots* o UMAPs que aíslan una subpoblación concreta.
     * 📁 **`02_big_etapa/` (Resolución Agrupada / Compartimentos) &rArr;** Alberga las agrupaciones biológicas macroscópicas (ej. colapsar varios subestadios en un único linaje principal). Para que el sistema los distinga correctamente, el formato sugerido es **`Cell_type_{Nombre}_manual_big_etapa.pdf`** o **`Cell_type_{Nombre}_Big_etapa.pdf`**.
 
-> ⚠️ **Nota sobre la integridad estructural y nomenclatura:**
-> 
+> [!IMPORTANT]
+> **Nota sobre la integridad estructural y nomenclatura:**
 > Al igual que en módulos anteriores, la ausencia de archivos en un directorio no interrumpirá la ejecución del informe; el sistema lo detectará automáticamente y desplegará un mensaje informativo indicando que la carpeta está vacía.
-> 
+
+> [!TIP]
 > **Sobre los archivos (Recomendado, no crítico):**
 > A diferencia de versiones previas, no utilizar los sufijos específicos (`_mergeSeurat.filter.pdf`, `_vs_allother.tsv`, `_manual.pdf` o `_manual_big_etapa.pdf`) **no generará un error crítico**. El sistema es flexible y logrará procesar y renderizar los mapas (*iframes*) y las tablas. No obstante, **se recomienda encarecidamente** seguir la nomenclatura, ya que permite a los scripts de Quarto extraer la información y formatear los títulos del informe de forma óptima y limpia. Si se omiten los sufijos, los archivos se representarán igual o, en el peor de los casos, quedarán a disposición del usuario en los listados interactivos de exploración, pero su título visible podría no ser tan estético.
-> 
+
+> [!IMPORTANT]
 > **Sobre los directorios (Requisito estricto):**
 > Lo que sí constituye un requerimiento estructural inquebrantable es el mantenimiento de la arquitectura de las carpetas. Las rutas base deben existir tal cual se ha documentado. Especialmente crítico es el historial de curación manual: las iteraciones deben crearse **obligatoriamente** siguiendo el patrón de versionado secuencial (`01_version`, `02_version`, `03_version`...). Alterar este patrón (por ejemplo, llamando a la carpeta `version_final` o `mis_anotaciones`) impedirá que el algoritmo ordene y detecte correctamente la última versión consolidada, lo que **sí provocará fallos de renderizado** en la compilación del informe.
 
@@ -2393,7 +2444,8 @@ Este sexto bloque de la carpeta `analysis` documenta la síntesis biológica y e
   * 📄 **Mapas Topológicos Globales (`.pdf`) ➜** Se recomienda incluir proyecciones base como `UMAP_clusters_combinados.pdf`. Estos documentos reflejan la nueva nomenclatura unificada aplicada sobre la topología global del tejido.
   * 📄 **Mapas Segregados por Condición (`.pdf`) ➜** Es fundamental incorporar proyecciones separadas o *split* (ej. `UMAP_clusters_combinados_by_condition.pdf`). Estas representaciones permiten evaluar de forma visual y cualitativa los posibles desplazamientos o cambios en la distribución poblacional entre las diferentes condiciones experimentales (ej. WT frente a KO).
 
-> ⚠️ **Nota sobre la visualización y los formatos:** Al igual que en módulos anteriores, GenoScribe explorará y procesará dinámicamente todo el contenido de estas carpetas. Si una de las versiones está vacía, el sistema lo notificará visualmente sin generar errores ni interrumpir el *pipeline*. Para garantizar la coherencia narrativa del informe, se recomienda encarecidamente incluir los dos PDF mencionados, ya que el texto autogenerado hace alusión directa a ellos. El sistema es flexible: renderizará automáticamente mediante visores interactivos (*iframes*) cualquier archivo adicional que tenga formato `.pdf`, mientras que los archivos con otras extensiones se organizarán en listas interactivas para su descarga directa.
+> [!NOTE]
+> **Nota sobre la visualización y los formatos:** Al igual que en módulos anteriores, GenoScribe explorará y procesará dinámicamente todo el contenido de estas carpetas. Si una de las versiones está vacía, el sistema lo notificará visualmente sin generar errores ni interrumpir el *pipeline*. Para garantizar la coherencia narrativa del informe, se recomienda encarecidamente incluir los dos PDF mencionados, ya que el texto autogenerado hace alusión directa a ellos. El sistema es flexible: renderizará automáticamente mediante visores interactivos (*iframes*) cualquier archivo adicional que tenga formato `.pdf`, mientras que los archivos con otras extensiones se organizarán en listas interactivas para su descarga directa.
 
 
 
@@ -2865,7 +2917,8 @@ Para adaptarse a cualquier diseño experimental, el directorio se divide ahora e
   * 📁 **Nomenclatura requerida:** Las carpetas de cada comparación deben ir enumeradas secuencialmente seguidas del nombre del diseño: **`[número]_[nombre]`** (por ejemplo `[número]_[condicion_A]_vs_[condicion_B]`, como podría ser `01_CtsD_high_vs_CtsD_low` o de forma similar `02_Tratamiento_vs_Control_vs_Placebo`), en definitiva, cualquier combinación posible, lo importante es que esté bien enumerado, y el nombre con guión bajo para que la herramienta pueda leer el nombre de forma adecuada.
   * 💡 **Flexibilidad total:** Dentro de cada una de estas carpetas ad-hoc, se pueden depositar archivos sueltos o crear nuevas subcarpetas. El sistema de GenoScribe leerá dinámicamente el contenido y construirá el explorador interactivo adaptándose a lo que encuentre.
 
-> ⚠️ **Consideraciones sobre visualización y formato de archivos:**
+> [!NOTE]
+> **Consideraciones sobre visualización y formato de archivos:**
 > A diferencia de secciones anteriores, debido al enorme volumen de datos que genera el análisis de expresión diferencial, los archivos de este módulo **no se renderizan mediante visores incrustados (*iframes*) ni tablas de datos interactivas**. En su lugar, GenoScribe genera dinámicamente **cajas de archivos listados (*box-files*)** ordenados alfabéticamente, desde donde el usuario puede abrirlos en una nueva pestaña o descargarlos con un solo clic.
 > 
 > 1. **Flexibilidad de archivos vs. Rigidez de directorios:** En este módulo, **mantener la estructura y nomenclatura exacta de los directorios base y las versiones es obligatorio** para que el informe compile. Sin embargo, respecto a los archivos en sí, el sistema es totalmente flexible: detectará y listará de forma interactiva cualquier archivo depositado (tablas, imágenes, documentos extra), sin importar su nombre o extensión.
@@ -3039,7 +3092,8 @@ Este octavo bloque representa la culminación interpretativa del análisis. Su o
   * 📁 **Nomenclatura requerida:** Las carpetas deben seguir el patrón secuencial **`[número]_[nombre]`** (por ejemplo, `01_CtsD_high_vs_CtsD_low`).
   * 💡 **Flexibilidad total:** En estas carpetas personalizadas, el usuario puede agrupar todos sus reportes (PDFs, Excel, TSV) en un único nivel sin necesidad de replicar el árbol complejo de ORA/GSEA/GO. El sistema leerá dinámicamente el contenido y construirá el explorador interactivo adaptándose a los archivos presentes.
 
-> ⚠️ **Consideraciones sobre la visualización y tolerancia a vacíos:**
+> [!NOTE]
+> **Consideraciones sobre la visualización y tolerancia a vacíos:**
 > 
 > 1. **Archivos dinámicos sin nomenclatura estricta:** A diferencia de otras etapas tempranas del *pipeline*, los archivos dentro del módulo de enriquecimiento **no requieren seguir un patrón de nombres estricto**. GenoScribe desplegará dinámicamente cajas de exploración interactivas (*box-files*) para cualquier documento encontrado. Se recomienda utilizar `.pdf` para los reportes gráficos (ej. *DotPlots*, *RidgePlots*) y `.tsv`, `.csv` o `.xlsx` para las matrices de significancia.
 > 2. **Tolerancia absoluta a directorios vacíos:** Es completamente normal y esperado que muchas de estas carpetas estén vacías (por ejemplo, es común que un proyecto decida omitir por completo el análisis estándar y centrarse solo en la carpeta `02_custom_comparisons`, dejando el resto en blanco). **Esto no provoca ningún error crítico**. GenoScribe está diseñado para detectar la ausencia de archivos y emitir un aviso metodológico elegante en el reporte, permitiendo una navegación ininterrumpida por las secciones que sí contienen resultados biológicos.
@@ -3070,7 +3124,8 @@ Este noveno y último bloque del directorio de análisis ha sido concebido como 
   
   * 📄 **Contenido de los Archivos (Libertad Total) &rArr;** Debido a que el alcance y volumen de esta sección puede ser extraordinariamente amplio, **los archivos depositados aquí no se renderizan mediante visores incrustados (*iframes*) ni tablas de datos interactivas**. Para evitar la sobrecarga visual de la página, GenoScribe genera dinámicamente exploradores interactivos (*box-files*) que listan todo el contenido de cada directorio. Independientemente de su nombre o extensión (`.pdf`, `.csv`, `.png`, etc.), todos los archivos serán detectados y presentados en forma de lista, permitiendo al usuario abrirlos en una nueva pestaña o descargarlos directamente con un solo clic.
 
-> ⚠️ **Nota sobre la flexibilidad del repositorio:** Al tratarse de un espacio complementario, el sistema es completamente tolerante. No se producirá ningún error técnico si el directorio `09_extra` está vacío, si faltan secuencias numéricas o si alguna de sus subcarpetas no contiene archivos. En caso de ausencia de datos, el informe simplemente desplegará un aviso metodológico indicando que el repositorio se encuentra en estado pasivo, garantizando en todo momento la fluidez y correcta compilación del documento final.
+> [!NOTE]
+> **Nota sobre la flexibilidad del repositorio:** Al tratarse de un espacio complementario, el sistema es completamente tolerante. No se producirá ningún error técnico si el directorio `09_extra` está vacío, si faltan secuencias numéricas o si alguna de sus subcarpetas no contiene archivos. En caso de ausencia de datos, el informe simplemente desplegará un aviso metodológico indicando que el repositorio se encuentra en estado pasivo, garantizando en todo momento la fluidez y correcta compilación del documento final.
 
 
 
@@ -3182,7 +3237,8 @@ Este directorio raíz actúa como el almacén central de la información "cruda"
   * 📁 **`03_aditional_r_objects/` &rArr;** Reservado para copias de seguridad (`.RData` o `.rds`) o archivos de proyecto de RStudio (`.Rproj`). GenoScribe no utiliza este contenido para el renderizado.
   * 📁 **`04_documentation/` &rArr;** Espacio libre para protocolos, PDFs informativos o notas técnicas del proyecto.
 
-> ⚠️ **Nota sobre la rigidez de nombres:** Mientras que GenoScribe es muy flexible con los archivos de anotación o documentación, es **extremadamente estricto** con la ubicación y nombre de los metadatos (`sample_metadata.tsv` y `fastq_mapping.tsv`) y los reportes de Cell Ranger (`web_summary.html`). Si estos archivos no están donde se espera, el informe carecerá de las métricas de alineamiento y la información de las muestras.
+> [!NOTE]
+> **Nota sobre la rigidez de nombres:** Mientras que GenoScribe es muy flexible con los archivos de anotación o documentación, es **extremadamente estricto** con la ubicación y nombre de los metadatos (`sample_metadata.tsv` y `fastq_mapping.tsv`) y los reportes de Cell Ranger (`web_summary.html`). Si estos archivos no están donde se espera, el informe carecerá de las métricas de alineamiento y la información de las muestras.
 
 
 
@@ -3214,7 +3270,8 @@ Este último bloque de la estructura raíz contiene el motor lógico del proyect
 * 📂 **`03_extra/` &rArr; Código Complementario (Opcional):**
   Espacio destinado a scripts de apoyo, pruebas de concepto o scripts de limpieza de datos que no forman parte del flujo central de análisis. Al igual que el resto de la carpeta `scripts/`, este contenido no se utiliza directamente en la redacción automática del informe con Quarto, pero es esencial para la integridad del repositorio del proyecto.
 
-> 💡 **Conclusión de la estructura:** Con este último bloque, queda definida la organización integral de un proyecto de Single-Cell RNA-Seq en **GenoScribe**. Respetar esta jerarquía y las nomenclaturas aquí descritas asegura que el informe interactivo se genere con todos sus componentes perfectamente vinculados, ofreciendo una experiencia de navegación fluida y profesional.
+> [!NOTE]
+> **Conclusión de la estructura:** Con este último bloque, queda definida la organización integral de un proyecto de Single-Cell RNA-Seq en **GenoScribe**. Respetar esta jerarquía y las nomenclaturas aquí descritas asegura que el informe interactivo se genere con todos sus componentes perfectamente vinculados, ofreciendo una experiencia de navegación fluida y profesional.
 
 
 
@@ -3237,9 +3294,9 @@ Para garantizar que **GenoScribe** genere el informe de **Transcriptómica Espac
 
 * **Configuración en Entorno Docker:** Si utiliza la interfaz gráfica de **Shiny** a través de un contenedor, recuerda emplear rutas absolutas mapeadas internamente (típicamente `/workspace/data/{nombre_proyecto}`).
 
-> ⚠️ **¡Regla de Oro sobre la Estructura!**
+> [!IMPORTANT]
+> **¡Regla de Oro sobre la Estructura!**
 > Es absolutamente **imprescindible respetar la jerarquía completa de directorios** detallada en esta guía. Aunque su análisis no incluya ciertos pasos (por ejemplo, si no ha realizado un análisis de enriquecimiento), **NUNCA borre las carpetas aunque estén vacías**. 
->
 > El sistema debe comprobar sistemáticamente cada ruta para verificar la existencia de datos; si la carpeta física no existe, el pipeline de Quarto devolverá un error crítico de lectura y no podrá generar el informe. Si la carpeta existe pero está vacía, el sistema lo gestionará correctamente mostrando un aviso informativo.
 
 
