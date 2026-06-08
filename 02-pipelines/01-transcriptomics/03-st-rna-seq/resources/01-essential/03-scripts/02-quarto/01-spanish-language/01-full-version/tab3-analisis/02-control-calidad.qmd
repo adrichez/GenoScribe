@@ -161,18 +161,22 @@ dir.create(ruta_archives_tmp_control_calidad)
 #===================================================================================================================================================
 
 # Rutas de la carpeta "data" dentro del directorio del proyecto
-ruta_analysis <- file.path(ruta_proyecto, "data")
-ruta_analysis_relativa <- file.path(ruta_proyecto_relativa, "data")
+ruta_data <- file.path(ruta_proyecto, "data")
+ruta_data_relativa <- file.path(ruta_proyecto_relativa, "data")
 
 
-# Carpeta donde están los FASTQ / resultados de Cell Ranger
-ruta_cellranger <- file.path(params$project_path, "data", "02_fastq_cellranger")
-ruta_cellranger_relativa <- file.path(ruta_proyecto_relativa, "data", "02_fastq_cellranger")
+# Carpeta donde están los archivos FASTQ
+ruta_fastq <- file.path(ruta_data, "01_reads", "02_fastq")
+ruta_fastq_relativa <- file.path(ruta_data_relativa, "01_reads", "02_fastq")
+
+# Carpeta donde están los resultados de Cell Ranger
+ruta_cellranger <- file.path(ruta_data, "03_alignment_outputs", "visium_cellranger")
+ruta_cellranger_relativa <- file.path(ruta_data_relativa, "03_alignment_outputs", "visium_cellranger")
 
 
 # Listar todos los archivos FASTQ.gz dentro de la carpeta
 fastq_files <- list.files(
-  ruta_cellranger, 
+  ruta_fastq, 
   pattern = "\\.fastq\\.gz$", 
   full.names = TRUE
 )
@@ -1349,7 +1353,6 @@ if (file.exists(ruta_multiqc_fastqc_abs)) {
       </a>
     </div>
   '))
-
 } else {
   HTML('
   <div class="alert-info alert-box">

@@ -154,8 +154,8 @@ ruta_archives_tmp_resumen <- file.path(ruta_sc_rna_seq_pipeline, "resources", "0
 #===================================================================================================================================================
 
 # Ruta a los metadatos del proyecto
-ruta_metadata <- file.path(params$project_path, "data", "04_resources", "01_metadata")
-ruta_metadata_relativa <- file.path(ruta_proyecto_relativa, "data", "04_resources", "01_metadata")
+ruta_metadata <- file.path(params$project_path, "data", "05_resources", "01_metadata")
+ruta_metadata_relativa <- file.path(ruta_proyecto_relativa, "data", "05_resources", "01_metadata")
 
 if (dir.exists(ruta_metadata_relativa)) {
 
@@ -184,14 +184,18 @@ if (dir.exists(ruta_metadata_relativa)) {
 # FASTQ Y MÉTRICAS DE CELL RANGER
 #===================================================================================================================================================
 
-# Carpeta donde están los FASTQ / resultados de Cell Ranger
-ruta_cellranger <- file.path(params$project_path, "data", "02_fastq_cellranger")
-ruta_cellranger_relativa <- file.path(ruta_proyecto_relativa, "data", "02_fastq_cellranger")
+# Carpeta donde están los archivos FASTQ
+ruta_fastq <- file.path(params$project_path, "data", "01_reads", "02_fastq")
+ruta_fastq_relativa <- file.path(ruta_proyecto_relativa, "data", "01_reads", "02_fastq")
+
+# Carpeta donde están los resultados de Cell Ranger
+ruta_cellranger <- file.path(params$project_path, "data", "03_alignment_outputs", "visium_cellranger")
+ruta_cellranger_relativa <- file.path(ruta_proyecto_relativa, "data", "03_alignment_outputs", "visium_cellranger")
 
 
 # Listar todos los archivos FASTQ.gz dentro de la carpeta
 fastq_files <- list.files(
-  ruta_cellranger, 
+  ruta_fastq, 
   pattern = "\\.fastq\\.gz$", 
   full.names = TRUE
 )

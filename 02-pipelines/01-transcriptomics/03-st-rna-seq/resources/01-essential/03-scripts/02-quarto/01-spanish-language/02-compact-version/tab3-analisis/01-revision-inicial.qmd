@@ -161,8 +161,8 @@ dir.create(ruta_archives_tmp_revision_inicial)
 #===================================================================================================================================================
 
 # Ruta a los metadatos del proyecto
-ruta_metadata <- file.path(params$project_path, "data", "04_resources", "01_metadata")
-ruta_metadata_relativa <- file.path(ruta_proyecto_relativa, "data", "04_resources", "01_metadata")
+ruta_metadata <- file.path(params$project_path, "data", "05_resources", "01_metadata")
+ruta_metadata_relativa <- file.path(ruta_proyecto_relativa, "data", "05_resources", "01_metadata")
 
 
 # Listar archivos .tsv en la carpeta
@@ -184,14 +184,18 @@ archives_metadata_list <- setNames(
 # FASTQ Y MÉTRICAS DE CELL RANGER
 #===================================================================================================================================================
 
-# Carpeta donde están los FASTQ / resultados de Cell Ranger
-ruta_cellranger <- file.path(params$project_path, "data", "02_fastq_cellranger")
-ruta_cellranger_relativa <- file.path(ruta_proyecto_relativa, "data", "02_fastq_cellranger")
+# Carpeta donde están los archivos FASTQ
+ruta_fastq <- file.path(params$project_path, "data", "01_reads", "02_fastq")
+ruta_fastq_relativa <- file.path(ruta_proyecto_relativa, "data", "01_reads", "02_fastq")
+
+# Carpeta donde están los resultados de Cell Ranger
+ruta_cellranger <- file.path(params$project_path, "data", "03_alignment_outputs", "visium_cellranger")
+ruta_cellranger_relativa <- file.path(ruta_proyecto_relativa, "data", "03_alignment_outputs", "visium_cellranger")
 
 
 # Listar todos los archivos FASTQ.gz dentro de la carpeta
 fastq_files <- list.files(
-  ruta_cellranger, 
+  ruta_fastq, 
   pattern = "\\.fastq\\.gz$", 
   full.names = TRUE
 )
@@ -426,12 +430,13 @@ cat(glue::glue('
 <div class="items">
 <ul>
   <li>
-    <strong><code>{nombre_proyecto}/data/</code></strong> <strong>&rArr;</strong> Es el "almacén" del proyecto. Directorio raíz que aloja todos los datos crudos, matrices de expresión, objetos matemáticos y recursos externos empleados. Aquí no suele haber resultados gráficos, sino los cimientos del estudio.
+    <strong><code>{nombre_proyecto}/data/</code></strong> <strong>&rArr;</strong> Directorio raíz que aloja todos los datos crudos, matrices de expresión, objetos matemáticos y recursos externos empleados en el proyecto.
     <ul>
-      <li><strong><code>01_raw_blc/</code></strong> <strong>&rarr;</strong> Archivos binarios directos del secuenciador (Illumina). Representan la señal óptica en bruto y se conservan principalmente como copia de seguridad a largo plazo.</li>
-      <li><strong><code>02_fastq_cellranger/</code></strong> <strong>&rarr;</strong> Resultados del procesamiento primario (ej. 10x Genomics). Contiene las secuencias genéticas legibles (FASTQ), las primeras matrices de conteo (cuántas veces se detecta cada gen en cada célula, formato <code>.h5</code>) y los reportes interactivos HTML (<em>web summaries</em>) que resumen la calidad de la secuenciación.</li>
-      <li><strong><code>03_processed_objects/</code></strong> <strong>&rarr;</strong> Archivos RDS (<em>R Data Structure</em>). Estos son los "puntos de guardado" del proyecto. Contienen los objetos de Seurat con toda la información de las células (expresión, coordenadas, metadatos) tras ser filtradas y anotadas. Si un investigador desea cargar los datos en R para hacer sus propias exploraciones interactivas en el futuro, utilizará estos archivos.</li>
-      <li><strong><code>04_resources/</code></strong> <strong>&rarr;</strong> El diccionario biológico. Incluye metadatos adicionales, bases de datos públicas de referencia (como HPCA o Tabula Muris) y las listas de genes (marcadores) seleccionadas manualmente por los investigadores para ayudar a identificar los tipos celulares.</li>
+      <li><strong><code>01_reads/</code></strong> <strong>&rarr;</strong> Contiene los datos brutos de secuenciación organizados internamente por nivel de procesamiento inicial: <code>01_bcl/</code> para los archivos binarios directos del secuenciador (ej. Illumina BCL, si se dispone de ellos) y <code>02_fastq/</code> para los archivos FASTQ crudos obtenidos tras el proceso de demultiplexación.</li>
+      <li><strong><code>02_genome/</code></strong> <strong>&rarr;</strong> Almacena los archivos de referencia genómica necesarios para el alineamiento (archivos FASTA de secuencias y anotaciones GTF), así como los índices generados para las herramientas de mapeo.</li>
+      <li><strong><code>03_alignment_outputs/</code></strong> <strong>&rarr;</strong> Resultados del procesamiento primario y cuantificación (ej. Cell Ranger). Incluye las matrices de conteo (archivos <code>.h5</code> y matrices filtradas/raw) y los reportes HTML de control de calidad (<em>web summaries</em>) por muestra. <br><em>Nota: Los archivos FASTQ derivados de este proceso se unifican en el directorio de lecturas iniciales para optimizar el almacenamiento.</em></li>
+      <li><strong><code>04_processed_objects/</code></strong> <strong>&rarr;</strong> Archivos en formato RDS (R Data Structure) que contienen los objetos Seurat guardados de forma secuencial tras las etapas clave del análisis (filtrado de calidad, normalización, integración y anotación final).</li>
+      <li><strong><code>05_resources/</code></strong> <strong>&rarr;</strong> Metadatos adicionales del proyecto, bases de datos de referencia (ej. HPCA, Tabula Muris) y archivos de curación manual (como listas de marcadores moleculares) empleados para la asignación de linajes celulares.</li>
     </ul>
   </li>
 
@@ -717,52 +722,54 @@ if ("fastq_mapping.tsv" %in% names_metadata_list) {
 </p>
 
 <p>
-  El producto final de esta ejecución es un directorio que contiene tanto los FASTQ generados como una compleja estructura de subcarpetas por muestra con los resultados analíticos primarios (matrices de expresión, reportes de calidad, etc.). A continuación, se muestra la ruta absoluta del sistema donde se aloja este directorio:
+  Para mantener una trazabilidad y organización óptimas, el producto de esta ejecución se ha separado en dos directorios distintos: uno para las lecturas crudas y otro para la compleja estructura de resultados analíticos primarios (matrices de expresión, reportes de calidad, etc.). A continuación, se muestran las rutas absolutas del sistema donde se alojan:
 </p>
 
 ```{r, results="asis"}
 cat(glue::glue('
-  <code>{ruta_cellranger}</code>
-'), sep = "\n\n")
+  <ul>
+    <li><strong>Directorio FASTQ:</strong> <code>{ruta_fastq}</code></li>
+    <li><strong>Directorio Cell Ranger:</strong> <code>{ruta_cellranger}</code></li>
+  </ul>
+'), sep = "\n")
 ```
 
 <p>
   <em style="color: #666;"><i class="fa-solid fa-circle-info"></i> <strong>Aviso sobre la accesibilidad de los datos crudos:</strong> Debido al tamaño excepcional de los archivos de secuenciación (<code>.fastq.gz</code>) y las matrices primarias generadas, estos no se han copiado físicamente junto a este informe interactivo para garantizar un rendimiento óptimo y la portabilidad del documento. Por ello, el siguiente visor enlaza directamente con la carpeta original utilizando las rutas absolutas del sistema. Si intenta hacer clic en estos enlaces desde un equipo externo local (ajeno al servidor o clúster donde se ejecutó el análisis), es normal que reciba un mensaje de error (como <code>ERR_FILE_NOT_FOUND</code> o ruta inaccesible). En tal caso, este panel interactivo cumplirá una función puramente descriptiva, permitiéndole confirmar de manera visual la integridad, existencia y nomenclatura de los datos de partida.</em>
 </p>
 
+<p>
+  Dicho esto, a continuación se exponen los paneles interactivos de ambos directorios. En primer lugar, se detalla el visor correspondiente a las lecturas crudas (<strong>FASTQ</strong>):
+</p>
+
 <div class="box-files">
 
 ```{r, results="asis"}
-if (!dir.exists(ruta_cellranger)) {
-  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible en este sistema.</em></p>\n', ruta_cellranger))
+if (!dir.exists(ruta_fastq)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible en este sistema.</em></p>\n', ruta_fastq))
 
 } else {
-  # Listar todos los archivos y carpetas del directorio
-  files <- list.files(ruta_cellranger, full.names = FALSE)
+  # Listar todos los archivos y carpetas del directorio FASTQ
+  files_fastq <- list.files(ruta_fastq, full.names = FALSE)
   
-  if (length(files) == 0) {
+  if (length(files_fastq) == 0) {
     cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
   
   } else {
-    enlace <- ruta_cellranger
+    enlace_fastq <- ruta_fastq
     
     cat("<ul>\n")
-    for (f in files) {
-      # Asignar clase según la extensión o si es carpeta
+    for (f in files_fastq) {
       clase <- if (!grepl("\\.", f)) {
         "file-folder"
       } else if (grepl("\\.fastq\\.gz$", f, ignore.case = TRUE)) {
         "file-fastqgz"
-      } else if (grepl("\\.html$", f, ignore.case = TRUE)) {
-        "file-html"
-      } else if (grepl("\\.h5$", f, ignore.case = TRUE)) {
-        "file-default" # O una clase específica como file-h5 si la tienes en tu CSS
       } else {
         "file-default"
       }
       
       cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
-                  clase, enlace, f, f))
+                  clase, enlace_fastq, f, f))
     }
     cat("</ul>\n")
   }
@@ -772,18 +779,69 @@ if (!dir.exists(ruta_cellranger)) {
 </div>
 
 ```{r, results="asis"}
-# Imprimir el botón para explorar la carpeta
 cat(glue::glue('
 <p style="text-align:center;">
-  <a href="{ruta_cellranger_relativa}/" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explorar los datos crudos y resultados de Cell Ranger aquí
+  <a href="{ruta_fastq_relativa}/" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explorar los datos FASTQ aquí
   </a>
 </p>
 '), sep = "\n")
 ```
 
 <p>
-  Como se puede observar en la estructura superior, para cada muestra listada en nuestro diccionario biológico existe un par (o varios pares) de archivos <code>.fastq.gz</code> (R1 y R2) correspondientes a las lecturas directas del secuenciador. Junto a ellos, se generan carpetas individuales (con el nombre de la muestra) que albergan el volcado completo de resultados de <em>Cell Ranger</em>, incluyendo la vital carpeta <code>outs/</code> donde residen las matrices de expresión filtradas.
+  Y a continuación, se presenta el segundo visor correspondiente a los resultados del procesamiento primario. En este directorio se generan carpetas individuales (con el nombre de la muestra) que albergan el volcado completo de resultados de <em>Cell Ranger</em>, incluyendo la vital subcarpeta <code>outs/</code> donde residen las matrices de expresión filtradas.
+</p>
+
+<div class="box-files">
+
+```{r, results="asis"}
+if (!dir.exists(ruta_cellranger)) {
+  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible en este sistema.</em></p>\n', ruta_cellranger))
+
+} else {
+  # Listar todos los archivos y carpetas del directorio Cell Ranger
+  files_cr <- list.files(ruta_cellranger, full.names = FALSE)
+  
+  if (length(files_cr) == 0) {
+    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+  
+  } else {
+    enlace_cr <- ruta_cellranger
+    
+    cat("<ul>\n")
+    for (f in files_cr) {
+      clase <- if (!grepl("\\.", f)) {
+        "file-folder"
+      } else if (grepl("\\.html$", f, ignore.case = TRUE)) {
+        "file-html"
+      } else if (grepl("\\.h5$", f, ignore.case = TRUE)) {
+        "file-default" 
+      } else {
+        "file-default"
+      }
+      
+      cat(sprintf('<li class="%s"><a href="%s/%s" target="_blank">%s</a></li>\n',
+                  clase, enlace_cr, f, f))
+    }
+    cat("</ul>\n")
+  }
+}
+```
+
+</div>
+
+```{r, results="asis"}
+cat(glue::glue('
+<p style="text-align:center;">
+  <a href="{ruta_cellranger_relativa}/" target="_blank" class="boton-files">
+    <i class="fa-solid fa-folder-open"></i> Explorar los resultados de Cell Ranger aquí
+  </a>
+</p>
+'), sep = "\n")
+```
+
+<p>
+  Como se puede constatar al explorar esta última estructura, el directorio de salidas de <em>Cell Ranger</em> se organiza de manera jerárquica, asignando una subcarpeta exclusiva para cada muestra listada en nuestro diccionario biológico. Es en el interior de estas carpetas individuales donde se aloja el volcado completo de los resultados analíticos primarios, destacando de manera fundamental el subdirectorio <code>outs/</code>. En él residen las matrices de expresión filtradas, los reportes de control de calidad y el resto de artefactos que constituyen el material de partida directo para las siguientes fases del análisis computacional.
 </p>
 
 

@@ -355,8 +355,8 @@ ruta_data <- file.path(ruta_proyecto, "data")
 ruta_data_relativa <- file.path(ruta_proyecto_relativa, "data")
 
 # Rutas de la carpeta "04_resources" dentro "data"
-ruta_resources <- file.path(ruta_data, "04_resources")
-ruta_resources_relativa <- file.path(ruta_data_relativa, "04_resources")
+ruta_resources <- file.path(ruta_data, "05_resources")
+ruta_resources_relativa <- file.path(ruta_data_relativa, "05_resources")
 
 
 

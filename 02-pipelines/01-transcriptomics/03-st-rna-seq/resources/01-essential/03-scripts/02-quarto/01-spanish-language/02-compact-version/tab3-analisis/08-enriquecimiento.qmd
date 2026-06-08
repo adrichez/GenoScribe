@@ -640,7 +640,7 @@ if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df)
   cat(glue::glue('
   <p class="text-center">
     <a href="{ruta_std_comparisons_relativa}" target="_blank" class="boton-files">
-      <i class="fa-solid fa-folder-open"></i> Explorar directorio del "01_standard_comparisons"
+      <i class="fa-solid fa-folder-open"></i> Explorar directorio raíz del análisis estándar
     </a>
   </p>
   '), sep = "\n")

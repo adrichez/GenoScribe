@@ -937,12 +937,13 @@ cat(glue::glue('
 <div class="items">
 <ul>
   <li>
-    <strong><code>{nombre_proyecto}/data/</code></strong> <strong>&rArr;</strong> Root directory hosting all raw data, expression matrices, mathematical objects, and external resources used in the project.
+    <strong><code>{nombre_proyecto}/data/</code></strong> <strong>&rArr;</strong> Root directory that stores all raw data, expression matrices, mathematical objects, and external resources used throughout the project.
     <ul>
-      <li><strong><code>01_raw_blc/</code></strong> <strong>&rarr;</strong> Direct binary files from the sequencer (Illumina).</li>
-      <li><strong><code>02_fastq_cellranger/</code></strong> <strong>&rarr;</strong> Primary processing results (10x Genomics), containing FASTQ files, count matrices (<code>.h5</code>), and HTML reports (web summaries) per sample.</li>
-      <li><strong><code>03_processed_objects/</code></strong> <strong>&rarr;</strong> RDS files (R Data Structure) with Seurat objects generated after key filtering, integration, and annotation stages.</li>
-      <li><strong><code>04_resources/</code></strong> <strong>&rarr;</strong> Additional metadata, databases (HPCA, Tabula Muris), and manual curation files (marker lists) used for cell annotation.</li>
+      <li><strong><code>01_reads/</code></strong> <strong>&rarr;</strong> Contains raw sequencing data internally organized according to the initial processing level: <code>01_bcl/</code> for binary files generated directly by the sequencer (e.g. Illumina BCL, when available) and <code>02_fastq/</code> for raw FASTQ files obtained after the demultiplexing process.</li>
+      <li><strong><code>02_genome/</code></strong> <strong>&rarr;</strong> Stores the genomic reference files required for alignment (FASTA sequence files and GTF annotations), as well as the indices generated for the mapping tools.</li>
+      <li><strong><code>03_alignment_outputs/</code></strong> <strong>&rarr;</strong> Results from primary processing and quantification (e.g. Cell Ranger). Includes count matrices (<code>.h5</code> files and filtered/raw matrices) and HTML quality control reports (<em>web summaries</em>) for each sample. <br><em>Note: FASTQ files generated during this process are consolidated into the initial reads directory to optimize storage usage.</em></li>
+      <li><strong><code>04_processed_objects/</code></strong> <strong>&rarr;</strong> RDS (R Data Structure) files containing Seurat objects sequentially saved after the key stages of the analysis (quality filtering, normalization, integration, and final annotation).</li>
+      <li><strong><code>05_resources/</code></strong> <strong>&rarr;</strong> Additional project metadata, reference databases (e.g. HPCA, Tabula Muris), and manually curated files (such as molecular marker lists) used for cell lineage assignment.</li>
     </ul>
   </li>
 

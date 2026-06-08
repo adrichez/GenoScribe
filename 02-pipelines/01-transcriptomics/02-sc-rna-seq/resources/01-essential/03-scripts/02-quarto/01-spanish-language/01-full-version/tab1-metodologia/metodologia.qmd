@@ -940,10 +940,11 @@ cat(glue::glue('
   <li>
     <strong><code>{nombre_proyecto}/data/</code></strong> <strong>&rArr;</strong> Directorio raíz que aloja todos los datos crudos, matrices de expresión, objetos matemáticos y recursos externos empleados en el proyecto.
     <ul>
-      <li><strong><code>01_raw_blc/</code></strong> <strong>&rarr;</strong> Archivos binarios directos del secuenciador (Illumina).</li>
-      <li><strong><code>02_fastq_cellranger/</code></strong> <strong>&rarr;</strong> Resultados del procesamiento primario (10x Genomics), conteniendo los archivos FASTQ, las matrices de conteo (<code>.h5</code>) y los reportes HTML (web summaries) por muestra.</li>
-      <li><strong><code>03_processed_objects/</code></strong> <strong>&rarr;</strong> Archivos RDS (R Data Structure) con los objetos Seurat generados tras las etapas clave de filtrado, integración y anotación.</li>
-      <li><strong><code>04_resources/</code></strong> <strong>&rarr;</strong> Metadatos adicionales, bases de datos (HPCA, Tabula Muris) y archivos de curación manual (listas de marcadores) empleados para la anotación celular.</li>
+      <li><strong><code>01_reads/</code></strong> <strong>&rarr;</strong> Contiene los datos brutos de secuenciación organizados internamente por nivel de procesamiento inicial: <code>01_bcl/</code> para los archivos binarios directos del secuenciador (ej. Illumina BCL, si se dispone de ellos) y <code>02_fastq/</code> para los archivos FASTQ crudos obtenidos tras el proceso de demultiplexación.</li>
+      <li><strong><code>02_genome/</code></strong> <strong>&rarr;</strong> Almacena los archivos de referencia genómica necesarios para el alineamiento (archivos FASTA de secuencias y anotaciones GTF), así como los índices generados para las herramientas de mapeo.</li>
+      <li><strong><code>03_alignment_outputs/</code></strong> <strong>&rarr;</strong> Resultados del procesamiento primario y cuantificación (ej. Cell Ranger). Incluye las matrices de conteo (archivos <code>.h5</code> y matrices filtradas/raw) y los reportes HTML de control de calidad (<em>web summaries</em>) por muestra. <br><em>Nota: Los archivos FASTQ derivados de este proceso se unifican en el directorio de lecturas iniciales para optimizar el almacenamiento.</em></li>
+      <li><strong><code>04_processed_objects/</code></strong> <strong>&rarr;</strong> Archivos en formato RDS (R Data Structure) que contienen los objetos Seurat guardados de forma secuencial tras las etapas clave del análisis (filtrado de calidad, normalización, integración y anotación final).</li>
+      <li><strong><code>05_resources/</code></strong> <strong>&rarr;</strong> Metadatos adicionales del proyecto, bases de datos de referencia (ej. HPCA, Tabula Muris) y archivos de curación manual (como listas de marcadores moleculares) empleados para la asignación de linajes celulares.</li>
     </ul>
   </li>
 

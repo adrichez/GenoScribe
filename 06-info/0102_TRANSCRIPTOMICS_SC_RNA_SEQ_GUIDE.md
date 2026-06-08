@@ -1809,10 +1809,11 @@ Así, una vez realizado todo el análisis bioinformático correspondiente para *
 `{nombre_proyecto}/`
 
   * **`data/`** **&rArr;** Directorio raíz que aloja datos crudos, matrices de expresión, objetos matemáticos y recursos.
-    * `01_raw_blc/` **&rarr;** Archivos binarios directos del secuenciador. *(Opcional)*.
-    * `02_fastq_cellranger/` **&rarr;** Resultados del procesamiento primario (FASTQ, matrices `.h5` y *web summaries*).
-    * `03_processed_objects/` **&rarr;** Archivos `.rds` con los objetos de Seurat.
-    * `04_resources/` **&rarr;** Diccionario biológico. Se subdivide en metadatos (`01_metadata/`), bases de datos y listas de genes (`02_annotations/dbs/` y `manual/`), objetos R adicionales (`03_aditional_r_objects/`) y documentación técnica (`04_documentation/`).
+    * `01_reads/` **&rarr;** Contiene los datos brutos de secuenciación: `01_bcl/` para los archivos binarios directos del secuenciador *(Opcional)* y `02_fastq/` para los archivos FASTQ crudos obtenidos tras la demultiplexación.
+    * `02_genome/` **&rarr;** Archivos de referencia genómica necesarios para el alineamiento (archivos FASTA, anotaciones GTF e índices).
+    * `03_alignment_outputs/` **&rarr;** Resultados del procesamiento primario (ej. Cell Ranger), conteniendo las matrices de conteo (`.h5` y raw/filtered) y los reportes HTML (*web summaries*).
+    * `04_processed_objects/` **&rarr;** Archivos `.rds` con los objetos de Seurat generados tras las etapas clave del análisis.
+    * `05_resources/` **&rarr;** Diccionario biológico y recursos adicionales. Se subdivide en metadatos (`01_metadata/`), bases de datos y listas de genes (`02_annotations/dbs/` y `manual/`), objetos R adicionales (`03_aditional_r_objects/`) y documentación técnica (`04_documentation/`).
 
   * **`scripts/`** **&rArr;** Repositorio del código fuente ("las recetas") para garantizar la total reproducibilidad del estudio.
     * `01_main/` **&rarr;** Directorio que contiene los scripts de R principales encargados de ejecutar todo el flujo del análisis bioinformático paso a paso.
@@ -2086,18 +2087,22 @@ Generando por consiguiente la siguiente estructura base detallada:
 │   └── 09_extra
 │       └── 01_specific_genes_of_interest
 ├── data
-│   ├── 01_raw_blc
-│   ├── 02_fastq_cellranger
-│   ├── 03_processed_objects
-│   └── 04_resources
-│       ├── 01_metadata
-│       │   ├── fastq_mapping.tsv
-│       │   └── sample_metadata.tsv
-│       ├── 02_annotations
-│       │   ├── dbs
-│       │   └── manual
-│       ├── 03_aditional_r_objects
-│       └── 04_documentation
+│   ├── 01_reads
+│   │   ├── 01_bcl
+│   │   └── 02_fastq
+│   ├── 02_genome
+│   ├── 03_alignment_outputs
+│   │   └── visium_cellranger
+│   ├── 04_processed_objects
+│   └── 05_resources
+│       ├── 01_metadata
+│       │   ├── fastq_mapping.tsv
+│       │   └── sample_metadata.tsv
+│       ├── 02_annotations
+│       │   ├── dbs
+│       │   └── manual
+│       ├── 03_aditional_r_objects
+│       └── 04_documentation
 └── scripts
     ├── 01_main
     ├── 02_functions
@@ -3139,102 +3144,110 @@ Este noveno y último bloque del directorio de análisis ha sido concebido como 
 
 ```plaintext
 ├── data
-│   ├── 01_raw_blc
-│   ├── 02_fastq_cellranger
-│   │   ├── SCS003_24_KO_S18
-│   │   │   ├── outs
-│   │   │   │   ├── analysis
-│   │   │   │   │   ├── clustering
-│   │   │   │   │   ├── diffexp
-│   │   │   │   │   ├── pca
-│   │   │   │   │   ├── tsne
-│   │   │   │   │   └── umap
-│   │   │   │   ├── cloupe.cloupe
-│   │   │   │   ├── filtered_feature_bc_matrix
-│   │   │   │   │   ├── barcodes.tsv.gz
-│   │   │   │   │   ├── features.tsv.gz
-│   │   │   │   │   └── matrix.mtx.gz
-│   │   │   │   ├── filtered_feature_bc_matrix.h5
-│   │   │   │   ├── metrics_summary.csv
-│   │   │   │   ├── molecule_info.h5
-│   │   │   │   ├── raw_feature_bc_matrix
-│   │   │   │   │   ├── barcodes.tsv.gz
-│   │   │   │   │   ├── features.tsv.gz
-│   │   │   │   │   └── matrix.mtx.gz
-│   │   │   │   ├── raw_feature_bc_matrix.h5
-│   │   │   │   └── web_summary.html
-│   │   │   ├── SC_RNA_COUNTER_CS
-│   │   │   ├── SCS003_24_KO_S18.mri.tgz
-│   │   ├── SCS003_24_KO_S18_L005_R1_001.fastq.gz
-│   │   ├── SCS003_24_KO_S18_L005_R2_001.fastq.gz
-│   │   ├── SCS003_24_WT_S1
-│   │   │   ├── outs
-│   │   │   │   ├── analysis
-│   │   │   │   │   ├── clustering
-│   │   │   │   │   ├── diffexp
-│   │   │   │   │   ├── pca
-│   │   │   │   │   ├── tsne
-│   │   │   │   │   └── umap
-│   │   │   │   ├── cloupe.cloupe
-│   │   │   │   ├── filtered_feature_bc_matrix
-│   │   │   │   │   ├── barcodes.tsv.gz
-│   │   │   │   │   ├── features.tsv.gz
-│   │   │   │   │   └── matrix.mtx.gz
-│   │   │   │   ├── filtered_feature_bc_matrix.h5
-│   │   │   │   ├── metrics_summary.csv
-│   │   │   │   ├── molecule_info.h5
-│   │   │   │   ├── raw_feature_bc_matrix
-│   │   │   │   │   ├── barcodes.tsv.gz
-│   │   │   │   │   ├── features.tsv.gz
-│   │   │   │   │   └── matrix.mtx.gz
-│   │   │   │   ├── raw_feature_bc_matrix.h5
-│   │   │   │   └── web_summary.html
-│   │   │   ├── SC_RNA_COUNTER_CS
-│   │   │   ├── SCS003_24_WT_S1.mri.tgz
-│   │   ├── SCS003_24_WT_S1_L001_R1_001.fastq.gz
-│   │   └── SCS003_24_WT_S1_L001_R2_001.fastq.gz
-│   ├── 03_processed_objects
-│   │   ├── mergeSeurat.filter.rds
-│   │   ├── SCS003_24_KO.rds
-│   │   └── SCS003_24_WT.rds
-│   └── 04_resources
-│       ├── 01_metadata
-│       │   ├── fastq_mapping.tsv
-│       │   └── sample_metadata.tsv
-│       ├── 02_annotations
-│       │   ├── dbs
-│       │   │   ├── annotations_droplet.csv
-│       │   │   ├── annotations_droplet_Thymus.csv
-│       │   │   └── Thymus-10X_P7_11
-│       │   │       ├── barcodes.tsv.gz
-│       │   │       ├── features.tsv.gz
-│       │   │       ├── genes.tsv.gz
-│       │   │       └── matrix.mtx.gz
-│       │   └── manual
-│       │       ├── anotaciones.tsv
-│       │       └── manual_anottation.txt
-│       ├── 03_aditional_r_objects
-│       │   ├── 05-INT-24-scRNASeq_Timo_Mdelgado.Rproj
-│       │   ├── deg_WT_backup.rds
-│       │   └── Mario_281224.RData
-│       └── 04_documentation
+│   ├── 01_reads
+│   │   ├── 01_bcl
+│   │   └── 02_fastq
+│   │       ├── SCS003_24_KO_S18_L005_R1_001.fastq.gz
+│   │       ├── SCS003_24_KO_S18_L005_R2_001.fastq.gz
+│   │       ├── SCS003_24_WT_S1_L001_R1_001.fastq.gz
+│   │       └── SCS003_24_WT_S1_L001_R2_001.fastq.gz
+│   ├── 02_genome
+│   ├── 03_alignment_outputs
+│   │   └── visium_cellranger
+│   │       ├── SCS003_24_KO_S18
+│   │       │   ├── outs
+│   │       │   │   ├── analysis
+│   │       │   │   │   ├── clustering
+│   │       │   │   │   ├── diffexp
+│   │       │   │   │   ├── pca
+│   │       │   │   │   ├── tsne
+│   │       │   │   │   └── umap
+│   │       │   │   ├── cloupe.cloupe
+│   │       │   │   ├── filtered_feature_bc_matrix
+│   │       │   │   │   ├── barcodes.tsv.gz
+│   │       │   │   │   ├── features.tsv.gz
+│   │       │   │   │   └── matrix.mtx.gz
+│   │       │   │   ├── filtered_feature_bc_matrix.h5
+│   │       │   │   ├── metrics_summary.csv
+│   │       │   │   ├── molecule_info.h5
+│   │       │   │   ├── raw_feature_bc_matrix
+│   │       │   │   │   ├── barcodes.tsv.gz
+│   │       │   │   │   ├── features.tsv.gz
+│   │       │   │   │   └── matrix.mtx.gz
+│   │       │   │   ├── raw_feature_bc_matrix.h5
+│   │       │   │   └── web_summary.html
+│   │       │   ├── SC_RNA_COUNTER_CS
+│   │       │   └── SCS003_24_KO_S18.mri.tgz
+│   │       └── SCS003_24_WT_S1
+│   │           ├── outs
+│   │           │   ├── analysis
+│   │           │   │   ├── clustering
+│   │           │   │   ├── diffexp
+│   │           │   │   ├── pca
+│   │           │   │   ├── tsne
+│   │           │   │   └── umap
+│   │           │   ├── cloupe.cloupe
+│   │           │   ├── filtered_feature_bc_matrix
+│   │           │   │   ├── barcodes.tsv.gz
+│   │           │   │   ├── features.tsv.gz
+│   │           │   │   └── matrix.mtx.gz
+│   │           │   ├── filtered_feature_bc_matrix.h5
+│   │           │   ├── metrics_summary.csv
+│   │           │   ├── molecule_info.h5
+│   │           │   ├── raw_feature_bc_matrix
+│   │           │   │   ├── barcodes.tsv.gz
+│   │           │   │   ├── features.tsv.gz
+│   │           │   │   └── matrix.mtx.gz
+│   │           │   ├── raw_feature_bc_matrix.h5
+│   │           │   └── web_summary.html
+│   │           ├── SC_RNA_COUNTER_CS
+│   │           └── SCS003_24_WT_S1.mri.tgz
+│   ├── 04_processed_objects
+│   │   ├── mergeSeurat.filter.rds
+│   │   ├── SCS003_24_KO.rds
+│   │   └── SCS003_24_WT.rds
+│   └── 05_resources
+│       ├── 01_metadata
+│       │   ├── fastq_mapping.tsv
+│       │   └── sample_metadata.tsv
+│       ├── 02_annotations
+│       │   ├── dbs
+│       │   │   ├── annotations_droplet.csv
+│       │   │   ├── annotations_droplet_Thymus.csv
+│       │   │   └── Thymus-10X_P7_11
+│       │   │       ├── barcodes.tsv.gz
+│       │   │       ├── features.tsv.gz
+│       │   │       ├── genes.tsv.gz
+│       │   │       └── matrix.mtx.gz
+│       │   └── manual
+│       │       ├── anotaciones.tsv
+│       │       └── manual_anottation.txt
+│       ├── 03_aditional_r_objects
+│       │   ├── 05-INT-24-scRNASeq_Timo_Mdelgado.Rproj
+│       │   ├── deg_WT_backup.rds
+│       │   └── Mario_281224.RData
+│       └── 04_documentation
 ```
 
 Este directorio raíz actúa como el almacén central de la información "cruda" y los objetos procesados. Aunque contiene archivos de gran tamaño que no se renderizan directamente en el informe HTML, es la base sobre la cual se construye toda la lógica de GenoScribe.
 
-* 📂 **`01_raw_blc/` &rArr; Archivos Binarios (Opcional):**
-  Destinado a los archivos BCL directos del secuenciador. GenoScribe/Quarto no utiliza este directorio para la generación del informe, por lo que puede dejarse vacío sin consecuencias.
+* 📂 **`01_reads/` &rArr; Datos Brutos de Secuenciación:**
+  Contiene las lecturas del secuenciador organizadas en dos subniveles:
+  * 📁 **`01_bcl/` (Opcional) &rArr;** Destinado a los archivos binarios directos del secuenciador. GenoScribe/Quarto no utiliza este directorio para la generación del informe, por lo que puede dejarse vacío sin consecuencias.
+  * 📁 **`02_fastq/` (Importante) &rArr;** Archivos crudos tras la demultiplexación. Deben seguir el formato estándar **`{nombre}.fastq.gz`**.
 
-* 📂 **`02_fastq_cellranger/` &rArr; Resultados de Cell Ranger (Importante):**
-  Contiene las secuencias y los informes de alineamiento inicial. Es vital para la trazabilidad técnica del proyecto:
-  * 📄 **Archivos FASTQ &rArr;** Deben seguir el formato estándar **`{nombre}.fastq.gz`**.
+* 📂 **`02_genome/` &rArr; Referencia Genómica (Opcional):**
+  Almacena los archivos FASTA, anotaciones GTF e índices. GenoScribe asume que el alineamiento ya se ha realizado previamente, por lo que puede dejarse vacío si el proyecto no requiere de estos recursos para consultas posteriores.
+
+* 📂 **`03_alignment_outputs/` &rArr; Resultados del Procesamiento Primario (Importante):**
+  Contiene los informes de alineamiento y cuantificación (organizados por tecnología, ej. en subdirectorios como `visium_cellranger/`). Es vital para la trazabilidad técnica del proyecto:
   * 📁 **Directorios de muestra (ej. `SCS003_.../`) &rArr;** Quarto recorrerá de forma automática cada carpeta de muestra que encuentre en este nivel. El nombre de la carpeta es libre, pero su contenido interno es estricto.
   * 📄 **Informes técnicos &rArr;** Dentro de cada carpeta de muestra debe existir un subdirectorio llamado **`outs/`** que contenga obligatoriamente los archivos **`web_summary.html`** (informe de calidad de 10x) y **`metrics_summary.csv`** con sus nombres originales.
 
-* 📂 **`03_processed_objects/` &rArr; Objetos de Seurat (Recomendado):**
+* 📂 **`04_processed_objects/` &rArr; Objetos de Seurat (Recomendado):**
   Almacena los archivos binarios de R (**`.rds`**) con los objetos Seurat ya filtrados y procesados. Son fundamentales para que otros investigadores puedan cargar el análisis exactamente en el mismo punto en el que se generó el informe.
 
-* 📂 **`04_resources/` &rArr; Diccionarios, Metadatos y Documentación (Recomendado):**
+* 📂 **`05_resources/` &rArr; Diccionarios, Metadatos y Documentación (Recomendado):**
   Este es el compartimento logístico del proyecto y se divide en cuatro áreas:
   * 📁 **`01_metadata/` (Crítico) &rArr;** GenoScribe requiere obligatoriamente que aquí se encuentren los archivos **`fastq_mapping.tsv`** y **`sample_metadata.tsv`** con esos nombres exactos. Estos archivos vinculan las muestras con sus condiciones experimentales y metadatos clínicos.
   * 📁 **`02_annotations/` &rArr;** Dividido en `manual/` (para diccionarios de identidad celular, preferiblemente en **`.tsv`**) y `dbs/` (para las bases de datos de referencia). Los archivos aquí depositados se listarán de forma interactiva en el menú del informe; el formato de nombre es libre.
