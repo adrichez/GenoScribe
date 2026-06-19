@@ -33,26 +33,26 @@ params:
       </h1>
 
       <p>
-        ¡Hola! Soy <strong>Geni</strong>, el asistente inteligente de <strong>GenoScribe</strong>.  
-        Estoy aquí para ayudarte a explorar de forma interactiva el contenido de este informe bioinformático.
+        Hello! I am <strong>Geni</strong>, the intelligent assistant of <strong>GenoScribe</strong>.  
+        I am here to help you interactively explore the content of this bioinformatics report.
       </p>
 
       <p>
-        Cuando me haces una pregunta, primero intento reconocer si coincide con alguno de los patrones o expresiones que conozco.  
-        Si encuentro una coincidencia, te responderé directamente con una respuesta predefinida, diseñada para ser rápida, clara e incluso un poco ingeniosa.  
-        Si no reconozco el patrón, entonces activo mis herramientas de búsqueda: genero representaciones vectoriales (embeddings) y busco los fragmentos más relevantes entre varios documentos —incluyendo el propio informe, archivos PDF y HTML externos, y sesiones de preguntas y respuestas (QA).  
-        A partir de esa información, creo un resumen que intenta ofrecerte una respuesta coherente y útil basada en el contenido existente.
+        When you ask me a question, I first try to recognize whether it matches any of the patterns or expressions I know.  
+        If I find a match, I will respond directly with a predefined answer, designed to be fast, clear, and even a bit witty.  
+        If I do not recognize the pattern, I then activate my search tools: I generate vector representations (embeddings) and look for the most relevant fragments across multiple documents—including the report itself, external PDF and HTML files, and question-and-answer (QA) sessions.  
+        Based on that information, I create a summary that aims to provide you with a coherent and useful response grounded in the existing content.
       </p>
 
       <p>
-        Se debe tener en cuenta que este entorno es experimental. No utilizo grandes modelos de lenguaje, por lo que algunas respuestas pueden ser aproximadas o incompletas.  
-        El objetivo principal es facilitar una visualización rápida, comprensible y reproducible de la información contenida en los documentos, permitiendo una exploración más dinámica del informe.
+        Please note that this environment is experimental. I do not use large language models, so some responses may be approximate or incomplete.  
+        The main goal is to provide a fast, understandable, and reproducible way to visualize the information contained in the documents, enabling a more dynamic exploration of the report.
       </p>
 
       <p>
-        Actualmente, los resultados pueden variar en precisión, ya que empleo modelos ligeros y locales para asegurar que la aplicación funcione en cualquier entorno sin necesidad de servidores externos.  
-        Sin embargo, la estructura del sistema está preparada para mejorar notablemente su rendimiento en el futuro mediante la integración con modelos más avanzados o APIs externas.  
-        Para comenzar, simplemente escribe tu pregunta en el campo inferior y deja que yo me encargue del resto. ¡Prometo poner todo mi código en ello!
+        Currently, results may vary in accuracy, as I use lightweight local models to ensure the application runs in any environment without the need for external servers.  
+        However, the system structure is designed to significantly improve its performance in the future through integration with more advanced models or external APIs.  
+        To get started, simply type your question in the field below and let me take care of the rest. I promise to put all my code into it!
       </p>
     </div>
     <div id="chat-log"></div>
@@ -246,13 +246,13 @@ if (dir.exists(ruta_extra)) {
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 
 <div class="informe-titulo-tab">
-  <h1>Pestaña</h1>
-  <h2>Análisis Bioinformático Completo</h2>
+  <h1>Tab</h1>
+  <h2>Comprehensive Bioinformatics Analysis</h2>
 </div>
 
 <div class="informe-titulo-seccion-unique">
-  <h1>Sección 9</h1>
-  <h2>Análisis Personalizados y Ad Hoc</h2>
+  <h1>Section 9</h1>
+  <h2>Custom and Ad Hoc Analyses</h2>
 </div>
 
 <div class="flecha-abajo">
@@ -261,18 +261,18 @@ if (dir.exists(ruta_extra)) {
 
 
 <div class="informe-resumen">
-  <h2>Resumen</h2>
+  <h2>Summary</h2>
 
   <p>
-    El análisis transcriptómico de célula única (<em>scRNA-seq</em>) genera un ecosistema de datos de una magnitud abrumadora. A lo largo de las secciones anteriores, hemos desplegado un flujo de trabajo computacional estandarizado que actúa como un mapa cartográfico global: desde el estricto control de calidad y la identificación de linajes, hasta el descubrimiento de firmas diferenciales y su traducción funcional.
+    Single cell transcriptomic analysis (<em>scRNA-seq</em>) generates a data ecosystem of overwhelming magnitude. Throughout the previous sections, we have deployed a standardized computational workflow that acts as a global cartographic map: from strict quality control and lineage identification to the discovery of differential signatures and their functional interpretation.
   </p>
 
   <p>
-    Sin embargo, la investigación biológica de vanguardia rara vez se agota en las aproximaciones globales. Con gran frecuencia, el equipo investigador requiere apartar la vista del panorama general para hacer "zoom" sobre coordenadas moleculares muy específicas, validando hipótesis concretas o explorando dianas terapéuticas particulares.
+    However, cutting edge biological research is rarely exhausted by global approaches. Very often, the research team needs to shift focus from the general landscape to zoom in on highly specific molecular coordinates, validating concrete hypotheses or exploring particular therapeutic targets.
   </p>
 
   <p>
-    Este noveno módulo se ha diseñado específicamente con ese propósito. Concebido como un repositorio dinámico, flexible y modular, está destinado a albergar todos los <strong>análisis personalizados y peticiones <em>ad hoc</em></strong> que escapan al flujo de trabajo automatizado. De esta forma, garantizamos que cualquier exploración complementaria solicitada por el laboratorio quede documentada, estructurada y perfectamente accesible dentro del mismo informe integral.
+    This ninth module has been specifically designed for that purpose. Conceived as a dynamic, flexible, and modular repository, it is intended to host all <strong>custom analyses and <em>ad hoc</em> requests</strong> that fall outside the automated workflow. In this way, we ensure that any complementary exploration requested by the laboratory is documented, structured, and fully accessible within the same comprehensive report.
   </p>
 </div>
 
@@ -297,19 +297,19 @@ if (dir.exists(ruta_extra)) {
 <div style="height: 15px; background-color: transparent;"></div>
 
 <div class="titulo-toc">
-  Tabla de contenidos de esta sección
+  Table of contents of this section
 </div>
 
 <div class="toc">
   <ul>
     <li>
-      <a href="#tab3-seccion9">9<span>.</span> Análisis Personalizados y Ad Hoc</a>
+      <a href="#tab3-seccion9">9<span>.</span> Custom and Ad Hoc Analyses</a>
       <ul>
         <li>
-          <a href="#tab3-seccion9.1">9.1. Naturaleza de las Peticiones Adicionales</a>
+          <a href="#tab3-seccion9.1">9.1. Nature of Additional Requests</a>
         </li>
         <li>
-          <a href="#tab3-seccion9.2">9.2. Repositorio de Exploración Dirigida</a>
+          <a href="#tab3-seccion9.2">9.2. Targeted Exploration Repository</a>
         </li>
       </ul>
     </li>
@@ -337,27 +337,27 @@ if (dir.exists(ruta_extra)) {
 <div style="height: 25px; background-color: transparent;"></div>
 
 <div class="titulo1" id="tab3-seccion9">
-  9<span>.</span> Análisis Personalizados y Ad Hoc
+  9<span>.</span> Custom and Ad Hoc Analyses
 </div>
 
 <p>
-  La estandarización algorítmica y la aplicación de umbrales estadísticos universales son los pilares que garantizan la reproducibilidad, objetividad y rigor de todo estudio bioinformático. Sin embargo, somos conscientes de que el verdadero valor traslacional de la transcriptómica de célula única reside en su plasticidad para adaptarse y responder a las hipótesis y preguntas específicas de cada investigador.
+  Algorithmic standardization and the application of universal statistical thresholds are the pillars that ensure the reproducibility, objectivity, and rigor of any bioinformatic study. However, we recognize that the true translational value of single cell transcriptomics lies in its flexibility to adapt and respond to the specific hypotheses and questions of each researcher.
 </p>
 
 <p>
-  A diferencia de los ocho módulos analíticos precedentes —cuyo contenido, formato y secuenciación están rígidamente definidos por la arquitectura computacional del <em>pipeline</em> central—, la presente sección ha sido concebida como un ecosistema analítico abierto y de alto nivel. Su estructura es intrínsecamente dinámica: no parte de un diseño preestablecido, sino que evolucionará y se poblará de directorios exclusivamente en respuesta a las demandas exploratorias que el equipo de investigación solicite tras la evaluación preliminar de los resultados generales.
+  Unlike the eight preceding analytical modules —whose content, format, and sequencing are rigidly defined by the computational architecture of the central <em>pipeline</em>—, the present section has been conceived as an open, high level analytical ecosystem. Its structure is intrinsically dynamic: it does not start from a predefined design, but will evolve and be populated with directories exclusively in response to the exploratory demands that the research team requests after the preliminary evaluation of the general results.
 </p>
 
 <p>
-  Este espacio centraliza todas aquellas aproximaciones técnicas que trascienden el flujo de trabajo automatizado, actuando como un puente directo entre la minería masiva de datos y las validaciones de banco del laboratorio. Para garantizar una navegación intuitiva y ordenada a través de este material inherentemente heterogéneo, el cierre de este informe se articula en dos bloques conceptuales:
+  This space centralizes all those technical approaches that go beyond the automated workflow, acting as a direct bridge between large scale data mining and laboratory bench validations. To ensure intuitive and organized navigation through this inherently heterogeneous material, the closing of this report is structured into two conceptual blocks:
 </p>
 
 <ul>
   <li>
-    <strong>9.1. Naturaleza de las Peticiones Adicionales &rArr;</strong> Proporciona una contextualización metodológica esencial para interpretar correctamente la variedad de resultados alojados. Detalla los casos de uso más frecuentes que justifican la creación de estas subcarpetas, abarcando desde resoluciones gráficas de alta granularidad hasta formatos de exportación tabular atípicos.
+    <strong>9.1. Nature of Additional Requests &rArr;</strong> Provides essential methodological context to correctly interpret the variety of hosted results. It details the most frequent use cases that justify the creation of these subfolders, ranging from high granularity graphical resolutions to atypical tabular export formats.
   </li>
   <li>
-    <strong>9.2. Repositorio de Exploración Dirigida &rArr;</strong> Constituye el núcleo interactivo final del estudio. A través de un motor de renderizado dinámico programado a medida, esta subsección rastreará, estructurará y presentará de forma completamente automatizada e indexada cualquier subdirectorio de material extra generado por el equipo bioinformático, facilitando su revisión inmediata.
+    <strong>9.2. Targeted Exploration Repository &rArr;</strong> Constitutes the final interactive core of the study. Through a custom programmed dynamic rendering engine, this subsection will scan, structure, and present in a fully automated and indexed manner any subdirectory of extra material generated by the bioinformatics team, facilitating its immediate review.
   </li>
 </ul>
 
@@ -373,15 +373,15 @@ if (dir.exists(ruta_extra)) {
 <div style="height: 20px; background-color: transparent;"></div>
 
 <div class="titulo2" id="tab3-seccion9.1">
-  9.1. Naturaleza de las Peticiones Adicionales
+  9.1. Nature of Additional Requests
 </div>
 
 <p>
-  Como complemento indispensable al rigor del análisis estandarizado, este repositorio se reserva para alojar resultados de naturaleza heterogénea y alta especificidad. Para asegurar una correcta interpretación del material que se despliega en los directorios subsiguientes, resulta útil enmarcar estos archivos dentro de sus casos de uso analítico más frecuentes.
+  As an essential complement to the rigor of standardized analysis, this repository is reserved to host results of heterogeneous and highly specific nature. To ensure correct interpretation of the material displayed in the subsequent directories, it is useful to frame these files within their most frequent analytical use cases.
 </p>
 
 <p>
-  Típicamente, este espacio custodiará la <strong>exploración visual dirigida de dianas terapéuticas</strong>, plasmada en proyecciones gráficas individuales (como <em>FeaturePlots</em> o <em>Violin Plots</em>) de genes de interés particular para el laboratorio.  Asimismo, es el lugar designado para albergar <strong>exportaciones tabulares no estándar</strong>, tales como matrices de expresión desglosadas a nivel de célula individual, hojas de cálculo personalizadas o recuentos crudos adaptados para cruces con bases de datos externas. Finalmente, este repositorio también dará cabida a <strong>reclasificaciones celulares o aislamientos de linajes concretos</strong> (como el <em>subclustering</em> profundo de poblaciones inmunes específicas) que hayan sido solicitados expresamente para aislar variables o responder a hipótesis secundarias exclusivas del proyecto.
+  Typically, this space will host the <strong>targeted visual exploration of therapeutic targets</strong>, represented in individual graphical projections (such as <em>FeaturePlots</em> or <em>Violin Plots</em>) of genes of particular interest to the laboratory. Likewise, it is the designated place to store <strong>non standard tabular exports</strong>, such as expression matrices broken down at the single cell level, customized spreadsheets, or raw counts adapted for integration with external databases. Finally, this repository will also accommodate <strong>cellular reclassifications or isolation of specific lineages</strong> (such as deep <em>subclustering</em> of specific immune populations) that have been explicitly requested to isolate variables or address secondary hypotheses unique to the project.
 </p>
 
 
@@ -396,49 +396,49 @@ if (dir.exists(ruta_extra)) {
 <div style="height: 20px; background-color: transparent;"></div>
 
 <div class="titulo2" id="tab3-seccion9.2">
-  9.2. Repositorio de Exploración Dirigida
+  9.2. Targeted Exploration Repository
 </div>
 
 <p>
-  A continuación, se despliega la estructura principal del directorio <code>09_extra</code>, el cual actúa como contenedor maestro para todas las peticiones analíticas <em>ad hoc</em>. Desde el siguiente panel interactivo puede acceder a la raíz del repositorio y obtener una visión global de las carpetas generadas:
+  Below, the main structure of the <code>09_extra</code> directory is displayed, which serves as the master container for all <em>ad hoc</em> analytical requests. From the following interactive panel, you can access the root of the repository and obtain an overview of the generated folders:
 </p>
 
 ```{r, echo=FALSE, results="asis"}
 if (!is.null(extra_root_dirs_df) && nrow(extra_root_dirs_df) > 0) {
   
-  # 1. MOSTRAR EL DIRECTORIO PADRE (09_extra)
+  # 1. SHOW THE PARENT DIRECTORY (09_extra)
   cat('<div class="box-files">\n<ul>\n')
   for (i in 1:nrow(extra_root_dirs_df)) {
     folder <- extra_root_dirs_df$folder_name[i]
-    # Limpiamos ruta y forzamos la barra final para abrir como directorio
+    # Clean path and enforce trailing slash to open as directory
     ruta_html <- utils::URLencode(gsub("\\\\", "/", paste0(extra_root_dirs_df$ruta_relativa[i], "/")))
     cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', ruta_html, folder))
   }
   cat('</ul>\n</div>\n')
   
-  # Botón para explorar la raíz
+  # Button to explore the root
   ruta_extra_html <- utils::URLencode(gsub("\\\\", "/", ruta_extra_relativa))
   
   cat(glue::glue('
   <p class="text-center">
     <a href="{ruta_extra_html}/" target="_blank" class="boton-files">
-      <i class="fa-solid fa-folder-open"></i> Explorar directorio raíz de análisis ad hoc
+      <i class="fa-solid fa-folder-open"></i> Explore ad hoc analysis root directory
     </a>
   </p>
   '), sep = "\n")
   
   
-  # 2. CONTEXTUALIZACIÓN DINÁMICA (Contar y listar carpetas)
+  # 2. DYNAMIC CONTEXTUALIZATION (Count and list folders)
   num_carpetas <- nrow(extra_root_dirs_df)
   texto_conteo <- ifelse(num_carpetas == 1, 
-                          "<strong>1 subdirectorio</strong> de exploración personalizada", 
-                          paste0("<strong>", num_carpetas, " subdirectorios</strong> de exploración personalizada"))
+                          "<strong>1 subdirectory</strong> of custom exploration", 
+                          paste0("<strong>", num_carpetas, " subdirectories</strong> of custom exploration"))
   
   lista_nombres <- paste0("<em>", extra_root_dirs_df$folder_name, "</em>", collapse = ", ")
   
   cat(glue::glue('
   <p>
-    En la versión actual de este proyecto, el sistema ha detectado y procesado {texto_conteo} ({lista_nombres}). A continuación, desglosaremos el contenido de cada una de estas secciones individuales, mostrando de forma directa los reportes gráficos y/o tabulares listos para su inspección.
+    In the current version of this project, the system has detected and processed {texto_conteo} ({lista_nombres}). Next, we will break down the content of each of these individual sections, directly displaying the graphical and/or tabular reports ready for inspection.
   </p>
   '), sep = "\n")
   
@@ -487,22 +487,16 @@ if (!is.null(extra_root_dirs_df) && nrow(extra_root_dirs_df) > 0) {
       cat('</ul>\n</div>\n')
       
     } else {
-      cat(glue::glue('
-      <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
-        <i class="fa-solid fa-folder-open"></i>
-        <b>Directorio sin resultados</b><br>
-        El contenedor <code>{carpeta_cruda}</code> ha sido inicializado, pero actualmente no se han volcado los archivos correspondientes (reportes o tablas) para esta comparativa.
-      </div>
-      '), sep = "\n")
+      cat('<p style="color: #666; font-style: italic;"><i class="fa-solid fa-folder-open"></i> The directory has been created, but the corresponding files have not been uploaded yet.</p>\n')
     }
     
-    # BOTÓN DE EXPLORACIÓN HACIA ESA SUBCARPETA
+    # BUTTON TO EXPLORE THAT SUBFOLDER
     ruta_carpeta_html <- utils::URLencode(gsub("\\\\", "/", ruta_carpeta_rel))
     
     cat(glue::glue('
     <p class="text-center">
       <a href="{ruta_carpeta_html}/" target="_blank" class="boton-files">
-        <i class="fa-solid fa-folder-open"></i> Explorar directorio "{carpeta_cruda}"
+        <i class="fa-solid fa-folder-open"></i> Explore directory "{carpeta_cruda}"
       </a>
     </p>
     '), sep = "\n")
@@ -513,8 +507,8 @@ if (!is.null(extra_root_dirs_df) && nrow(extra_root_dirs_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box" style="margin-top: 25px; margin-bottom: 20px;">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Repositorio pasivo</b><br>
-    Actualmente no hay análisis personalizados ni peticiones extra solicitadas para este proyecto.
+    <b>Information Note</b><br>
+    Currently there are no custom analyses or additional requests submitted for this project.
   </div>
   '), sep = "\n")
 }
@@ -532,15 +526,15 @@ if (!is.null(extra_root_dirs_df) && nrow(extra_root_dirs_df) > 0) {
 <div class="divider"></div>
 
 <p>
-  Con la estructuración de este repositorio interactivo a medida, damos por finalizado el despliegue técnico y analítico del proyecto. A lo largo de los sucesivos módulos, hemos transitado desde el preprocesamiento de los datos crudos y el filtrado de calidad, pasando por la identificación de linajes y la extracción de firmas transcripcionales, hasta llegar a la exploración funcional y las peticiones específicas de este último bloque.
+  With the structuring of this custom interactive repository, we conclude the technical and analytical deployment of the project. Across the successive modules, we have progressed from raw data preprocessing and quality filtering, through lineage identification and transcriptional signature extraction, to functional exploration and the specific requests of this final block.
 </p>
 
 <p>
-  Ahora que todas las piezas del rompecabezas bioinformático están calculadas, estructuradas y puestas a disposición del equipo investigador, es el momento de consolidar los hallazgos. Para ello, el informe culmina en una sección final dedicada a sintetizar el impacto biológico del estudio y a plantear los siguientes pasos en la investigación.
+  Now that all the pieces of the bioinformatic puzzle are calculated, structured, and made available to the research team, it is time to consolidate the findings. For this purpose, the report culminates in a final section dedicated to summarizing the biological impact of the study and outlining the next steps in the research.
 </p>
 
 <p>
-  Le invitamos a dirigirse al último apartado del informe: <strong><a href="10-conclusiones.html" class="normalink">10. Conclusiones y perspectivas</a></strong>.
+  You are invited to proceed to the last section of the report: <strong><a href="10-conclusiones.html" class="normalink">10. Conclusions and Perspectives</a></strong>.
 </p>
 
 

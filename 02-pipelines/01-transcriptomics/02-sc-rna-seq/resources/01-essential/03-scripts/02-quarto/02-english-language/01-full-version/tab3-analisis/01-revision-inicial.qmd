@@ -201,11 +201,19 @@ fastq_files <- list.files(
 )
 
 # Crear data.frame con nombre y ruta
-fastq_df <- data.frame(
-  file_name = basename(fastq_files),
-  ruta_absoluta = fastq_files,
-  stringsAsFactors = FALSE
-)
+if (length(fastq_files) > 0) {
+  fastq_df <- data.frame(
+    file_name = basename(fastq_files),
+    ruta_absoluta = fastq_files,
+    stringsAsFactors = FALSE
+  )
+} else {
+  fastq_df <- data.frame(
+    file_name = character(),
+    ruta_absoluta = character(),
+    stringsAsFactors = FALSE
+  )
+}
 ```
 
 
@@ -367,23 +375,37 @@ cat(glue::glue('
   The complete structure of this directory is shown below. This representation allows visualizing the files and subfolders generated during the Single-Cell RNA-Seq analysis, which were used as the basis for constructing this report:
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_proyecto_relativa)) {
-  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_proyecto_relativa))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The specified path does not exist or is not accessible:<br>
+  <code>{ruta_proyecto}</code>
+  </div>
+  '))
+
 } else {
-  # List all files, no filters
+  # Listar todos los archivos, sin filtros
   files <- list.files(ruta_proyecto_relativa, full.names = FALSE)
   
   if (length(files) == 0) {
-    cat('<p><em>No files were found in the specified folder.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
+    No files were found in the specified folder:<br>
+    <code>{ruta_proyecto}</code>
+    </div>
+    '))
+  
   } else {
     enlace <- ruta_proyecto_relativa
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files) {
-      # Assign class based on extension
+      # Asignar clase según la extensión
       clase <- if (!grepl("\\.", f)) {
         "file-folder"
       } else if (grepl("\\.html$", f)) {
@@ -400,24 +422,20 @@ if (!dir.exists(ruta_proyecto_relativa)) {
                   clase, enlace, f, f))
     }
     cat("</ul>\n")
+
+    # Para que funcione con rutas absolutas
+    enlace <- ruta_proyecto_relativa
+
+    # Imprimir el enlace
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{enlace}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Browse the files in the "{nombre_proyecto}" folder here
+      </a>
+    </p>
+    \n\n'))
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# For compatibility with absolute paths
-enlace <- ruta_proyecto_relativa
-
-# Print the link
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{enlace}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explore the files in the folder "{nombre_proyecto}" here
-  </a>
-</p>
-\n\n'))
 ```
 
 ```{r, results="asis"}
@@ -499,24 +517,36 @@ cat(glue::glue('
   The available metadata files associated with this project are detailed below:
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_metadata_relativa)) {
-  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_metadata_relativa))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The specified path does not exist or is not accessible:<br>
+  <code>{ruta_metadata}</code>
+  </div>
+  '))
 
 } else {
-  # List all files
+  # Listar todos los archivos
   files <- list.files(ruta_metadata_relativa, full.names = FALSE)
   
   if (length(files) == 0) {
-    cat('<p><em>No files were found in the specified folder.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
+    No files were found in the specified folder:<br>
+    <code>{ruta_metadata}</code>
+    </div>
+    '))
   } else {
     enlace <- ruta_metadata_relativa
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files) {
-      # Assign class based on extension
+      # Asignar clase según la extensión
       clase <- if (!grepl("\\.", f)) {
         "file-folder"
       } else if (grepl("\\.tsv$", f, ignore.case = TRUE)) {
@@ -531,26 +561,23 @@ if (!dir.exists(ruta_metadata_relativa)) {
                   clase, enlace, f, f))
     }
     cat("</ul>\n")
+
+    # Imprimir el botón para explorar la carpeta
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_metadata_relativa}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Browse metadata files here
+      </a>
+    </p>
+    '), sep = "\n")
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# Print the button to explore the folder
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_metadata_relativa}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explore the metadata files here
-  </a>
-</p>
-'), sep = "\n")
 ```
 
 <p>
   After locating these documents within the directory structure, we proceed to explore the content of the clinical metadata table in detail. The following interactive viewer allows you to quickly and conveniently review experimental assignments, sort patients or samples according to variables of interest, and verify the integrity of the design before delving into the interpretation of analytical results.
 </p>
+
 
 <div class="divider"></div>
 
@@ -563,19 +590,19 @@ if ("sample_metadata.tsv" %in% names_metadata_list) {
     </p>
 
     <p>
-      This file acts as the fundamental <strong>biological dictionary</strong> for the analysis. Its main function is to assign each unique sample identifier (<code>Sample_ID</code>) its corresponding phenotypic context. This includes <strong>primary experimental variables</strong> (such as clinical condition: e.g., WT vs KO, Healthy vs Diseased, Treated vs Control), <strong>biological variables</strong> (tissue of origin, sex, donor age), and <strong>technical variables</strong> (replicates, responsible researcher, or sequencing batch).
+      This file constitutes the <strong>biological dictionary</strong> of the analysis. Its purpose is to associate each unique sample identifier (<code>Sample_ID</code>) with its corresponding experimental variables, such as clinical condition (e.g., WT vs KO), tissue of origin, replicates, age, or sequencing batch.
     </p>
 
     <p>
-      The accuracy of these parameters is absolutely critical for the proper functioning of advanced computational stages executed using tools like <em>Seurat</em>. Thanks to the information in this table, the software can group cells from biologically related samples, apply mathematical algorithms to mitigate technical noise (<em>batch effect correction</em>), and, most importantly, define the exact groups on which statistical contrasts will be performed to identify <strong>differentially expressed genes (DEGs)</strong>.
+      These parameters are essential in advanced stages of the pipeline (using tools such as <em>Seurat</em>), as they enable the grouping of biologically similar cells, correction of batch effects (<em>batch effect</em>), and execution of differential expression statistical contrasts.
     </p>
   '), sep = "\n")
 
 } else {
   cat(glue::glue('
-  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Warning</b><br>
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
     The file <code>sample_metadata.tsv</code> was not found in the specified directory:<br>
     <code>{ruta_metadata_relativa}</code>.
   </div>
@@ -583,7 +610,7 @@ if ("sample_metadata.tsv" %in% names_metadata_list) {
 }
 ```
 
-```{r}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 if ("sample_metadata.tsv" %in% names_metadata_list) {
   df_sample <- archives_metadata_list[["sample_metadata.tsv"]]
   
@@ -632,24 +659,24 @@ if ("sample_metadata.tsv" %in% names_metadata_list) {
 if ("fastq_mapping.tsv" %in% names_metadata_list) {
   cat(glue::glue('
     <p>
-      <i class="fa-solid fa-server" style="color: #4a86e8;"></i> 
+      <i class="fa-solid fa-flask" style="color: #4a86e8;"></i> 
       <strong>File:</strong> <code>fastq_mapping.tsv</code>
     </p>
 
     <p>
-      This document represents the <strong>computational and sequencing traceability</strong> of the project. It establishes a direct and unambiguous correspondence between standardized sample names (those defined in the biological dictionary) and the raw binary <code>.fastq.gz</code> files (R1 and R2) generated by the Illumina sequencer.
+      This document represents the <strong>computational and sequencing traceability</strong> of the project. It establishes the direct correspondence between standardized sample names and the raw binary <code>.fastq.gz</code> files (R1 and R2) generated by the Illumina sequencer.
     </p>
 
     <p>
-      This traceability ensures complete transparency of the computational process. It is the "instruction map" that guarantees that primary processing pipelines (such as <em>Cell Ranger</em>) correctly identify, assign, and assemble the structure of cellular barcodes (<em>Cell Barcodes</em>), molecular identifiers (UMIs), and transcriptomic reads (<em>Reads</em>) originating from each sequencing lane (<em>Lane</em>).
+      This traceability ensures full transparency of the computational workflow, guaranteeing that primary processing pipelines (such as <em>Cell Ranger</em>) correctly identify and assemble the structure of cell barcodes, unique molecular identifiers (UMIs), and transcriptomic reads corresponding to each sequencing lane (<em>Lane</em>).
     </p>
   '), sep = "\n")
 
 } else {
   cat(glue::glue('
-  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Warning</b><br>
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
     The file <code>fastq_mapping.tsv</code> was not found in the specified directory:<br>
     <code>{ruta_metadata_relativa}</code>.
   </div>
@@ -684,11 +711,11 @@ if ("fastq_mapping.tsv" %in% names_metadata_list) {
   ruta_file <- file.path(ruta_metadata_relativa, "fastq_mapping.tsv")
 
   cat(glue::glue('
-  <p style="text-align:center; margin-top: 15px;">
+  <p style="text-align:center;">
     <a href="{ruta_file}" 
       download="fastq_mapping.tsv" 
       class="boton-file-download">
-      <i class="fa-solid fa-file-arrow-down"></i> Download file "fastq_mapping.tsv"
+      <i class="fa-solid fa-file-arrow-down"></i> Download file"fastq_mapping.tsv"
     </a>
   </p>
   '), sep = "\n")
@@ -743,23 +770,35 @@ cat(glue::glue('
   With that said, the interactive panels for both directories are presented below. First, the viewer corresponding to the raw sequencing reads (<strong>FASTQ</strong>) is detailed:
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_fastq)) {
-  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible on this system.</em></p>\n', ruta_fastq))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The specified path does not exist or is not accessible:<br>
+  <code>{ruta_fastq}</code>
+  </div>
+  '))
 
 } else {
-  # List all files and directories within the FASTQ folder
+  # Listar todos los archivos y carpetas del directorio FASTQ
   files_fastq <- list.files(ruta_fastq, full.names = FALSE)
   
   if (length(files_fastq) == 0) {
-    cat('<p><em>No files were found in the specified directory.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
+    No files were found in the specified folder:<br>
+    <code>{ruta_fastq}</code>
+    </div>
+    '))
   
   } else {
     enlace_fastq <- ruta_fastq
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files_fastq) {
       clase <- if (!grepl("\\.", f)) {
         "file-folder"
@@ -773,43 +812,51 @@ if (!dir.exists(ruta_fastq)) {
                   clase, enlace_fastq, f, f))
     }
     cat("</ul>\n")
+
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_fastq_relativa}/" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Browse FASTQ data here
+      </a>
+    </p>
+    '), sep = "\n")
   }
 }
 ```
 
-</div>
-
-```{r, results="asis"}
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_fastq_relativa}/" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explore the FASTQ data here
-  </a>
-</p>
-'), sep = "\n")
-```
-
 <p>
-  Y a continuación, se presenta el segundo visor correspondiente a los resultados del procesamiento primario. En este directorio se generan carpetas individuales (con el nombre de la muestra) que albergan el volcado completo de resultados de <em>Cell Ranger</em>, incluyendo la vital subcarpeta <code>outs/</code> donde residen las matrices de expresión filtradas.
+  Next, the second viewer corresponding to the primary processing results is presented. In this directory, individual folders (named after each sample) are generated, containing the complete output of the <em>Cell Ranger</em> pipeline, including the essential <code>outs/</code> subfolder where the filtered expression matrices are stored.
 </p>
-
-<div class="box-files">
 
 ```{r, results="asis"}
 if (!dir.exists(ruta_cellranger)) {
-  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible on this system.</em></p>\n', ruta_cellranger))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Alerta</b><br>
+  La ruta especificada no existe o no es accesible:<br>
+  <code>{ruta_cellranger}</code>
+  </div>
+  '))
 
 } else {
-  # List all files and folders in the Cell Ranger directory
+  # Listar todos los archivos y carpetas del directorio Cell Ranger
   files_cr <- list.files(ruta_cellranger, full.names = FALSE)
   
   if (length(files_cr) == 0) {
-    cat('<p><em>No files were found in the specified directory.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
+    No se encontraron archivos en la carpeta especificada:<br>
+    <code>{ruta_cellranger}</code>
+    </div>
+    '))
   
   } else {
     enlace_cr <- ruta_cellranger
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files_cr) {
       clase <- if (!grepl("\\.", f)) {
         "file-folder"
@@ -825,20 +872,16 @@ if (!dir.exists(ruta_cellranger)) {
                   clase, enlace_cr, f, f))
     }
     cat("</ul>\n")
+
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_cellranger_relativa}/" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explorar los resultados de Cell Ranger aquí
+      </a>
+    </p>
+    '), sep = "\n")
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_cellranger_relativa}/" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explore the Cell Ranger results here
-  </a>
-</p>
-'), sep = "\n")
 ```
 
 <p>

@@ -538,7 +538,7 @@ if (!is.null(dim_reduction_df) && nrow(dim_reduction_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se encontraron archivos en la carpeta de reducción de dimensionalidad (PCA).
   </div>
   '), sep = "\n")
@@ -609,7 +609,7 @@ if (!is.null(dim_reduction_df) && nrow(dim_reduction_df) > 0) {
   HTML(glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota</b><br>
+    <b>Nota informativa</b><br>
     Al no existir archivos de reducción de dimensionalidad, no se generarán los iframes interactivos para este apartado.
   </div>
   '), sep = "\n")
@@ -693,7 +693,7 @@ if (dir.exists(ruta_clustering)) {
     cat(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Nota Metodológica</b><br>
+      <b>Nota informativa</b><br>
       El directorio raíz de clustering se encuentra vacío en este proyecto.
     </div>
     '), sep = "\n")
@@ -808,7 +808,7 @@ if (!is.null(merged_umaps_df) && nrow(merged_umaps_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectaron archivos de proyecciones UMAP para la estrategia <em>Merged</em> en este proyecto.
   </div>
   '), sep = "\n")
@@ -921,7 +921,7 @@ if (!is.null(merged_proportions_df) && nrow(merged_proportions_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectaron archivos de proporciones celulares para la estrategia <em>Merged</em> en este proyecto.
   </div>
   '), sep = "\n")
@@ -1050,7 +1050,7 @@ if (!is.null(integrated_umaps_df) && nrow(integrated_umaps_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectaron archivos de proyecciones UMAP para la estrategia <em>Integrated</em> en este proyecto.
   </div>
   '), sep = "\n")
@@ -1170,7 +1170,7 @@ if (!is.null(integrated_proportions_df) && nrow(integrated_proportions_df) > 0) 
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectaron archivos de proporciones celulares para la estrategia <em>Integrated</em> en este proyecto.
   </div>
   '), sep = "\n")

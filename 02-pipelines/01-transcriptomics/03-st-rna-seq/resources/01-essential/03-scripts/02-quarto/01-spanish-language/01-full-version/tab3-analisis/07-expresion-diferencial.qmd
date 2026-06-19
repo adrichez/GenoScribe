@@ -720,9 +720,9 @@ if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df)
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Directorio vacío</b><br>
+    <b>Nota informativa</b><br>
     No se han detectado subdirectorios en la raíz de Comparaciones Estándar.
   </div>
   '), sep = "\n")
@@ -812,9 +812,9 @@ if (!is.null(files_deg_seurat_within_df) && nrow(files_deg_seurat_within_df) > 0
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectaron archivos de expresión diferencial preliminar en clústeres numéricos.
   </div>
   '), sep = "\n")
@@ -875,9 +875,9 @@ if (!is.null(dbs_subdirs_df) && nrow(dbs_subdirs_df) > 0) {
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectaron directorios de bases de datos automáticas en este análisis.
   </div>
   '), sep = "\n")
@@ -951,9 +951,9 @@ if (!is.null(dbs_subdirs_df) && nrow(dbs_subdirs_df) > 0) {
       
     } else {
       cat(glue::glue('
-      <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+      <div class="alert-info alert-box">
         <i class="fa-solid fa-circle-info"></i>
-        <b>Directorio vacío</b><br>
+        <b>Nota informativa</b><br>
         No se han detectado archivos de expresión diferencial para la base de datos {db}.
       </div>
       '), sep = "\n")
@@ -1032,9 +1032,9 @@ if (!is.null(versiones_deg_agg_df) && nrow(versiones_deg_agg_df) > 0) {
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectaron versiones de análisis para el modelo manual consolidado.
   </div>
   '), sep = "\n")
@@ -1100,9 +1100,9 @@ if (!is.null(ultima_version_nombre)) {
 } else {
   # Añadir alerta corporativa por si el directorio no existe
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectó la última versión para mostrar sus subcarpetas de contraste.
   </div>
   '), sep = "\n")
@@ -1166,9 +1166,9 @@ if (!is.null(ult_ver_within_df) && nrow(ult_ver_within_df) > 0) {
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectaron archivos de contraste intrapoblacional (within_cluster) en la versión definitiva.
   </div>
   '), sep = "\n")
@@ -1326,10 +1326,10 @@ if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_di
       
     } else {
       cat(glue::glue('
-      <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
-        <i class="fa-solid fa-folder-open"></i>
-        <b>Directorio sin resultados</b><br>
-        El contenedor <code>{carpeta_cruda}</code> ha sido inicializado, pero actualmente no se han volcado los archivos correspondientes (reportes o tablas) para esta comparativa.
+      <div class="alert-info alert-box">
+        <i class="fa-solid fa-circle-info"></i>
+        <b>Nota informativa</b><br>
+        El directorio <code>{carpeta_cruda}</code> ha sido inicializado, pero actualmente no se han volcado los archivos correspondientes (reportes o tablas) para esta comparativa.
       </div>
       '), sep = "\n")
     }
@@ -1339,9 +1339,9 @@ if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_di
 } else {
   # ESCENARIO B: NO HAY PETICIONES AD HOC (SIN CARPETAS)
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 25px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Repositorio pasivo</b><br>
+    <b>Nota informativa</b><br>
     Actualmente no hay análisis personalizados ni peticiones extra solicitadas para este proyecto.
   </div>
   '), sep = "\n")

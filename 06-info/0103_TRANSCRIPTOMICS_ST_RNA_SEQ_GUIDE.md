@@ -2185,7 +2185,7 @@ Contiene la evaluación técnica de las lecturas crudas de secuenciación. En lo
   * 📊 **Integración de MultiQC (Común a ambos) &rArr;** Si se desea incorporar el reporte unificado en el informe interactivo, el archivo central debe llamarse exactamente **`multiqc_report.html`**. Es indispensable que esté acompañado de su respectiva carpeta **`multiqc_data/`** (con sus logs y JSONs internos) para que el visor no pierda la interactividad.
 
 * 📂 **`02_cells_qc/` &rArr; Viabilidad celular (Recomendado):**
-Almacena los resultados biológicos del filtrado celular generado por Seurat (evaluando métricas clave como el porcentaje mitocondrial o la cantidad de genes detectados por célula). En este nivel, GenoScribe buscará de forma automatizada y estricta dos únicos archivos con exactamente estos nombres:
+Almacena los resultados biológicos del filtrado celular generado por Seurat (evaluando métricas clave como el porcentaje mitocondrial o la cantidad de genes detectados por célula). En este nivel, GenoScribe buscará de forma automatizada los archivos que una nomenclatura similar a los que se muestran a continuación (basta simplemente que sean archivos `.pdf` para mostrarlos de forma interactiva en el explorador de archivos, pero solo los dos siguientes se representarán además de forma dinámica en un visor):
   * 📄 **`Pre_Quality_mergeSeurat.pdf` &rArr;** Gráficos de violín y dispersión antes de aplicar los filtros.
   * 📄 **`Post_Quality_mergeSeurat.pdf` &rArr;** Resultado gráfico tras la limpieza de la matriz.
 

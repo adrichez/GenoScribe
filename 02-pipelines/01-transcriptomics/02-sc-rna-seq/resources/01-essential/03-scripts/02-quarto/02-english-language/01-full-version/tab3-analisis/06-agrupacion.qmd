@@ -443,8 +443,8 @@ if (!is.null(versiones_aggregation_df) && nrow(versiones_aggregation_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    No aggregation version folders were detected in the corresponding directory.
+    <b>Information Note</b><br>
+    The directory is empty or no clustering version folders were detected in the corresponding directory.
   </div>
   '), sep = "\n")
 }

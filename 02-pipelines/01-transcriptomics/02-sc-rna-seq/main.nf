@@ -65,7 +65,15 @@ process COPIAR_CARPETA_PROYECTO {
 
         if [ -d "\$origen" ]; then
             echo "Copiando carpeta: \$origen"
-            mkdir -p "\$destino"
+            
+            # 1. Clonar primero toda la estructura de directorios (incluidas carpetas vacías)
+            find "\$origen" -type d -print0 | while IFS= read -r -d '' dir; do
+                # Extraer la ruta relativa eliminando el prefijo del origen
+                rel_dir="\${dir#\$origen}"
+                mkdir -p "\$destino\$rel_dir"
+            done
+
+            # 2. Copiar los archivos aplicando los filtros de peso y extensión
             find "\$origen" -type f -size -200M \\
                 -not -name "*.fastq" \\
                 -not -name "*.fq" \\
@@ -79,9 +87,8 @@ process COPIAR_CARPETA_PROYECTO {
                 -not -name "*.cram" \\
                 -not -name "*.vcf.gz" \\
                 -print0 | while IFS= read -r -d '' file; do
-                    rel_path=\$(dirname "\${file#\$origen/}")
-                    mkdir -p "\$destino/\$rel_path"
-                    cp "\$file" "\$destino/\$rel_path/"
+                    rel_path="\${file#\$origen/}"
+                    cp "\$file" "\$destino/\$rel_path"
             done
         else
             echo "⚠ Carpeta no encontrada: \$origen"

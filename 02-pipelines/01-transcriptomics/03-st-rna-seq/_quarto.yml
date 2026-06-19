@@ -3,6 +3,19 @@ project:
   output-dir: report
   render:
     - index_es.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab1-metodologia/metodologia.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab2-resumen/resumen.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/00-contexto.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/01-revision-inicial.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/02-control-calidad.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/03-clustering.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/04-marcadores.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05-anotacion.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/06-agrupacion.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/07-expresion-diferencial.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/08-enriquecimiento.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/09-extra.qmd
+    - resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/10-conclusiones.qmd
 
 resources:
   - resources/**

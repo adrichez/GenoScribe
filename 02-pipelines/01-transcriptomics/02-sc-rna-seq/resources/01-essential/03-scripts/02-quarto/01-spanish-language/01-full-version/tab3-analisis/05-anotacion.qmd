@@ -396,7 +396,7 @@ if (dir.exists(ruta_data_annotations)) {
 
 # Rutas de la carpeta "manual" dentro "02_annotations"
 ruta_data_annotations_manual <- file.path(ruta_data_annotations, "manual")
-ruta_data_annotations_manual_relativa <- file.path(ruta_data_annotations, "manual")
+ruta_data_annotations_manual_relativa <- file.path(ruta_data_annotations_relativa, "manual")
 
 # Escaneo de Data Annotations Manual
 data_annotations_manual_df <- NULL
@@ -674,8 +674,9 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
-    No se detectaron archivos de anotación automática en este proyecto. Las subsecciones correspondientes se mostrarán vacías.
+    <b>Nota informativa</b><br>
+    El directorio está vacío o no se detectaron archivos de anotación automática en este proyecto.<br>
+    Las subsecciones correspondientes se mostrarán vacías.
   </div>
   '), sep = "\n")
 }
@@ -818,7 +819,9 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
           }, error = function(e) {
               out_auto <<- tagAppendChild(out_auto, HTML(glue::glue('
                 <div class="alert-info alert-box" style="margin-bottom: 30px;">
-                  <i class="fa-solid fa-triangle-exclamation"></i> Error al leer la tabla {nombre_tsv}. Formato inesperado.
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <b>Nota informativa</b><br>
+                  Error al leer la tabla {nombre_tsv}. Formato inesperado.
                 </div>
               '), sep = "\n"))
           })
@@ -832,8 +835,8 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Nota</b><br>
-      No se han encontrado archivos PDF consolidados para las bases de datos de anotación automática.
+      <b>Nota informativa</b><br>
+      El directorio está vacío o no se han encontrado archivos PDF consolidados para las bases de datos de anotación automática.
     </div>
     '), sep = "\n")
   }
@@ -908,7 +911,7 @@ if (!is.null(data_annotations_manual_df) && nrow(data_annotations_manual_df) > 0
   cat(glue::glue('
   <div class="alert-info alert-box" style="margin-top: 20px;">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Nota informativa</b><br>
     No se han detectado diccionarios en el directorio requerido (data/04_resources/02_annotations/manual).
   </div>
   '))
@@ -997,11 +1000,12 @@ if (!is.null(cell_annotation_manual_ult_version_df) && nrow(cell_annotation_manu
     </a>
   </p>
   '))
+
 } else {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
+    <b>Nota informativa</b><br>
     No se detectaron subdirectorios o archivos en la versión definitiva de anotación manual.
   </div>
   '))
@@ -1061,7 +1065,7 @@ if (!is.null(cell_annotation_manual_etapa_df) && nrow(cell_annotation_manual_eta
   cat(glue::glue('
   <div class="alert-info alert-box" style="margin-top: 20px;">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Directorio no detectado o vacío</b><br>
+    <b>Nota informativa</b><br>
     No se han detectado archivos organizados bajo el nivel jerárquico <code>01_etapa</code> en la última versión. Es posible que el proyecto no requiera este nivel de granularidad o que los archivos de validación se hayan depositado directamente en el directorio raíz de la versión.
   </div>
   '), sep = "\n")
@@ -1164,8 +1168,9 @@ if (!is.null(cell_annotation_manual_big_etapa_df) && nrow(cell_annotation_manual
   cat(glue::glue('
   <div class="alert-info alert-box" style="margin-top: 20px;">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Directorio no detectado o vacío</b><br>
-    No se han detectado archivos organizados bajo el nivel jerárquico <code>02_big_etapa</code> en la última versión. Es posible que el proyecto no requiera una agrupación macroscópica de las poblaciones o que los archivos se hayan depositado directamente en la raíz de la versión.
+    <b>Nota informativa</b><br>
+    No se han detectado archivos organizados bajo el nivel jerárquico <code>02_big_etapa</code> en la última versión.<br>
+    Es posible que el proyecto no requiera una agrupación macroscópica de las poblaciones o que los archivos se hayan depositado directamente en la raíz de la versión.
   </div>
   '), sep = "\n")
 }

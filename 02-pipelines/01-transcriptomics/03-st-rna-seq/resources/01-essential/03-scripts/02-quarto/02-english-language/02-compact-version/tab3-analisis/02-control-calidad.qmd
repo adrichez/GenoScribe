@@ -182,18 +182,30 @@ fastq_files <- list.files(
 )
 
 # Crear data.frame con nombre y ruta
-fastq_df <- data.frame(
-  file_name = basename(fastq_files),
-  ruta_absoluta = fastq_files,
-  stringsAsFactors = FALSE
-)
+if (length(fastq_files) > 0) {
+  fastq_df <- data.frame(
+    file_name = basename(fastq_files),
+    ruta_absoluta = fastq_files,
+    stringsAsFactors = FALSE
+  )
+} else {
+  fastq_df <- data.frame(
+    file_name = character(),
+    ruta_absoluta = character(),
+    stringsAsFactors = FALSE
+  )
+}
 
 
 # Lista con rutas de las subcarpetas de primer nivel dentro de la carpeta de Cell Ranger (cada una corresponde a una muestra)
-ruta_muestras_cellranger_relativa_list <- list.dirs(ruta_cellranger_relativa, recursive = FALSE, full.names = TRUE)
-
-# Obtener solo los nombres de las carpetas (sin ruta)
-nombre_muestras_cellranger_relativa_list <- basename(ruta_muestras_cellranger_relativa_list)
+if (dir.exists(ruta_cellranger_relativa)) {
+  ruta_muestras_cellranger_relativa_list <- list.dirs(ruta_cellranger_relativa, recursive = FALSE, full.names = TRUE)
+  # Obtener solo los nombres de las carpetas (sin ruta)
+  nombre_muestras_cellranger_relativa_list <- basename(ruta_muestras_cellranger_relativa_list)
+} else {
+  ruta_muestras_cellranger_relativa_list <- character()
+  nombre_muestras_cellranger_relativa_list <- character()
+}
 
 # Inicializamos lista para almacenar resultados
 metrics_list <- list()
@@ -237,49 +249,59 @@ for (sub in ruta_muestras_cellranger_relativa_list) {
 # - ruta_absoluta_html: la ruta absoluta de web_summary.html
 
 
-# Crear lista temporal de dataframes
-metrics_df_list <- lapply(names(metrics_list), function(sample_name) {
-  df <- metrics_list[[sample_name]]$metrics_df
-  # Añadir columna con el nombre de la muestra
-  df <- cbind(Sample = sample_name, df)
-  return(df)
-})
+# Inicializar dataframes vacíos para evitar errores en el renderizado si no hay datos
+metrics_combined_df <- data.frame()
+metrics_mean_df <- data.frame()
 
-# Combinar todo en un único dataframe
-metrics_combined_df <- do.call(rbind, metrics_df_list)
+if (length(metrics_list) > 0) {
 
-# Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
-colnames(metrics_combined_df) <- gsub("\\.", " ", colnames(metrics_combined_df))
+  # Crear lista temporal de dataframes
+  metrics_df_list <- lapply(names(metrics_list), function(sample_name) {
+    df <- metrics_list[[sample_name]]$metrics_df
+    # Añadir columna con el nombre de la muestra
+    df <- cbind(Sample = sample_name, df)
+    return(df)
+  })
 
-# Ruta de salida para el CSV combinado
-ruta_cellranger_metrics_summary_all_samples <- file.path(ruta_archives_tmp_control_calidad, "cellranger_metrics_summary_all_samples.csv")
+  # Combinar todo en un único dataframe
+  metrics_combined_df <- do.call(rbind, metrics_df_list)
 
-# Guardar el dataframe combinado como CSV en la carpeta temporal para control de calidad dentro de análisis
-write.csv(metrics_combined_df, ruta_cellranger_metrics_summary_all_samples, row.names = FALSE)
+  if (!is.null(metrics_combined_df) && ncol(metrics_combined_df) > 0) {
+    # Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
+    colnames(metrics_combined_df) <- gsub("\\.", " ", colnames(metrics_combined_df))
+  }
+
+  # Ruta de salida para el CSV combinado
+  ruta_cellranger_metrics_summary_all_samples <- file.path(ruta_archives_tmp_control_calidad, "cellranger_metrics_summary_all_samples.csv")
+
+  # Guardar el dataframe combinado como CSV en la carpeta temporal para control de calidad dentro de análisis
+  write.csv(metrics_combined_df, ruta_cellranger_metrics_summary_all_samples, row.names = FALSE)
 
 
-# Convertir las columnas a formato numérico
-metrics_numeric_df <- metrics_combined_df
-metrics_numeric_df[-1] <- lapply(metrics_numeric_df[-1], function(x) {
-  x <- gsub(",", "", x)   # eliminar separadores de miles
-  x <- gsub("%", "", x)   # eliminar %
-  as.numeric(x)
-})
+  # Convertir las columnas a formato numérico
+  metrics_numeric_df <- metrics_combined_df
+  metrics_numeric_df[-1] <- lapply(metrics_numeric_df[-1], function(x) {
+    x <- gsub(",", "", x)   # eliminar separadores de miles
+    x <- gsub("%", "", x)   # eliminar %
+    as.numeric(x)
+  })
 
-# Calcular la media de cada métrica (ignorando la columna "Sample") y crear un nuevo dataframe para la fila de medias
-metrics_mean_df <- data.frame(
-  Sample = "Mean",
-  t(colMeans(metrics_numeric_df[-1], na.rm = TRUE))
-)
+  # Calcular la media de cada métrica (ignorando la columna "Sample") y crear un nuevo dataframe para la fila de medias
+  metrics_mean_df <- data.frame(
+    Sample = "Mean",
+    t(colMeans(metrics_numeric_df[-1], na.rm = TRUE))
+  )
 
-# Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
-colnames(metrics_mean_df) <- gsub("\\.", " ", colnames(metrics_mean_df))
+  # Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
+  colnames(metrics_mean_df) <- gsub("\\.", " ", colnames(metrics_mean_df))
 
-# Ruta de salida para el CSV con las medias
-ruta_cellranger_metrics_summary_mean <- file.path(ruta_archives_tmp_control_calidad, "cellranger_metrics_summary_mean.csv")
+  # Ruta de salida para el CSV con las medias
+  ruta_cellranger_metrics_summary_mean <- file.path(ruta_archives_tmp_control_calidad, "cellranger_metrics_summary_mean.csv")
 
-# Guardar el dataframe combinado como CSV en la carpeta de ruta_archives_tmp_control_calidad
-write.csv(metrics_mean_df, ruta_cellranger_metrics_summary_mean, row.names = FALSE)
+  # Guardar el dataframe combinado como CSV en la carpeta de ruta_archives_tmp_control_calidad
+  write.csv(metrics_mean_df, ruta_cellranger_metrics_summary_mean, row.names = FALSE)
+
+}
 
 
 
@@ -611,14 +633,12 @@ cells_qc_files_df <- cells_qc_files_df[order(cells_qc_files_df$file_name), ]
   Below, the directories resulting from this computational phase are presented. These repositories contain the <strong>sparse expression matrices</strong> (both raw and filtered), secondary cluster analyses, and the <strong>HTML technical validation reports</strong> for each processed library:
 </p>
 
-<div class="box-files">
-
 ```{r, echo=FALSE, results="asis"}
 if (!dir.exists(ruta_cellranger_relativa)) {
   cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_cellranger_relativa))
 
 } else {
-  # List all files and folders in the Cell Ranger directory
+  # Listar todos los archivos y carpetas del directorio de Cell Ranger
   files <- list.files(ruta_cellranger_relativa, full.names = FALSE)
   
   if (length(files) == 0) {
@@ -626,9 +646,9 @@ if (!dir.exists(ruta_cellranger_relativa)) {
   } else {
     enlace <- ruta_cellranger_relativa
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files) {
-      # Assign class based on extension (sample folders usually have no dot)
+      # Asignar clase según la extensión (las carpetas de muestras no suelen tener punto)
       clase <- if (!grepl("\\.", f)) {
         "file-folder"
       } else if (grepl("\\.html$", f, ignore.case = TRUE)) {
@@ -645,21 +665,17 @@ if (!dir.exists(ruta_cellranger_relativa)) {
                   clase, enlace, f, f))
     }
     cat("</ul>\n")
+
+    # Imprimir el botón para explorar la carpeta
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_cellranger_relativa}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Browse the Cell Ranger directory here
+      </a>
+    </p>
+    '), sep = "\n")
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# Imprimir el botón para explorar la carpeta
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_cellranger_relativa}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explore the Cell Ranger directory here
-  </a>
-</p>
-'), sep = "\n")
 ```
 
 <p>
@@ -693,48 +709,48 @@ carpetas_muestras <- list.dirs(ruta_cellranger_relativa, recursive = FALSE, full
 
 if (length(carpetas_muestras) > 0) {
   
-  out <- tagList()  # General container
+  out <- tagList()  # Contenedor general
   
-  i <- 1  # Counter
+  i <- 1  # Contador
 
-  # Iterate over each sample
+  # Iterar sobre cada muestra
   for (sample_name in carpetas_muestras) {
     
-    # Relative (for web) and absolute (for R) paths
+    # Rutas relativas (para la web) y absolutas (para leer en R)
     ruta_html_rel <- file.path(ruta_cellranger_relativa, sample_name, "outs", "web_summary.html")
     ruta_csv_rel  <- file.path(ruta_cellranger_relativa, sample_name, "outs", "metrics_summary.csv")
     
     ruta_html_abs <- file.path(ruta_cellranger, sample_name, "outs", "web_summary.html")
     ruta_csv_abs  <- file.path(ruta_cellranger, sample_name, "outs", "metrics_summary.csv")
     
-    # Check that the files exist
+    # Comprobar que los archivos existen
     if (file.exists(ruta_csv_abs) && file.exists(ruta_html_abs)) {
       
-      # Read the table directly from the file
+      # Leer la tabla directamente del archivo
       df_metrics <- read.csv(ruta_csv_abs, stringsAsFactors = FALSE)
       
-      # Clean column names to remove dots for the Datatable
+      # Limpiar columnas para que no salgan con puntos en el Datatable
       colnames(df_metrics) <- gsub("\\.", " ", colnames(df_metrics))
       
-      # 1. ADD HTML BLOCK FOR IFRAME AND TITLES
+      # 1. AÑADIR BLOQUE HTML PARA EL IFRAME Y TÍTULOS
       out <- tagAppendChild(out, HTML(glue::glue('
         <div style="height: 15px; background-color: transparent;"></div>
 
         <div class="titulo4" id="tab3-seccion2.1.1.{i}" style="padding-bottom: 8px; line-height: 1.2;">
-          2.1.1.{i}. Sample: {sample_name}
+          2.1.1.{i}. Muestra: {sample_name}
         </div>
 
         <p style="margin-top: 20px;">
-          This section breaks down the individual technical profile of the library corresponding to sample <strong>{sample_name}</strong>. Isolated review of this replicate is essential to certify the integrity of its cell partitioning and sequencing process, allowing specific anomalies of this batch to be discarded before integrating the global data of the experiment.
+          En este apartado se desglosa el perfil técnico individual de la librería correspondiente a la muestra <strong>{sample_name}</strong>. La revisión aislada de esta réplica resulta fundamental para certificar la integridad de su proceso de partición celular y secuenciación, permitiendo descartar anomalías específicas de este lote antes de proceder a la integración global de los datos del experimento.
         </p>
 
         <p style="margin-top: 20px; margin-bottom: 18px;">
           <i class="fa-solid fa-microchip" style="color: #276DC3;"></i> 
-          <strong>Cell Ranger Report:</strong> <code>web_summary.html</code>
+          <strong>Reporte Cell Ranger:</strong> <code>web_summary.html</code>
         </p>
         
         <p style="margin-bottom: 18px;">
-          The following interactive <em>dashboard</em> summarizes the key technical indicators of the sample. Special attention is recommended on the barcode rank plot (blue curve) to ensure that the drop <em>(cliff)</em> between identified cells and background noise is sharp and clear.
+          El siguiente <em>dashboard</em> interactivo resume los indicadores técnicos clave de la muestra. Se recomienda prestar especial atención al gráfico de rango de códigos de barras (curva azul) para asegurar que la caída <em>(cliff)</em> entre las células identificadas y el ruido de fondo sea pronunciada y clara.
         </p>
 
         <div class="iframe-container" style="margin-top: 25px; margin-bottom: 10px;">
@@ -745,23 +761,23 @@ if (length(carpetas_muestras) > 0) {
           <a href="{ruta_html_rel}"
             target="_blank" 
             class="boton-iframe">
-            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Report in a new tab
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir Reporte en pestaña nueva
           </a>
 
           <a href="{ruta_html_rel}"
             download="{sample_name}_web_summary.html"
             class="boton-iframe-download">
-            <i class="fa-solid fa-file-arrow-down"></i> Download HTML Report
+            <i class="fa-solid fa-file-arrow-down"></i> Descargar Reporte HTML
           </a>
         </div>
         
         <p style="margin-top: 20px; margin-bottom: 18px;">
           <i class="fa-solid fa-table" style="color: #276DC3;"></i> 
-          <strong>Exact Metrics Table (<code>metrics_summary.csv</code>):</strong>
+          <strong>Tabla de Métricas exactas (<code>metrics_summary.csv</code>):</strong>
         </p>
         
         <p style="margin-bottom: 20px;">
-          To complement the above visual analysis, this table directly presents all mapping, depth, and cell performance statistics for this specific library in a copyable format.
+          Para complementar el análisis visual superior, esta tabla expone de forma directa y copiable todos los estadísticos de mapeo, profundidad y rendimiento celular consolidados para esta librería específica.
         </p>
       ')))
       
@@ -790,7 +806,7 @@ if (length(carpetas_muestras) > 0) {
           <a href="{ruta_csv_rel}" 
             download="{sample_name}_metrics_summary.csv" 
             class="boton-file-download">
-            <i class="fa-solid fa-file-arrow-down"></i> Download metrics (.csv)
+            <i class="fa-solid fa-file-arrow-down"></i> Descargar métricas (.csv)
           </a>
         </div>
       ')))
@@ -799,13 +815,13 @@ if (length(carpetas_muestras) > 0) {
       i <- i + 1
       
     } else {
-      # If files are missing
+      # Si faltan archivos
       out <- tagAppendChild(out, HTML(glue::glue('
         <div class="alert-warning alert-box">
           <i class="fa-solid fa-triangle-exclamation"></i>
-          <b>Warning</b><br>
-          Result files are missing for the sample:<br>
-          <code>{sample_name}</code>.
+          <b>Advertencia</b><br>
+          Se ha encontrado en el directorio de Cell Ranger la carpeta de la muestra <code>{sample_name}</code>,<br>
+          pero no se han hallado los archivos <code>metrics_summary.csv</code> ni <code>web_summary.html</code> en la ruta esperada.
         </div>
       ')))
     }
@@ -815,12 +831,12 @@ if (length(carpetas_muestras) > 0) {
   out
 
 } else {
-  # Warning message if no folders are found
+  # Mensaje de advertencia si no hay carpetas
   HTML(glue::glue('
   <div class="alert-warning alert-box">
     <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Warning</b><br>
-    No sample folders were found in the Cell Ranger directory:<br>
+    <b>Advertencia</b><br>
+    No se han encontrado carpetas de muestras en el directorio de Cell Ranger:<br>
     <code>{ruta_cellranger_relativa}</code>.
   </div>
   '))
@@ -859,7 +875,7 @@ if (exists("metrics_combined_df") && !is.null(metrics_combined_df) && nrow(metri
       lengthChange = FALSE,
       info = FALSE,
       dom = 't', 
-      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json')
+      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
     ),
     class = 'stripe hover row-border order-column compact',
     rownames = FALSE
@@ -867,10 +883,10 @@ if (exists("metrics_combined_df") && !is.null(metrics_combined_df) && nrow(metri
 
 } else {
   HTML(glue::glue('
-  <div class="alert-error alert-box">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Warning</b><br>
-    The unified metrics table could not be generated.
+  <div class="alert-info alert-box">
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Information Note</b><br>
+  The unified metrics table could not be generated because the required files are missing or empty.
   </div>
   '))
 }
@@ -975,7 +991,7 @@ if (!is.null(fastp_files_df) && nrow(fastp_files_df) > 0) {
   cat(glue::glue('
   <p style="text-align:center;">
     <a href="{ruta_reads_qc_fastp_relativa}" target="_blank" class="boton-files">
-      <i class="fa-solid fa-folder-open"></i> Explore the Fastp directory here
+      <i class="fa-solid fa-folder-open"></i> Browse Fastp directory here
     </a>
   </p>
   '))
@@ -983,9 +999,10 @@ if (!is.null(fastp_files_df) && nrow(fastp_files_df) > 0) {
 } else {
   cat('
   <div class="alert-info alert-box">
-    <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    No files were found in the Fastp folder. It is likely that this methodological step was skipped, delegating the filtering entirely to Cell Ranger.
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Information Note</b><br>
+  No files were found in the Fastp folder.<br>
+  It is likely that this step was omitted from the workflow, delegating filtering entirely to Cell Ranger.
   </div>
   ')
 }
@@ -1056,8 +1073,8 @@ if (!is.null(fastp_html_df) && nrow(fastp_html_df) > 0) {
   HTML('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Note</b><br>
-    As there are no Fastp files, interactive iframes for individual samples will not be generated.
+    <b>Nota informativa</b><br>
+    Al no disponer de los archivos de reporte de Fastp, no es posible mostrar los paneles interactivos de calidad por muestra.
   </div>
   ')
 }
@@ -1107,7 +1124,7 @@ if (file.exists(ruta_multiqc_fastp_abs)) {
   HTML('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     The integrated MultiQC report for Fastp is not available in this project.
   </div>
   ')
@@ -1185,7 +1202,7 @@ if (!is.null(fastqc_files_df) && nrow(fastqc_files_df) > 0) {
   cat(glue::glue('
   <p style="text-align:center;">
     <a href="{ruta_reads_qc_fastqc_relativa}" target="_blank" class="boton-files">
-      <i class="fa-solid fa-folder-open"></i> Explore the FastQC directory here
+      <i class="fa-solid fa-folder-open"></i> Browse FastQC directory here
     </a>
   </p>
   '))
@@ -1193,9 +1210,10 @@ if (!is.null(fastqc_files_df) && nrow(fastqc_files_df) > 0) {
 } else {
   cat('
   <div class="alert-info alert-box">
-    <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    No files were found in the FastQC folder.
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Information Note</b><br>
+  No files were found in the FastQC folder.<br>
+  It is likely that this methodological step was omitted, delegating filtering entirely to Cell Ranger.
   </div>
   ')
 }
@@ -1306,9 +1324,9 @@ if (!is.null(fastqc_html_df) && nrow(fastqc_html_df) > 0) {
 } else {
   HTML('
   <div class="alert-info alert-box">
-    <i class="fa-solid fa-circle-info"></i>
-    <b>Note</b><br>
-    As there are no FastQC files, interactive iframes for individual samples will not be generated.
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Information Note</b><br>
+  As FastQC report files are not available, it is not possible to display the interactive per-sample quality panels.
   </div>
   ')
 }
@@ -1353,11 +1371,12 @@ if (file.exists(ruta_multiqc_fastqc_abs)) {
       </a>
     </div>
   '))
+
 } else {
   HTML('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     The integrated MultiQC report for FastQC is not available in this project.
   </div>
   ')
@@ -1432,17 +1451,17 @@ if (!is.null(cells_qc_files_df) && nrow(cells_qc_files_df) > 0) {
   cat(glue::glue('
   <p class="text-center">
     <a href="{ruta_cells_qc_relativa}" target="_blank" class="boton-files">
-      <i class="fa-solid fa-folder-open"></i> Explore the cell QC directory (Seurat)
+      <i class="fa-solid fa-folder-open"></i> Browse cell quality control directory (Seurat)
     </a>
   </p>
   '))
-
+  
 } else {
   cat('
   <div class="alert-info alert-box">
-    <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    No files were found in the Seurat cell QC folder.
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Information Note</b><br>
+  No files were found in the Seurat cell quality control folder.
   </div>
   ')
 }
@@ -1497,9 +1516,9 @@ if (file.exists(ruta_pre_qc_pdf_abs)) {
 } else {
   HTML('
   <div class="alert-info alert-box">
-    <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    The Pre-Filtering Quality report (Pre_Quality_mergeSeurat.pdf) is not available.
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Information Note</b><br>
+  The pre-filtering quality report (Pre_Quality_mergeSeurat.pdf) is not available.
   </div>
   ')
 }
@@ -1554,9 +1573,9 @@ if (file.exists(ruta_post_qc_pdf_abs)) {
 } else {
   HTML('
   <div class="alert-info alert-box">
-    <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    The Post-Filtering Quality report (Post_Quality_mergeSeurat.pdf) is not available.
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Nota informativa</b><br>
+  El reporte de calidad Post-Filtrado <code>(Post_Quality_mergeSeurat.pdf)</code> no se encuentra disponible o no se ha generado.<br>
   </div>
   ')
 }

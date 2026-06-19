@@ -600,7 +600,6 @@ list_archives_metodologia_scripts_functions_txt <-
 cat(glue::glue(' 
 <p><code>{ruta_scripts_main}</code></p>
 \n\n'))
-
 ```
 
 <p>
@@ -609,14 +608,29 @@ cat(glue::glue('
 
 ```{r, results="asis"}
 if (!dir.exists(ruta_scripts_main)) {
-  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_scripts_main))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Alerta</b><br>
+  La ruta especificada no existe o no es accesible:<br>
+  <code>{ruta_scripts_main}</code>
+  </div>
+  '))
+
 } else {
   # Listar archivos y carpetas en la ruta
   files <- list.files(ruta_scripts_main_relativa, full.names = FALSE)
   files <- files[!grepl("(_cache|_libs|\\.html$)", files)]
   
   if (length(files) == 0) {
-    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
+    No se encontraron archivos en la carpeta especificada:<br>
+    <code>{ruta_scripts_main}</code>
+    </div>
+    '))
   
   } else {
     carpetas <- files[file.info(file.path(ruta_scripts_main_relativa, files))$isdir]
@@ -642,19 +656,17 @@ if (!dir.exists(ruta_scripts_main)) {
       cat(sprintf('<li class="%s">%s</li>\n', clase, f))
     }
     cat("</ul>\n")
+
+    # Imprimir el botón para explorar la carpeta
+    cat(glue::glue('
+    <p style="text-align:center; margin-bottom: 30px;">
+      <a href="{ruta_scripts_main_relativa}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{basename(ruta_scripts_main)}" aquí
+      </a>
+    </p>
+    \n\n'))
   }
 }
-```
-
-```{r, results="asis"}
-# Imprimir el botón para explorar la carpeta
-cat(glue::glue('
-<p style="text-align:center; margin-bottom: 30px;">
-  <a href="{ruta_scripts_main_relativa}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{basename(ruta_scripts_main)}" aquí
-  </a>
-</p>
-\n\n'))
 ```
 
 <p>
@@ -703,9 +715,9 @@ if (length(list_scripts_main) > 0) {
 
 } else {
   cat(glue::glue('
-  <div class="alert-warning alert-box">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Advertencia</b><br>
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
     No se han encontrado scripts <code>.R</code> en el directorio especificado:  
     <code>{ruta_scripts_main}</code>.
   </div>
@@ -736,14 +748,29 @@ cat(glue::glue('
 
 ```{r, results="asis"}
 if (!dir.exists(ruta_scripts_functions_relativa)) {
-  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_scripts_functions))
+  cat(glue::glue('
+  <div class="alert-warning alert-box"">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Alerta</b><br>
+  La ruta especificada no existe o no es accesible:<br>
+  <code>{ruta_scripts_functions}</code>
+  </div>
+  '))
 
 } else {
   files_func <- list.files(ruta_scripts_functions_relativa, full.names = FALSE)
   files_func <- files_func[!grepl("(_cache|_libs|\\.html$)", files_func)]
   
   if (length(files_func) == 0) {
-    cat('<p><em>La carpeta de funciones está vacía.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
+    No se encontraron archivos en la carpeta especificada:<br>
+    <code>{ruta_scripts_functions}</code>
+    </div>
+    '))
+  
   } else {
     carpetas_f <- files_func[file.info(file.path(ruta_scripts_functions_relativa, files_func))$isdir]
     archivos_f <- setdiff(files_func, carpetas_f)
@@ -766,19 +793,17 @@ if (!dir.exists(ruta_scripts_functions_relativa)) {
       cat(sprintf('<li class="%s">%s</li>\n', clase, f))
     }
     cat("</ul>\n")
+
+    # Imprimir el botón para explorar la carpeta
+    cat(glue::glue('
+    <p style="text-align:center; margin-bottom: 30px;">
+      <a href="{ruta_scripts_functions_relativa}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{basename(ruta_scripts_functions)}" aquí
+      </a>
+    </p>
+    \n\n'))
   }
 }
-```
-
-```{r, results="asis"}
-# Imprimir el botón para explorar la carpeta
-cat(glue::glue('
-<p style="text-align:center; margin-bottom: 30px;">
-  <a href="{ruta_scripts_functions_relativa}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{basename(ruta_scripts_functions)}" aquí
-  </a>
-</p>
-\n\n'))
 ```
 
 <p>
@@ -827,9 +852,9 @@ if (length(list_scripts_functions) > 0) {
 
 } else {
   cat(glue::glue('
-  <div class="alert-warning alert-box">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Advertencia</b><br>
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
     No se han encontrado scripts <code>.R</code> en el directorio especificado:  
     <code>{ruta_scripts_functions}</code>.
   </div>
@@ -875,21 +900,35 @@ cat(glue::glue('
   A continuación se muestra la estructura completa de dicho directorio. Esta representación permite visualizar los archivos y subcarpetas generados durante el análisis de Single-Cell RNA-Seq y que se emplearon como base para la construcción de este informe: 
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_proyecto_relativa)) {
-  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_proyecto_relativa))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Alerta</b><br>
+  La ruta especificada no existe o no es accesible:<br>
+  <code>{ruta_proyecto}</code>
+  </div>
+  '))
+
 } else {
   # Listar todos los archivos, sin filtros
   files <- list.files(ruta_proyecto_relativa, full.names = FALSE)
   
   if (length(files) == 0) {
-    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
+    No se encontraron archivos en la carpeta especificada:<br>
+    <code>{ruta_proyecto}</code>
+    </div>
+    '))
+  
   } else {
     enlace <- ruta_proyecto_relativa
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files) {
       # Asignar clase según la extensión
       clase <- if (!grepl("\\.", f)) {
@@ -908,24 +947,20 @@ if (!dir.exists(ruta_proyecto_relativa)) {
                   clase, enlace, f, f))
     }
     cat("</ul>\n")
+
+    # Para que funcione con rutas absolutas
+    enlace <- ruta_proyecto_relativa
+
+    # Imprimir el enlace
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{enlace}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{nombre_proyecto}" aquí
+      </a>
+    </p>
+    \n\n'))
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# Para que funcione con rutas absolutas
-enlace <- ruta_proyecto_relativa
-
-# Imprimir el enlace
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{enlace}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{nombre_proyecto}" aquí
-  </a>
-</p>
-\n\n'))
 ```
 
 ```{r, results="asis"}
@@ -1048,11 +1083,17 @@ cat(glue::glue('<code>{ruta_sc_rna_seq_pipeline_absoluta}</code>'), sep = "\n")
   A continuación se presenta la estructura completa del directorio correspondiente a este proyecto. Es importante destacar que los elementos listados (tanto archivos como subcarpetas) no representan enlaces interactivos, sino que se muestran únicamente para ilustrar la organización interna de los contenidos. Esta representación permite al lector comprender de manera clara y visual cómo se distribuyen los distintos componentes del proyecto, facilitando la navegación conceptual del directorio sin necesidad de acceder directamente a cada archivo.
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_sc_rna_seq_pipeline_absoluta)) {
-  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_sc_rna_seq_pipeline_absoluta))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Alerta</b><br>
+  La ruta especificada no existe o no es accesible:<br>
+  <code>{ruta_sc_rna_seq_pipeline_absoluta}</code>
+  </div>
+  '))
+
 } else {
   # Listar archivos y carpetas en la ruta
   files <- list.files(ruta_sc_rna_seq_pipeline_absoluta, full.names = FALSE)
@@ -1070,7 +1111,15 @@ if (!dir.exists(ruta_sc_rna_seq_pipeline_absoluta)) {
   files <- c(carpetas, archivos)
 
   if (length(files) == 0) {
-    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
+    No se encontraron archivos en la carpeta especificada:<br>
+    <code>{ruta_sc_rna_seq_pipeline_absoluta}</code>
+    </div>
+    '))
+  
   } else {
     cat("<ul class='box-files'>\n")
     for (f in files) {
@@ -1118,24 +1167,20 @@ if (!dir.exists(ruta_sc_rna_seq_pipeline_absoluta)) {
       cat(sprintf('<li class="%s">%s</li>\n', clase, f))
     }
     cat("</ul>\n")
+
+    # Para que funcione con rutas absolutas
+    enlace <- ruta_sc_rna_seq_pipeline_absoluta
+
+    # Imprimir el enlace
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{enlace}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{basename(ruta_sc_rna_seq_pipeline_absoluta)}" aquí
+      </a>
+    </p>
+    \n\n'))
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# Para que funcione con rutas absolutas
-enlace <- ruta_sc_rna_seq_pipeline_absoluta
-
-# Imprimir el enlace
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{enlace}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{basename(ruta_sc_rna_seq_pipeline_absoluta)}" aquí
-  </a>
-</p>
-\n\n'))
 ```
 
 <p>

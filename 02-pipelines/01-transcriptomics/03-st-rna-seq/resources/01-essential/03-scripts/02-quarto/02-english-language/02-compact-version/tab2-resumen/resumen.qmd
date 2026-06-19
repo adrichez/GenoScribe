@@ -201,18 +201,30 @@ fastq_files <- list.files(
 )
 
 # Crear data.frame con nombre y ruta
-fastq_df <- data.frame(
-  file_name = basename(fastq_files),
-  ruta_absoluta = fastq_files,
-  stringsAsFactors = FALSE
-)
+if (length(fastq_files) > 0) {
+  fastq_df <- data.frame(
+    file_name = basename(fastq_files),
+    ruta_absoluta = fastq_files,
+    stringsAsFactors = FALSE
+  )
+} else {
+  fastq_df <- data.frame(
+    file_name = character(),
+    ruta_absoluta = character(),
+    stringsAsFactors = FALSE
+  )
+}
 
 
 # Lista con rutas de las subcarpetas de primer nivel dentro de la carpeta de Cell Ranger (cada una corresponde a una muestra)
-ruta_muestras_cellranger_relativa_list <- list.dirs(ruta_cellranger_relativa, recursive = FALSE, full.names = TRUE)
-
-# Obtener solo los nombres de las carpetas (sin ruta)
-nombre_muestras_cellranger_relativa_list <- basename(ruta_muestras_cellranger_relativa_list)
+if (dir.exists(ruta_cellranger_relativa)) {
+  ruta_muestras_cellranger_relativa_list <- list.dirs(ruta_cellranger_relativa, recursive = FALSE, full.names = TRUE)
+  # Obtener solo los nombres de las carpetas (sin ruta)
+  nombre_muestras_cellranger_relativa_list <- basename(ruta_muestras_cellranger_relativa_list)
+} else {
+  ruta_muestras_cellranger_relativa_list <- character()
+  nombre_muestras_cellranger_relativa_list <- character()
+}
 
 # Inicializamos lista para almacenar resultados
 metrics_list <- list()
@@ -248,49 +260,59 @@ for (sub in ruta_muestras_cellranger_relativa_list) {
 # - ruta_absoluta: la ruta absoluta
 
 
-# Crear lista temporal de dataframes
-metrics_df_list <- lapply(names(metrics_list), function(sample_name) {
-  df <- metrics_list[[sample_name]]$metrics_df
-  # Añadir columna con el nombre de la muestra
-  df <- cbind(Sample = sample_name, df)
-  return(df)
-})
+# Inicializar dataframes vacíos para evitar errores en el renderizado si no hay datos
+metrics_combined_df <- data.frame()
+metrics_mean_df <- data.frame()
 
-# Combinar todo en un único dataframe
-metrics_combined_df <- do.call(rbind, metrics_df_list)
+if (length(metrics_list) > 0) {
 
-# Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
-colnames(metrics_combined_df) <- gsub("\\.", " ", colnames(metrics_combined_df))
+  # Crear lista temporal de dataframes
+  metrics_df_list <- lapply(names(metrics_list), function(sample_name) {
+    df <- metrics_list[[sample_name]]$metrics_df
+    # Añadir columna con el nombre de la muestra
+    df <- cbind(Sample = sample_name, df)
+    return(df)
+  })
 
-# Ruta de salida para el CSV combinado
-ruta_cellranger_metrics_summary_all_samples <- file.path(ruta_archives_tmp_resumen, "cellranger_metrics_summary_all_samples.csv")
+  # Combinar todo en un único dataframe
+  metrics_combined_df <- do.call(rbind, metrics_df_list)
 
-# Guardar el dataframe combinado como CSV en la carpeta de resumen
-write.csv(metrics_combined_df, ruta_cellranger_metrics_summary_all_samples, row.names = FALSE)
+  if (!is.null(metrics_combined_df) && ncol(metrics_combined_df) > 0) {
+    # Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
+    colnames(metrics_combined_df) <- gsub("\\.", " ", colnames(metrics_combined_df))
+  }
+
+  # Ruta de salida para el CSV combinado
+  ruta_cellranger_metrics_summary_all_samples <- file.path(ruta_archives_tmp_resumen, "cellranger_metrics_summary_all_samples.csv")
+
+  # Guardar el dataframe combinado como CSV en la carpeta de resumen
+  write.csv(metrics_combined_df, ruta_cellranger_metrics_summary_all_samples, row.names = FALSE)
 
 
-# Convertir las columnas a formato numérico
-metrics_numeric_df <- metrics_combined_df
-metrics_numeric_df[-1] <- lapply(metrics_numeric_df[-1], function(x) {
-  x <- gsub(",", "", x)   # eliminar separadores de miles
-  x <- gsub("%", "", x)   # eliminar %
-  as.numeric(x)
-})
+  # Convertir las columnas a formato numérico
+  metrics_numeric_df <- metrics_combined_df
+  metrics_numeric_df[-1] <- lapply(metrics_numeric_df[-1], function(x) {
+    x <- gsub(",", "", x)   # eliminar separadores de miles
+    x <- gsub("%", "", x)   # eliminar %
+    as.numeric(x)
+  })
 
-# Calcular la media de cada métrica (ignorando la columna "Sample") y crear un nuevo dataframe para la fila de medias
-metrics_mean_df <- data.frame(
-  Sample = "Mean",
-  t(colMeans(metrics_numeric_df[-1], na.rm = TRUE))
-)
+  # Calcular la media de cada métrica (ignorando la columna "Sample") y crear un nuevo dataframe para la fila de medias
+  metrics_mean_df <- data.frame(
+    Sample = "Mean",
+    t(colMeans(metrics_numeric_df[-1], na.rm = TRUE))
+  )
 
-# Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
-colnames(metrics_mean_df) <- gsub("\\.", " ", colnames(metrics_mean_df))
+  # Cambiar los nombres de las columnas para que sean más legibles (reemplazar puntos por espacios)
+  colnames(metrics_mean_df) <- gsub("\\.", " ", colnames(metrics_mean_df))
 
-# Ruta de salida para el CSV con las medias
-ruta_cellranger_metrics_summary_mean <- file.path(ruta_archives_tmp_resumen, "cellranger_metrics_summary_mean.csv")
+  # Ruta de salida para el CSV con las medias
+  ruta_cellranger_metrics_summary_mean <- file.path(ruta_archives_tmp_resumen, "cellranger_metrics_summary_mean.csv")
 
-# Guardar el dataframe combinado como CSV en la carpeta de resumen
-write.csv(metrics_mean_df, ruta_cellranger_metrics_summary_mean, row.names = FALSE)
+  # Guardar el dataframe combinado como CSV en la carpeta de resumen
+  write.csv(metrics_mean_df, ruta_cellranger_metrics_summary_mean, row.names = FALSE)
+  
+}
 
 
 
@@ -352,8 +374,12 @@ if (length(ruta_versiones_aggregation_relativa_list) > 0) {
 ruta_deg_agg <- file.path(params$project_path, "analysis", "07_deg_conditions", "01_standard_comparisons", "03_manual_aggregated_named_clusters")
 ruta_deg_agg_relativa <- file.path(ruta_proyecto_relativa, "analysis", "07_deg_conditions", "01_standard_comparisons", "03_manual_aggregated_named_clusters")
 
-# Listar subcarpetas de primer nivel
-ruta_versiones_deg_agg_relativa_list <- list.dirs(ruta_deg_agg_relativa, recursive = FALSE, full.names = TRUE)
+# Listar subcarpetas de primer nivel (solo si el directorio existe para evitar warnings)
+if (dir.exists(ruta_deg_agg_relativa)) {
+  ruta_versiones_deg_agg_relativa_list <- list.dirs(ruta_deg_agg_relativa, recursive = FALSE, full.names = TRUE)
+} else {
+  ruta_versiones_deg_agg_relativa_list <- character()
+}
 
 if (length(ruta_versiones_deg_agg_relativa_list) > 0) {
 
@@ -584,27 +610,41 @@ if (length(ruta_versiones_deg_agg_relativa_list) > 0) {
   Below are the metadata files associated with this project:
 </p>
 
-<div class="box-files">
-
 ```{r, echo=FALSE, results="asis"}
 if (!dir.exists(ruta_metadata_relativa)) {
-  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_metadata_relativa))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The specified path does not exist or is not accessible:<br>
+  <code>{ruta_metadata}</code>
+  </div>
+  '))
+
 } else {
-  # List all files
+  # Listar todos los archivos
   files <- list.files(ruta_metadata_relativa, full.names = FALSE)
   
   if (length(files) == 0) {
-    cat('<p><em>No files were found in the specified folder.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
+    No files were found in the specified folder:<br>
+    <code>{ruta_metadata}</code>
+    </div>
+    '))
+  
   } else {
     enlace <- ruta_metadata_relativa
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files) {
-      # Assign class according to extension
+      # Asignar clase según la extensión
       clase <- if (!grepl("\\.", f)) {
         "file-folder"
       } else if (grepl("\\.tsv$", f, ignore.case = TRUE)) {
-        "file-tsv" # Ensure this class exists in your CSS, or use file-default
+        "file-tsv" # Asegúrate de tener esta clase en tu CSS, o usa file-default
       } else if (grepl("\\.csv$", f, ignore.case = TRUE)) {
         "file-csv"
       } else {
@@ -615,21 +655,17 @@ if (!dir.exists(ruta_metadata_relativa)) {
                   clase, enlace, f, f))
     }
     cat("</ul>\n")
+
+    # Imprimir el botón para explorar la carpeta
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_metadata_relativa}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Browse the metadata files here
+      </a>
+    </p>
+    '), sep = "\n")
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# Print the button to explore the folder
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_metadata_relativa}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explore the metadata files here
-  </a>
-</p>
-'), sep = "\n")
 ```
 
 <p>
@@ -647,19 +683,19 @@ if ("sample_metadata.tsv" %in% names_metadata_list) {
     </p>
 
     <p>
-      This file constitutes the <strong>biological dictionary</strong> of the analysis. Its function is to associate each unique sample identifier (<code>Sample_ID</code>) with its corresponding experimental variables, such as the clinical condition (e.g., WT vs KO), tissue of origin, replicates, age, or sequencing batch. 
+      This file constitutes the <strong>biological dictionary</strong> of the analysis. Its purpose is to associate each unique sample identifier (<code>Sample_ID</code>) with its corresponding experimental variables, such as clinical condition (e.g., WT vs KO), tissue of origin, replicates, age, or sequencing batch.
     </p>
 
     <p>
-      These parameters are essential in advanced stages of the pipeline (using tools like <em>Seurat</em>), as they allow grouping biologically similar cells, performing batch effect corrections (<em>batch effect</em>), and executing statistical contrasts for differential expression.
+      These parameters are essential in advanced stages of the pipeline (using tools such as <em>Seurat</em>), as they enable the grouping of biologically similar cells, correction of batch effects (<em>batch effect</em>), and execution of differential expression statistical contrasts.
     </p>
   '), sep = "\n")
 
 } else {
   cat(glue::glue('
-  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Warning</b><br>
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
     The file <code>sample_metadata.tsv</code> was not found in the specified directory:<br>
     <code>{ruta_metadata_relativa}</code>.
   </div>
@@ -714,19 +750,19 @@ if ("fastq_mapping.tsv" %in% names_metadata_list) {
     </p>
 
     <p>
-      This document represents the <strong>computational and sequencing mapping</strong> of the project. It establishes the direct correspondence between standardized sample names and the raw binary <code>.fastq.gz</code> files (R1 and R2) generated by the Illumina sequencer.
+      This document represents the <strong>computational and sequencing traceability</strong> of the project. It establishes the direct correspondence between standardized sample names and the raw binary <code>.fastq.gz</code> files (R1 and R2) generated by the Illumina sequencer.
     </p>
 
     <p>
-      This traceability ensures complete transparency of the computational process, guaranteeing that primary processing pipelines (such as <em>Cell Ranger</em>) correctly identify and assemble the structure of cell barcodes, molecular identifiers (UMIs), and transcriptomic reads corresponding to each sequencing lane (<em>Lane</em>).
+      This traceability ensures full transparency of the computational workflow, guaranteeing that primary processing pipelines (such as <em>Cell Ranger</em>) correctly identify and assemble the structure of cell barcodes, unique molecular identifiers (UMIs), and transcriptomic reads corresponding to each sequencing lane (<em>Lane</em>).
     </p>
   '), sep = "\n")
 
 } else {
   cat(glue::glue('
-  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Warning</b><br>
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
     The file <code>fastq_mapping.tsv</code> was not found in the specified directory:<br>
     <code>{ruta_metadata_relativa}</code>.
   </div>
@@ -802,20 +838,20 @@ if (n_samples > 0) {
   muestras_str <- paste(paste0("<code>", metrics_combined_df$Sample, "</code>"), collapse = ", ")
   cat(glue::glue('
   <p>
-    In this project, primary processing through the <em>Cell Ranger</em> pipeline (alignment, filtering of cellular <em>barcodes</em>, and UMI counting) has been successfully completed for a total of <strong>{n_samples} samples</strong>: {muestras_str}.
+    In this project, primary processing using the <em>Cell Ranger</em> pipeline (alignment, cellular <em>barcode</em> filtering, and UMI counting) has been successfully completed for a total of <strong>{n_samples} samples</strong>: {muestras_str}.
   </p>
 
   <p>
-    Below, the <strong>consolidated overall metrics</strong> of the experiment are presented. These aggregated values —calculated as the mean of quality metrics across all samples— allow a quick confirmation that sequencing did not experience widespread technical failures and that a robust volume of data has been obtained for subsequent computational analysis.
+    The following section presents the <strong>consolidated global metrics</strong> of the experiment. These aggregated values — calculated as the mean of all sample quality metrics — provide a quick overview confirming that sequencing did not suffer from widespread technical failures and that a robust volume of data has been obtained for downstream computational analysis.
   </p>
   '), sep = "\n")
 
 } else {
   cat('
-  <div class="alert-warning alert-box" style="margin-bottom: 40px;">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Warning</b><br>
-    No consolidated Cell Ranger metrics were detected for these samples.
+  <div class="alert-info alert-box">
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Information Note</b><br>
+  No consolidated Cell Ranger metrics were detected for these samples.
   </div>
   ')
 }
@@ -1012,18 +1048,31 @@ if (n_samples > 0) {
   Below, the graphical files generated in the latest consensus version of population clustering are listed:
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_ult_version_aggregation)) {
-  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_ult_version_aggregation))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The specified path does not exist or is not accessible:<br>
+  <code>{ruta_ult_version_aggregation}</code>
+  </div>
+  '))
+
 } else {
   # Listar archivos en la ruta de la última versión
   files <- list.files(ruta_ult_version_aggregation, full.names = FALSE)
   files <- files[!grepl("(_cache|_libs|\\.html$)", files)]
   
   if (length(files) == 0) {
-    cat('<p><em>No files were found in the specified folder.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
+    No files were found in the specified folder.
+    </div>
+    '))
+  
   } else {
     carpetas <- files[file.info(file.path(ruta_ult_version_aggregation, files))$isdir]
     archivos <- setdiff(files, carpetas)
@@ -1032,7 +1081,7 @@ if (!dir.exists(ruta_ult_version_aggregation)) {
     archivos <- sort(archivos)
     files_ordenados <- c(carpetas, archivos)
 
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files_ordenados) {
       ruta_f <- file.path(ruta_ult_version_aggregation, f)
       es_dir <- file.info(ruta_f)$isdir
@@ -1048,21 +1097,17 @@ if (!dir.exists(ruta_ult_version_aggregation)) {
       cat(sprintf('<li class="%s">%s</li>\n', clase, f))
     }
     cat("</ul>\n")
+  
+    # Imprimir el botón para explorar la carpeta
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_ult_version_aggregation}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Browse the files in the "{basename(ruta_ult_version_aggregation)}" folder here
+      </a>
+    </p>
+    \n\n'))
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# Imprimir el botón para explorar la carpeta
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_ult_version_aggregation}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explore the files in the folder "{basename(ruta_ult_version_aggregation)}" here
-  </a>
-</p>
-\n\n'))
 ```
 
 <p>
@@ -1080,7 +1125,7 @@ if (exists("files_pdf_ult_version_aggregation_df") && nrow(files_pdf_ult_version
     cat(glue::glue('
     <p style="margin-top: 10px; margin-bottom: -10px;">
       <i class="fa-solid fa-map-location-dot" style="color: #276DC3;"></i> 
-      <strong>Cell Map:</strong> <code>{nombre_base}</code>
+      <strong>Cell map:</strong> <code>{nombre_base}</code>
     </p>
 
     <div class="iframe-container">
@@ -1106,10 +1151,10 @@ if (exists("files_pdf_ult_version_aggregation_df") && nrow(files_pdf_ult_version
 } else {
   # Mensaje de advertencia si no hay PDFs
   cat(glue::glue('
-  <div class="alert-warning alert-box">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    <b>Warning</b><br>
-    No consolidated plots (PDF files) were found in the last population aggregation directory:<br>
+  <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
+    No consolidated plots (PDF files) were found in the latest population aggregation directory:<br>
     <code>{ruta_ult_version_aggregation}</code>.
   </div>
   '), sep = "\n")
@@ -1167,19 +1212,31 @@ if (exists("files_pdf_ult_version_aggregation_df") && nrow(files_pdf_ult_version
   Below, the tabular results (statistically significant genes) and graphical outputs (Volcano plots) generated for each individual cell population in this comparison are listed:
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_ult_version_deg_agg_reference_vs_test)) {
-  cat(sprintf('<p><em>The path "%s" does not exist or is not accessible.</em></p>\n', ruta_ult_version_deg_agg_reference_vs_test))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Warning</b><br>
+  The specified path does not exist or is not accessible.
+  </div>
+  '))
 
 } else {
-  # List files
+  # Listar archivos
   files <- list.files(ruta_ult_version_deg_agg_reference_vs_test, full.names = FALSE)
   files <- files[!grepl("(_cache|_libs|\\.html$)", files)]
   
   if (length(files) == 0) {
-    cat('<p><em>No files were found in the specified folder.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Information Note</b><br>
+    No files were found in the specified folder.<br>
+    It is recommended to check the "Custom Analyses" section.
+    </div>
+    '))
+  
   } else {
     carpetas <- files[file.info(file.path(ruta_ult_version_deg_agg_reference_vs_test, files))$isdir]
     archivos <- setdiff(files, carpetas)
@@ -1188,7 +1245,7 @@ if (!dir.exists(ruta_ult_version_deg_agg_reference_vs_test)) {
     archivos <- sort(archivos)
     files_ordenados <- c(carpetas, archivos)
 
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files_ordenados) {
       ruta_f <- file.path(ruta_ult_version_deg_agg_reference_vs_test, f)
       es_dir <- file.info(ruta_f)$isdir
@@ -1205,22 +1262,18 @@ if (!dir.exists(ruta_ult_version_deg_agg_reference_vs_test)) {
       }
       cat(sprintf('<li class="%s">%s</li>\n', clase, f))
     }
-    cat("</ul>\n")
+    cat("</ul>")
+
+    # Imprimir el botón para explorar la carpeta
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_ult_version_deg_agg_reference_vs_test}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Browse DEGs results here
+      </a>
+    </p>
+    \n\n'))
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# Imprimir el botón para explorar la carpeta
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_ult_version_deg_agg_reference_vs_test}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explore the DEG results here
-  </a>
-</p>
-\n\n'))
 ```
 
 <p>
@@ -1232,15 +1285,15 @@ cat(glue::glue('
 </p>
 
 ```{r}
-# Control variables
+# Variables de control
 hay_datos <- FALSE
 
 if (exists("files_tsv_ult_version_deg_agg_reference_vs_test_df") && nrow(files_tsv_ult_version_deg_agg_reference_vs_test_df) > 0) {
   
-  # List to store summary per cluster
+  # Lista para guardar resumen por cluster
   deg_agg_reference_vs_test_summary_list <- list()
   
-  # Iterate over each TSV
+  # Iterar sobre cada TSV
   for (tsv_file in files_tsv_ult_version_deg_agg_reference_vs_test_df$ruta_absoluta) {
     deg_df <- read.delim(tsv_file, stringsAsFactors = FALSE)
     deg_sig <- deg_df %>% filter(p_val_adj < 0.05)
@@ -1262,17 +1315,17 @@ if (exists("files_tsv_ult_version_deg_agg_reference_vs_test_df") && nrow(files_t
   
   deg_agg_reference_vs_test_summary_df <- bind_rows(deg_agg_reference_vs_test_summary_list) %>% arrange(Cluster)
   
-  # Save table to disk
+  # Guardar tabla a disco
   ruta_archives_tmp_resumen_deg_agg_reference_vs_test <- file.path(ruta_archives_tmp_resumen, "deg_agg_reference_vs_test_summary.tsv")
   write.table(deg_agg_reference_vs_test_summary_df, file = ruta_archives_tmp_resumen_deg_agg_reference_vs_test, sep = "\t", quote = FALSE, row.names = FALSE)
   
-  # Prepare long-format data
+  # Preparar datos largos
   deg_long <- deg_agg_reference_vs_test_summary_df %>%
     pivot_longer(cols = c("Up", "Down"), names_to = "Regulation", values_to = "Count")
   
   deg_long$Cluster <- factor(deg_long$Cluster, levels = deg_agg_reference_vs_test_summary_df$Cluster[order(deg_agg_reference_vs_test_summary_df$Total, decreasing = TRUE)])
   
-  # Plot
+  # Gráfico
   p <- ggplot(deg_long, aes(x = Cluster, y = Count, fill = Regulation, text = paste0("Cluster: ", Cluster, "<br>Regulation: ", Regulation, "<br>Count: ", Count))) +
     geom_bar(stat = "identity") +
     geom_text(data = deg_agg_reference_vs_test_summary_df, aes(x = Cluster, y = Total, label = Total), inherit.aes = FALSE, vjust = -0.3, size = 3.5) +
@@ -1285,27 +1338,34 @@ if (exists("files_tsv_ult_version_deg_agg_reference_vs_test_df") && nrow(files_t
   hay_datos <- TRUE
 }
 
-# RENDERING
+# RENDERIZADO
 if (hay_datos) {
   out <- tagList()
   
-  # Open container
+  # Abrir contenedor
   out <- tagAppendChild(out, HTML(glue::glue('
     <div class="plot-center" style="margin-top: 30px; margin-bottom: 40px;">
   '), sep = "\n"))
   
-  # Embed plotly
+  # Incrustar plotly
   out <- tagAppendChild(out, p_interactivo)
   
-  # Close container
+  # Cerrar contenedor
   out <- tagAppendChild(out, HTML(glue::glue('
     </div>
   '), sep = "\n"))
   
-  # Return output
+  # Devolver salida
   out
+
 } else {
-  HTML('<p><em>DEG data could not be loaded.</em></p>')
+  HTML(glue::glue('
+  <div class="alert-info alert-box">
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Information Note</b><br>
+  Plot not available because DEGs data could not be loaded.
+  </div>
+  '))
 }
 ```
 
@@ -1330,7 +1390,7 @@ if (hay_datos) {
 if (exists("deg_agg_reference_vs_test_summary_df") && nrow(deg_agg_reference_vs_test_summary_df) > 0) {
   
   display_deg_df <- deg_agg_reference_vs_test_summary_df
-  colnames(display_deg_df) <- c("Cell Population", "Overexpressed Genes (Up)", "Repressed Genes (Down)", "Total DEGs")
+  colnames(display_deg_df) <- c("Cell Population", "Genes Overexpressed (Up)", "Genes Repressed (Down)", "Total DEGs")
   
   DT::datatable(
     display_deg_df,
@@ -1341,12 +1401,22 @@ if (exists("deg_agg_reference_vs_test_summary_df") && nrow(deg_agg_reference_vs_
       paging = FALSE,
       lengthChange = FALSE,
       info = FALSE,
-      dom = 't', # Clean table
-      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json')
+      dom = 't', # Tabla limpia
+      language = list(url = '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json')
     ),
     class = 'stripe hover row-border order-column compact',
     rownames = FALSE
   )
+
+} else {
+  htmltools::HTML(glue::glue('
+  <div class="alert-info alert-box">
+  <i class="fa-solid fa-circle-info"></i>
+  <b>Information Note</b><br>
+  Table not available because standard comparison workflows were not detected.<br>
+  It is recommended to check the "Custom Analyses" section for alternative designs.
+  </div>
+  '))
 }
 ```
 

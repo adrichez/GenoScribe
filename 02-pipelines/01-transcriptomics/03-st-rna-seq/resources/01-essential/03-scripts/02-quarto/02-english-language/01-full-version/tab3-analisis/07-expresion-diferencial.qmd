@@ -699,7 +699,7 @@ if (dir.exists(ruta_custom_comparisons)) {
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# Show box-files from the "01_standard_comparisons" folder
+# Mostrar bos-files de la carpeta "01_standard_comparisons"
 if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df) > 0) {
   
   cat('<div class="box-files">\n<ul>\n')
@@ -720,9 +720,9 @@ if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df)
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Empty directory</b><br>
+    <b>Information Note</b><br>
     No subdirectories have been detected in the Standard Comparisons root.
   </div>
   '), sep = "\n")
@@ -776,10 +776,10 @@ if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df)
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# SHOW BOX-FILES FROM NUMERICAL DIRECTORY
+# MOSTRAR BOX-FILES DEL DIRECTORIO NUMÉRICO
 if (!is.null(files_deg_seurat_within_df) && nrow(files_deg_seurat_within_df) > 0) {
   
-  # Ensure alphabetical/numerical ordering
+  # Asegurar orden alfabético/numérico
   df_sorted <- files_deg_seurat_within_df[order(files_deg_seurat_within_df$file_name), ]
   
   cat('<div class="box-files">\n<ul>\n')
@@ -787,7 +787,7 @@ if (!is.null(files_deg_seurat_within_df) && nrow(files_deg_seurat_within_df) > 0
     f <- df_sorted$file_name[i]
     ruta <- df_sorted$ruta_relativa[i]
     
-    # Class assignment based on extension
+    # Asignación de clases según extensión
     clase <- if (!grepl("\\.", f)) {
       "file-folder"
     } else if (grepl("\\.pdf$", f, ignore.case = TRUE)) {
@@ -812,9 +812,9 @@ if (!is.null(files_deg_seurat_within_df) && nrow(files_deg_seurat_within_df) > 0
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No preliminary differential expression files were detected in numerical clusters.
   </div>
   '), sep = "\n")
@@ -851,10 +851,10 @@ if (!is.null(files_deg_seurat_within_df) && nrow(files_deg_seurat_within_df) > 0
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# 1. SHOW GLOBAL BOX-FILES OF DATABASE DIRECTORIES
+# 1. MOSTRAR BOX-FILES GLOBAL DE CARPETAS DE BASES DE DATOS
 if (!is.null(dbs_subdirs_df) && nrow(dbs_subdirs_df) > 0) {
   
-  # Sort alphabetically
+  # Ordenar alfabéticamente
   df_sorted <- dbs_subdirs_df[order(dbs_subdirs_df$db_name), ]
   
   cat('<div class="box-files">\n<ul>\n')
@@ -875,9 +875,9 @@ if (!is.null(dbs_subdirs_df) && nrow(dbs_subdirs_df) > 0) {
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No automatic annotation database directories were detected in this analysis.
   </div>
   '), sep = "\n")
@@ -951,15 +951,15 @@ if (!is.null(dbs_subdirs_df) && nrow(dbs_subdirs_df) > 0) {
       
     } else {
       cat(glue::glue('
-      <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+      <div class="alert-info alert-box">
         <i class="fa-solid fa-circle-info"></i>
-        <b>Empty directory</b><br>
+        <b>Information Note</b><br>
         No differential expression files were detected for the {db} database.
       </div>
       '), sep = "\n")
     }
     
-    # 2.4. Button to explore this specific database folder
+    # 2.4. Botón para explorar la carpeta específica de esta base de datos
     cat(glue::glue('
       <p class="text-center">
         <a href="{ruta_db_carpeta}" target="_blank" class="boton-files">
@@ -968,10 +968,10 @@ if (!is.null(dbs_subdirs_df) && nrow(dbs_subdirs_df) > 0) {
       </p>
     '), sep = "\n")
     
-    # 2.5. Short closing paragraph
+    # 2.5. Breve párrafo de cierre
     cat(glue::glue('
       <p>
-        <i class="fa-solid fa-circle-info" style="color: #276DC3;"></i> <strong>Note:</strong> <code>.tsv</code> files can be used to inspect broad gene ranges, while <code>.pdf</code> reports provide a snapshot of the DEGs with the highest magnitude of change.
+        <i class="fa-solid fa-circle-info" style="color: #276DC3;"></i> <strong>Note:</strong> <code>.tsv</code> files can be used to inspect broad ranges of genes, while <code>.pdf</code> reports provide a snapshot of the DEGs with the largest magnitude of change.
       </p>
     '), sep = "\n")
   }
@@ -1011,7 +1011,7 @@ if (!is.null(dbs_subdirs_df) && nrow(dbs_subdirs_df) > 0) {
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# 1. SHOW BOX-FILES WITH VERSION FOLDERS (01_version, 02_version...)
+# 1. MOSTRAR BOX-FILES CON LAS CARPETAS DE VERSIONES (01_version, 02_version...)
 if (!is.null(versiones_deg_agg_df) && nrow(versiones_deg_agg_df) > 0) {
   
   cat('<div class="box-files">\n<ul>\n')
@@ -1032,9 +1032,9 @@ if (!is.null(versiones_deg_agg_df) && nrow(versiones_deg_agg_df) > 0) {
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No analysis versions were detected for the consolidated manual model.
   </div>
   '), sep = "\n")
@@ -1077,7 +1077,7 @@ if (!is.null(versiones_deg_agg_df) && nrow(versiones_deg_agg_df) > 0) {
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# 2. SHOW BOX-FILES WITH THE 3 SUBFOLDERS OF THE LATEST VERSION
+# 2. MOSTRAR BOX-FILES CON LAS 3 SUBCARPETAS DE LA ÚLTIMA VERSIÓN
 if (!is.null(ultima_version_nombre)) {
   
   ruta_ult_ver_relativa <- file.path(ruta_deg_agg_relativa, ultima_version_nombre)
@@ -1088,7 +1088,7 @@ if (!is.null(ultima_version_nombre)) {
   cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', file.path(ruta_ult_ver_relativa, "03_test_between_clusters_pairwise"), "03_test_between_clusters_pairwise"))
   cat('</ul>\n</div>\n')
   
-  # Add button to explore directory
+  # Añadir el botón de explorar directorio
   cat(glue::glue('
   <p class="text-center">
     <a href="{ruta_ult_ver_relativa}" target="_blank" class="boton-files">
@@ -1098,12 +1098,12 @@ if (!is.null(ultima_version_nombre)) {
   '), sep = "\n")
   
 } else {
-  # Add corporate-style alert if directory does not exist
+  # Añadir alerta corporativa por si el directorio no existe
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    The latest version was not detected, so its contrast subfolders cannot be displayed.
+    <b>Information note</b><br>
+    The latest version could not be detected to display its contrast subdirectories.
   </div>
   '), sep = "\n")
 }
@@ -1129,13 +1129,13 @@ if (!is.null(ultima_version_nombre)) {
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# 3. SHOW BOX-FILES FOR WITHIN CLUSTER FILES OF THE LATEST VERSION
+# 3. MOSTRAR BOX-FILES DE LOS ARCHIVOS WITHIN CLUSTER DE LA ÚLTIMA VERSIÓN
 if (!is.null(ult_ver_within_df) && nrow(ult_ver_within_df) > 0) {
   
-  # Extract folder path for the button
+  # Extraer la ruta de la carpeta para el botón
   ruta_directorio_within <- dirname(ult_ver_within_df$ruta_relativa[1])
   
-  # Sort alphabetically
+  # Ordenar alfabéticamente
   df_sorted <- ult_ver_within_df[order(ult_ver_within_df$file_name), ]
   
   cat('<div class="box-files">\n<ul>\n')
@@ -1155,7 +1155,7 @@ if (!is.null(ult_ver_within_df) && nrow(ult_ver_within_df) > 0) {
   }
   cat('</ul>\n</div>\n')
   
-  # Add button to explore directory
+  # Añadir el botón de explorar directorio
   cat(glue::glue('
   <p class="text-center">
     <a href="{ruta_directorio_within}" target="_blank" class="boton-files">
@@ -1166,9 +1166,9 @@ if (!is.null(ult_ver_within_df) && nrow(ult_ver_within_df) > 0) {
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No intra-population contrast (within_cluster) files were detected in the definitive version.
   </div>
   '), sep = "\n")
@@ -1222,17 +1222,17 @@ if (!is.null(ult_ver_within_df) && nrow(ult_ver_within_df) > 0) {
 ```{r, echo=FALSE, results="asis"}
 if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_dirs_df) > 0) {
   
-  # 1. SHOW PARENT DIRECTORY (02_custom_comparisons)
+  # 1. MOSTRAR EL DIRECTORIO PADRE (02_custom_comparisons)
   cat('<div class="box-files">\n<ul>\n')
   for (i in 1:nrow(custom_comparisons_root_dirs_df)) {
     folder <- custom_comparisons_root_dirs_df$folder_name[i]
-    # Clean path and force trailing slash to open as directory
+    # Limpiamos ruta y forzamos la barra final para abrir como directorio
     ruta_html <- utils::URLencode(gsub("\\\\", "/", paste0(custom_comparisons_root_dirs_df$ruta_relativa[i], "/")))
     cat(sprintf('<li class="file-folder"><a href="%s" target="_blank">%s</a></li>\n', ruta_html, folder))
   }
   cat('</ul>\n</div>\n')
   
-  # Button to explore root
+  # Botón para explorar la raíz
   ruta_custom_comparisons_html <- utils::URLencode(gsub("\\\\", "/", ruta_custom_comparisons_relativa))
   
   cat(glue::glue('
@@ -1244,11 +1244,11 @@ if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_di
   '), sep = "\n")
   
   
-  # 2. DYNAMIC CONTEXTUALIZATION (Count and list folders)
+  # 2. CONTEXTUALIZACIÓN DINÁMICA (Contar y listar carpetas)
   num_carpetas <- nrow(custom_comparisons_root_dirs_df)
   texto_conteo <- ifelse(num_carpetas == 1, 
-                          "<strong>1 custom exploration subdirectory</strong>", 
-                          paste0("<strong>", num_carpetas, " custom exploration subdirectories</strong>"))
+                          "<strong>1 subdirectorio</strong> de exploración personalizada", 
+                          paste0("<strong>", num_carpetas, " subdirectorios</strong> de exploración personalizada"))
   
   lista_nombres <- paste0("<em>", custom_comparisons_root_dirs_df$folder_name, "</em>", collapse = ", ")
   
@@ -1259,23 +1259,23 @@ if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_di
   '), sep = "\n")
   
 
-  # 3. DETAILED LOOP FOR EACH SUBFOLDER
+  # 3. BUCLE DETALLADO PARA CADA SUBCARPETA
   for (i in 1:nrow(custom_comparisons_root_dirs_df)) {
     
     carpeta_cruda <- custom_comparisons_root_dirs_df$folder_name[i]
     ruta_carpeta_rel <- custom_comparisons_root_dirs_df$ruta_relativa[i]
     
-    # GENERATE DYNAMIC TITLE (Remove numeric prefix, clean underscores, and capitalize)
-    # 1. Remove leading numbers and underscore (e.g. "01_" -> "")
+    # GENERAR EL TÍTULO DINÁMICO (Eliminar prefijo numérico, limpiar guiones y capitalizar)
+    # 1. Quitamos los números iniciales y su guion bajo (ej: "01_" -> "")
     carpeta_sin_numeros <- sub("^\\d+_+", "", carpeta_cruda)
     
-    # 2. Replace remaining underscores with spaces and capitalize
+    # 2. Cambiamos los guiones bajos restantes por espacios y capitalizamos
     titulo_limpio <- stringr::str_to_title(gsub("_", " ", carpeta_sin_numeros))
     
-    # Add sequential numbering 7.3.i. to the title
+    # Añadimos la numeración secuencial 7.3.i. al título
     cat(sprintf('<div class="titulo3" style="margin-top: 50px; margin-bottom: 6px; padding-bottom: 8px; line-height: 1.2;">7.3.%d. %s</div>\n', i, titulo_limpio))
 
-    # Dynamic introduction to the folder
+    # Introducción dinámica a la carpeta
     cat(glue::glue('
     <p>
       This section presents the statistical results corresponding to the exploratory comparison defined as <strong>{titulo_limpio}</strong>. This focused analysis has been executed in parallel to the standard workflow, with the aim of characterizing the molecular signature governing this particular biological condition without interference or masking from the rest of the tissue populations.
@@ -1326,22 +1326,22 @@ if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_di
       
     } else {
       cat(glue::glue('
-      <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
-        <i class="fa-solid fa-folder-open"></i>
-        <b>Empty Directory</b><br>
-        The <code>{carpeta_cruda}</code> container has been initialized, but no corresponding files (reports or tables) have been generated for this comparison yet.
+      <div class="alert-info alert-box">
+        <i class="fa-solid fa-circle-info"></i>
+        <b>Information note</b><br>
+        The <code>{carpeta_cruda}</code> directory has been initialized, but the corresponding files (reports or tables) for this comparison have not yet been generated.
       </div>
       '), sep = "\n")
     }
-    
+
   }
   
 } else {
-  # SCENARIO B: NO AD HOC REQUESTS (NO FOLDERS)
+  # ESCENARIO B: NO HAY PETICIONES AD HOC (SIN CARPETAS)
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 25px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Passive repository</b><br>
+    <b>Information note</b><br>
     There are currently no custom analyses or additional requests for this project.
   </div>
   '), sep = "\n")

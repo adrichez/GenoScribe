@@ -396,7 +396,7 @@ if (dir.exists(ruta_data_annotations)) {
 
 # Rutas de la carpeta "manual" dentro "02_annotations"
 ruta_data_annotations_manual <- file.path(ruta_data_annotations, "manual")
-ruta_data_annotations_manual_relativa <- file.path(ruta_data_annotations, "manual")
+ruta_data_annotations_manual_relativa <- file.path(ruta_data_annotations_relativa, "manual")
 
 # Escaneo de Data Annotations Manual
 data_annotations_manual_df <- NULL
@@ -635,10 +635,10 @@ if (dir.exists(ruta_data_annotations_manual)) {
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# 1. GENERATE GLOBAL BOX-FILES FOR AUTOMATIC ANNOTATION
+# 1. GENERAR BOX-FILES GLOBAL DE ANOTACIÓN AUTOMÁTICA
 if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
   
-  # Extract possible numbers or enforce strict alphabetical order
+  # Extraer posibles números o forzar orden alfabético estricto
   df_sorted <- cell_annotation_auto_df[order(cell_annotation_auto_df$file_name), ]
   
   cat('<div class="box-files">\n<ul>\n')
@@ -674,26 +674,27 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    No automatic annotation files were detected in this project. The corresponding subsections will be displayed empty.
+    <b>Information note</b><br>
+    The directory is empty or no automatic annotation files were detected in this project.<br>
+    The corresponding subsections will be displayed empty.
   </div>
   '), sep = "\n")
 }
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-# 2. DYNAMIC LOOP TO DISPLAY PDFs AND TABLES BY DATABASE
+# 2. BUCLE DINÁMICO PARA MOSTRAR PDFs Y TABLAS POR BASE DE DATOS
 if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
   
-  # Filter global PDFs (acting as master report for each database)
-  # Assume summary PDFs usually contain "mergeSeurat" or do not contain "_vs_"
+  # Filtrar los PDFs globales (que actúan como informe maestro para cada base de datos)
+  # Asumimos que los PDFs resumen suelen contener "mergeSeurat" o no contienen "_vs_"
   pdf_globales <- cell_annotation_auto_df[grepl("\\.pdf$", cell_annotation_auto_df$file_name, ignore.case = TRUE) & 
                                 !grepl("_vs_", cell_annotation_auto_df$file_name, ignore.case = TRUE), ]
   
   if (nrow(pdf_globales) > 0) {
     out_auto <- tagList()
     
-    # Sort PDFs alphabetically
+    # Ordenar los PDFs alfabéticamente
     pdf_globales <- pdf_globales[order(pdf_globales$file_name), ]
     
     for (i in 1:nrow(pdf_globales)) {
@@ -701,9 +702,9 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
       nombre_pdf <- pdf_globales$file_name[i]
       ruta_rel_pdf <- pdf_globales$ruta_relativa[i]
       
-      # Extract database prefix (e.g., from "GeneralCell_HPCA_mergeSeurat.filter.pdf" -> "GeneralCell_HPCA")
+      # Extraer el prefijo de la base de datos (Ej: de "GeneralCell_HPCA_mergeSeurat.filter.pdf" -> "GeneralCell_HPCA")
       db_prefix <- gsub("_mergeSeurat.*\\.pdf|\\.pdf$", "", nombre_pdf, ignore.case = TRUE)
-      db_clean_name <- gsub("_", " ", db_prefix) # Make title visually cleaner
+      db_clean_name <- gsub("_", " ", db_prefix) # Para que quede bonito en el título
       
       out_auto <- tagAppendChild(out_auto, HTML(glue::glue('
         <div style="height: 12px; background-color: transparent;"></div>
@@ -765,8 +766,8 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
 
             <p style="margin-top: 12px; margin-bottom: 16px;">
               <i class="fa-solid fa-microscope" style="color: #276DC3;"></i> 
-              <strong>Inferred Cell Type: <span style="color: #05bab4;">{cell_type_name}</span></strong>
-              <br><span style="font-size: 0.85em; color: #777;">File: <code>{nombre_tsv}</code></span>
+              <strong>Tipo Celular Inferido: <span style="color: #05bab4;">{cell_type_name}</span></strong>
+              <br><span style="font-size: 0.85em; color: #777;">Archivo: <code>{nombre_tsv}</code></span>
             </p>
           ')))
           
@@ -775,17 +776,17 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
           tryCatch({
             datos_tsv <- read.table(ruta_abs_tsv, sep=sep_char, header=TRUE, stringsAsFactors=FALSE, fill=TRUE)
             
-            # Rename first column if it has no name
+            # Renombrar primera columna si no tiene nombre
             if(colnames(datos_tsv)[1] == "X" || colnames(datos_tsv)[1] == "") {
                 colnames(datos_tsv)[1] <- "Gene"
             }
             
-            # Numeric formatting
+            # Formateo numérico
             if("avg_log2FC" %in% colnames(datos_tsv)) datos_tsv$avg_log2FC <- round(as.numeric(datos_tsv$avg_log2FC), 4)
             if("p_val_adj" %in% colnames(datos_tsv)) datos_tsv$p_val_adj <- signif(as.numeric(datos_tsv$p_val_adj), 4)
             if("p_val" %in% colnames(datos_tsv)) datos_tsv$p_val <- signif(as.numeric(datos_tsv$p_val), 4)
             
-            # Datatable block with identical styles to markers
+            # Bloque datatable con estilos idénticos a los de marcadores
             out_auto <- tagAppendChild(out_auto, 
               DT::datatable(
                 datos_tsv,
@@ -804,7 +805,7 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
               )
             )
             
-            # Table download button
+            # Botón de descarga de la tabla
             out_auto <- tagAppendChild(out_auto, HTML(glue::glue('
               <div style="text-align: center; margin-top: 16px; margin-bottom: 30px;">
                 <a href="{ruta_rel_tsv}" 
@@ -818,7 +819,9 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
           }, error = function(e) {
               out_auto <<- tagAppendChild(out_auto, HTML(glue::glue('
                 <div class="alert-info alert-box" style="margin-bottom: 30px;">
-                  <i class="fa-solid fa-triangle-exclamation"></i> Error reading table {nombre_tsv}. Unexpected format.
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <b>Information Note</b><br>
+                  Error reading table {nombre_tsv}. Unexpected format.
                 </div>
               '), sep = "\n"))
           })
@@ -832,8 +835,8 @@ if (!is.null(cell_annotation_auto_df) && nrow(cell_annotation_auto_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Note</b><br>
-      No consolidated PDF files were found for the automatic annotation databases.
+      <b>Information Note</b><br>
+      The directory is empty or no consolidated PDF files were found for the automatic annotation databases.
     </div>
     '), sep = "\n")
   }
@@ -908,12 +911,14 @@ if (!is.null(data_annotations_manual_df) && nrow(data_annotations_manual_df) > 0
   cat(glue::glue('
   <div class="alert-info alert-box" style="margin-top: 20px;">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No dictionary files were detected in the data resources directory (data/04_resources/02_annotations/manual).
   </div>
   '))
 }
 ```
+
+<div style="height: 10px; background-color: transparent;"></div>
 
 <p>
   Given the iterative nature of biological curation, it is common for the phenotypic model to evolve through different refinement phases. For this reason, the system organizes the results into a <strong>version history</strong>, allowing the progression of the analysis to be audited from the earliest topological proposals to the definitive consensus.
@@ -999,7 +1004,7 @@ if (!is.null(cell_annotation_manual_ult_version_df) && nrow(cell_annotation_manu
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No subdirectories or files were detected in the final manual annotation version.
   </div>
   '))
@@ -1035,7 +1040,7 @@ if (!is.null(cell_annotation_manual_ult_version_df) && nrow(cell_annotation_manu
 # 1. MOSTRAR BOX-FILES LOCAL (Requiere results="asis")
 if (!is.null(cell_annotation_manual_etapa_df) && nrow(cell_annotation_manual_etapa_df) > 0) {
   
-  # Ensure natural/alphabetical order
+  # Asegurar orden natural/alfabético
   cell_annotation_manual_etapa_df <- cell_annotation_manual_etapa_df[order(cell_annotation_manual_etapa_df$file_name), ]
   
   cat('<div class="box-files">\n<ul>\n')
@@ -1059,7 +1064,7 @@ if (!is.null(cell_annotation_manual_etapa_df) && nrow(cell_annotation_manual_eta
   cat(glue::glue('
   <div class="alert-info alert-box" style="margin-top: 20px;">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Directory not detected or empty</b><br>
+    <b>Information Note</b><br>
     No files have been detected under the <code>01_etapa</code> hierarchical level in the latest version. It is possible that the project does not require this level of granularity or that validation files have been placed directly in the root directory of the version.
   </div>
   '), sep = "\n")
@@ -1162,7 +1167,7 @@ if (!is.null(cell_annotation_manual_big_etapa_df) && nrow(cell_annotation_manual
   cat(glue::glue('
   <div class="alert-info alert-box" style="margin-top: 20px;">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Directory not detected or empty</b><br>
+    <b>Information Note</b><br>
     No files have been detected under the <code>02_big_etapa</code> hierarchical level in the latest version. It is possible that the project does not require a macroscopic grouping of populations or that files have been placed directly in the root of the version.
   </div>
   '), sep = "\n")

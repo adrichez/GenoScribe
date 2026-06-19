@@ -443,8 +443,8 @@ if (!is.null(versiones_aggregation_df) && nrow(versiones_aggregation_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
-    No se detectaron carpetas de versiones de agrupación en el directorio correspondiente.
+    <b>Nota informativa</b><br>
+    El directorio se encuentra vacío o no se han detectado carpetas de versiones de agrupación en el directorio correspondiente.
   </div>
   '), sep = "\n")
 }

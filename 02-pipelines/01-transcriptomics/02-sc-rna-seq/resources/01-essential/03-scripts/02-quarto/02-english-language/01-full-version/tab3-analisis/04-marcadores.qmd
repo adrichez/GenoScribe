@@ -186,8 +186,8 @@ ruta_markers_relativa <- file.path(ruta_analysis_relativa, "04_markers")
 #------------------------------------------------------------------------
 
 # Rutas base Merged
-ruta_markers_merged <- file.path(ruta_markers, "01_markers_seurat_merged_clusters")
-ruta_markers_merged_relativa <- file.path(ruta_markers_relativa, "01_markers_seurat_merged_clusters")
+ruta_markers_merged <- file.path(ruta_markers, "01_seurat_merged_clusters")
+ruta_markers_merged_relativa <- file.path(ruta_markers_relativa, "01_seurat_merged_clusters")
 
 
 # Listar archivos dentro del directorio
@@ -214,8 +214,8 @@ if (dir.exists(ruta_markers_merged)) {
 #------------------------------------------------------------------------
 
 # Rutas base Integrated
-ruta_markers_integrated <- file.path(ruta_markers, "02_markers_seurat_integrated_clusters")
-ruta_markers_integrated_relativa <- file.path(ruta_markers_relativa, "02_markers_seurat_integrated_clusters")
+ruta_markers_integrated <- file.path(ruta_markers, "02_seurat_integrated_clusters")
+ruta_markers_integrated_relativa <- file.path(ruta_markers_relativa, "02_seurat_integrated_clusters")
 
 
 # Listar archivos dentro del directorio
@@ -253,7 +253,6 @@ if (dir.exists(ruta_markers_integrated)) {
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
 <!--  TÍTULO Y RESUMEN CONTEXTUAL -->
 <!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -->
-
 <div class="informe-titulo-tab">
   <h1>Tab</h1>
   <h2>Comprehensive Bioinformatics Analysis</h2>
@@ -451,16 +450,16 @@ if (dir.exists(ruta_markers_integrated)) {
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# 1. GENERATE BOX-FILES FOR MERGED
+# 1. GENERAR BOX-FILES DE MERGED
 if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
 
-  # Extract the cluster number from the file name to enforce a "natural order"
+  # Extraer el número de clúster del nombre del archivo para forzar un "orden natural"
   num_cluster <- as.numeric(stringr::str_extract(markers_merged_df$file_name, "\\d+"))
   
-  # Files without numbers (like summaries or global CSVs) are assigned -1 to appear first
+  # A los archivos sin números (como resúmenes o CSV globales) les damos un -1 para que vayan al principio
   num_cluster[is.na(num_cluster)] <- -1
   
-  # First sort by cluster number (-1, 0, 1, 2... 10) and then alphabetically (to break ties for .pdf and .tsv)
+  # Ordenar primero por el número de clúster (-1, 0, 1, 2... 10) y luego alfabéticamente (para desempatar .pdf y .tsv)
   df_sorted <- markers_merged_df[order(num_cluster, markers_merged_df$file_name), ]
   
   cat('<div class="box-files">\n<ul>\n')
@@ -489,7 +488,7 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
   cat(glue::glue('
   <p class="text-center" style="margin-top: 15px;">
     <a href="{ruta_markers_merged_relativa}" target="_blank" class="boton-files">
-      <i class="fa-solid fa-folder-open"></i> Explore Marker Directory (Merged)
+      <i class="fa-solid fa-folder-open"></i> Explore Merged Markers directory
     </a>
   </p>
   '))
@@ -498,8 +497,9 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    No marker files were detected for the <em>Merged</em> strategy in this project. The corresponding subsections will be displayed empty.
+    <b>Information Note</b><br>
+    No marker files were detected for the <em>Merged</em> strategy in this project.<br>
+    The corresponding subsections will be displayed empty.
   </div>
   '), sep = "\n")
 }
@@ -569,8 +569,8 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Note</b><br>
-      No consolidated global PDF file (summary) was found for this strategy. Please review the individual scrutiny below.
+      <b>Information note</b><br>
+      No consolidated global PDF file (summary) was found for this strategy. Please review the individual analysis below.
     </div>
     '), sep = "\n")
   }
@@ -579,9 +579,8 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Empty Directory</b><br>
-      The folder does not contain results to perform this visualization.
-    </div>
+      <b>Information note</b><br>
+      The directory is empty or no expected files with all global markers were detected.
     '), sep = "\n")
 }
 ```
@@ -688,7 +687,9 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
       } else {
         out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
           <div class="alert-info alert-box" style="margin-bottom: 25px;">
-            <i class="fa-solid fa-circle-info"></i> No PDF graphic report was found for Cluster {c}.
+            <i class="fa-solid fa-circle-info"></i>
+            <b>Information Note</b><br>
+            No PDF graphic report was found for Cluster {c}.
           </div>
         '), sep = "\n"))
       }
@@ -757,16 +758,19 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
           
         }, error = function(e) {
             out_indiv <<- tagAppendChild(out_indiv, HTML(glue::glue('
-              <div class="alert-info alert-box" style="margin-bottom: 50px;">
-                <i class="fa-solid fa-triangle-exclamation"></i> Error reading the table {nombre_tsv}. Unexpected format.
+              <div class="alert-info alert-box">
+                <i class="fa-solid fa-triangle-exclamation"></i><br>
+                Error reading the table {nombre_tsv}. Unexpected format.
               </div>
             '), sep = "\n"))
         })
       
       } else {
         out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
-          <div class="alert-info alert-box" style="margin-bottom: 50px;">
-            <i class="fa-solid fa-circle-info"></i> No data table was found for Cluster {c}.
+          <div class="alert-info alert-box" style="margin-bottom: 25px;">
+            <i class="fa-solid fa-circle-info"></i>
+            <b>Information Note</b><br>
+            No data table was found for Cluster {c}.
           </div>
         ')))
       }
@@ -780,8 +784,8 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Note</b><br>
-      No individual cluster files (formats <code>_vs_all</code>) were found to perform detailed scrutiny.
+      <b>Information Note</b><br>
+      No individual cluster files were found (formats <code>_vs_all</code>) to perform the detailed analysis.
     </div>
     '), sep = "\n")
   }
@@ -790,8 +794,8 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Empty Directory</b><br>
-      The folder does not contain results to perform this individual analysis.
+      <b>Information Note</b><br>
+      The directory is empty or no expected files with individual cluster markers were detected.
     </div>
     '), sep = "\n")
 }
@@ -821,16 +825,16 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# 1. GENERATE BOX-FILES FOR INTEGRATED
+# 1. GENERAR BOX-FILES DE INTEGRATED
 if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
   
-  # Extract the cluster number from the file name to enforce a "natural order"
+  # Extraer el número de clúster del nombre del archivo para forzar un "orden natural"
   num_cluster <- as.numeric(stringr::str_extract(markers_integrated_df$file_name, "\\d+"))
   
-  # Files without numbers (like summaries, CSVs, or global XLSX) are assigned -1 to appear first
+  # A los archivos sin números (como resúmenes, CSV o XLSX globales) les damos un -1 para que vayan al principio
   num_cluster[is.na(num_cluster)] <- -1
   
-  # First sort by cluster number (-1, 0, 1, 2... 10) and then alphabetically (to break ties for .pdf and .tsv)
+  # Ordenar primero por el número de clúster (-1, 0, 1, 2... 10) y luego alfabéticamente (para desempatar .pdf y .tsv)
   df_sorted <- markers_integrated_df[order(num_cluster, markers_integrated_df$file_name), ]
   
   cat('<div class="box-files">\n<ul>\n')
@@ -859,7 +863,7 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
   cat(glue::glue('
   <p class="text-center" style="margin-top: 15px;">
     <a href="{ruta_markers_integrated_relativa}" target="_blank" class="boton-files">
-      <i class="fa-solid fa-folder-open"></i> Explore Marker Directory (Integrated)
+      <i class="fa-solid fa-folder-open"></i> Explore Integrated Markers directory
     </a>
   </p>
   '))
@@ -868,8 +872,9 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    No marker files were detected for the <em>Integrated</em> strategy in this project. The corresponding subsections will be displayed empty.
+    <b>Information note</b><br>
+    No marker files were detected for the <em>Integrated</em> strategy in this project.<br>
+    The corresponding subsections will be displayed empty.
   </div>
   '), sep = "\n")
 }
@@ -893,10 +898,10 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
 </p>
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-# 2. DISPLAY GLOBAL PDF (IF EXISTS)
+# 2. MOSTRAR EL PDF GLOBAL (SI EXISTE)
 if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
   
-  # Search for a PDF that is NOT individual (assuming individual files contain "_vs_all" in their name)
+  # Buscar un PDF que NO sea individual (asumimos que los individuales contienen "_vs_all" en su nombre)
   global_pdf_df <- markers_integrated_df[grepl("\\.pdf$", markers_integrated_df$file_name, ignore.case = TRUE) & 
                                           !grepl("_vs_all", markers_integrated_df$file_name, ignore.case = TRUE), ]
   
@@ -940,8 +945,8 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
     HTML('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Note</b><br>
-      No global consolidated PDF (summary) was found for this strategy. Please review individual scrutiny below.
+      <b>Information note</b><br>
+      No consolidated global PDF file (summary) was found for this strategy. Please review the individual analysis below.
     </div>
     ')
   }
@@ -950,8 +955,8 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
     HTML('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Empty Directory</b><br>
-      The folder does not contain results to perform this visualization.
+      <b>Information note</b><br>
+      The directory is empty or the expected file with all global markers was not detected.
     </div>
     ')
 }
@@ -984,32 +989,32 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
 </ul>
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-# 3. MATCH AND DISPLAY PDF AND TSV BY CLUSTER (INTEGRATED)
+# 3. EMPAREJAR Y MOSTRAR PDF Y TSV POR CLÚSTER (INTEGRATED)
 if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
   
-  # Isolate only files containing "_vs_all"
+  # Aislar solo los archivos que contienen "_vs_all"
   indiv_df <- markers_integrated_df[grepl("_vs_all", markers_integrated_df$file_name, ignore.case = TRUE), ]
   
   if (nrow(indiv_df) > 0) {
-    # Extract cluster numbers using regular expressions to sort numerically
-    clusters_detected <- as.numeric(stringr::str_extract(indiv_df$file_name, "\\d+"))
-    clusters_unique <- sort(unique(clusters_detected[!is.na(clusters_detected)]))
+    # Extraer los números de los clústeres usando expresiones regulares para ordenarlos numéricamente
+    clusters_detectados <- as.numeric(stringr::str_extract(indiv_df$file_name, "\\d+"))
+    clusters_unicos <- sort(unique(clusters_detectados[!is.na(clusters_detectados)]))
     
     out_indiv <- tagList()
     
-    # Index for subsection numbering (4.3.2.1, 4.3.2.2, etc.)
+    # Índice para la numeración de los apartados (4.3.2.1, 4.3.2.2, etc.)
     idx <- 1
     
-    for (c in clusters_unique) {
+    for (c in clusters_unicos) {
       
-      # Filter the exact files for this cluster 
+      # Filtrar los archivos exactos de este clúster 
       pattern_cluster <- paste0("[^0-9]", c, "_vs_all")
-      cluster_files <- indiv_df[grepl(pattern_cluster, indiv_df$file_name, ignore.case = TRUE), ]
+      archivos_cluster <- indiv_df[grepl(pattern_cluster, indiv_df$file_name, ignore.case = TRUE), ]
       
-      pdf_file <- cluster_files[grepl("\\.pdf$", cluster_files$file_name, ignore.case = TRUE), ]
-      tsv_file <- cluster_files[grepl("\\.tsv$|\\.csv$", cluster_files$file_name, ignore.case = TRUE), ]
+      fila_pdf <- archivos_cluster[grepl("\\.pdf$", archivos_cluster$file_name, ignore.case = TRUE), ]
+      fila_tsv <- archivos_cluster[grepl("\\.tsv$|\\.csv$", archivos_cluster$file_name, ignore.case = TRUE), ]
       
-      # Add subsection header for this cluster
+      # Añadir la cabecera de la subsección para este clúster
       out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
         <div style="height: 12px; background-color: transparent;"></div>
 
@@ -1022,7 +1027,7 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
         </p>
       ')))
       
-      # --- BLOCK 1: PDF ---
+      # --- BLOQUE 1: PDF ---
       if (nrow(pdf_file) > 0) {
         ruta_rel_pdf <- pdf_file$ruta_relativa[1]
         nombre_pdf <- pdf_file$file_name[1]
@@ -1055,19 +1060,22 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
             </a>
           </div>
         ')))
+      
       } else {
         out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
           <div class="alert-info alert-box" style="margin-bottom: 25px;">
-            <i class="fa-solid fa-circle-info"></i> No PDF graphic report was found for Cluster {c}.
+            <i class="fa-solid fa-circle-info"></i> 
+            <b>Information Note</b><br>
+            No PDF graphic report was found for Cluster {c}.
           </div>
         '), sep = "\n"))
       }
       
-      # --- BLOCK 2: TSV / CSV (Datatable) ---
-      if (nrow(tsv_file) > 0) {
-        ruta_abs_tsv <- tsv_file$ruta_absoluta[1]
-        ruta_rel_tsv <- tsv_file$ruta_relativa[1]
-        nombre_tsv <- tsv_file$file_name[1]
+      # --- BLOQUE 2: TSV / CSV (Datatable) ---
+      if (nrow(fila_tsv) > 0) {
+        ruta_abs_tsv <- fila_tsv$ruta_absoluta[1]
+        ruta_rel_tsv <- fila_tsv$ruta_relativa[1]
+        nombre_tsv <- fila_tsv$file_name[1]
         
         out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
           <p style="margin-top: 20px; margin-bottom: 18px;">
@@ -1085,17 +1093,17 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
         tryCatch({
           datos_tsv <- read.table(ruta_abs_tsv, sep=sep_char, header=TRUE, stringsAsFactors=FALSE, fill=TRUE)
           
-          # Rename first column if unnamed
+          # Renombrar primera columna si no tiene nombre
           if(colnames(datos_tsv)[1] == "X" || colnames(datos_tsv)[1] == "") {
               colnames(datos_tsv)[1] <- "Gene"
           }
           
-          # Numeric formatting
+          # Formateo numérico
           if("avg_log2FC" %in% colnames(datos_tsv)) datos_tsv$avg_log2FC <- round(as.numeric(datos_tsv$avg_log2FC), 4)
           if("p_val_adj" %in% colnames(datos_tsv)) datos_tsv$p_val_adj <- signif(as.numeric(datos_tsv$p_val_adj), 4)
           if("p_val" %in% colnames(datos_tsv)) datos_tsv$p_val <- signif(as.numeric(datos_tsv$p_val), 4)
           
-          # Datatable block
+          # Bloque datatable
           out_indiv <- tagAppendChild(out_indiv, 
             DT::datatable(
               datos_tsv,
@@ -1114,7 +1122,7 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
             )
           )
           
-          # Download button for the table
+          # Botón de descarga de la tabla
           out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
             <div style="text-align: center; margin-top: 16px; margin-bottom: 30px;">
               <a href="{ruta_rel_tsv}" 
@@ -1128,14 +1136,16 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
         }, error = function(e) {
             out_indiv <<- tagAppendChild(out_indiv, HTML(glue::glue('
               <div class="alert-info alert-box" style="margin-bottom: 50px;">
-                <i class="fa-solid fa-triangle-exclamation"></i> Error reading the table {nombre_tsv}. Unexpected format.
+                <i class="fa-solid fa-triangle-exclamation"></i> Error al leer la tabla {nombre_tsv}. Formato inesperado.
               </div>
             '), sep = "\n"))
         })
       } else {
         out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
           <div class="alert-info alert-box" style="margin-bottom: 50px;">
-            <i class="fa-solid fa-circle-info"></i> No data table found for Cluster {c}.
+            <i class="fa-solid fa-circle-info"></i>
+            <b>Information Note</b><br>
+            No data table found for Cluster {c}.
           </div>
         ')))
       }
@@ -1149,8 +1159,8 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Note</b><br>
-      No individual cluster files (formats <code>_vs_all</code>) were found to perform detailed scrutiny.
+      <b>Information note</b><br>
+      No individual cluster files were found (formats <code>_vs_all</code>) to perform the detailed analysis.
     </div>
     '), sep = "\n")
   }
@@ -1159,8 +1169,8 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Empty directory</b><br>
-      The folder does not contain results to perform this individual analysis.
+      <b>Information note</b><br>
+      The directory is empty or no expected files with individual cluster markers were detected.
     </div>
     '), sep = "\n")
 }

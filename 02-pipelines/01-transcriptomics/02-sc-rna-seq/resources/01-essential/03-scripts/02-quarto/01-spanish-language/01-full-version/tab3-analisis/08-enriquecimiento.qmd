@@ -647,9 +647,9 @@ if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df)
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Directorio vacío</b><br>
+    <b>Nota informativa</b><br>
     No se han detectado subdirectorios en la carpeta "01_standard_comparisons".
   </div>
   '), sep = "\n")
@@ -715,9 +715,9 @@ if (!is.null(ult_ver_enrich_within_df) && nrow(ult_ver_enrich_within_df) > 0) {
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Directorio vacío</b><br>
+    <b>Nota informativa</b><br>
     No se han detectado subdirectorios en la carpeta "01_reference_vs_test_within_cluster".
   </div>
   '), sep = "\n")
@@ -908,8 +908,8 @@ if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_di
     } else {
       cat(glue::glue('
       <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
-        <i class="fa-solid fa-folder-open"></i>
-        <b>Directorio sin resultados</b><br>
+        <i class="fa-solid fa-circle-info"></i>
+        <b>Nota informativa</b><br>
         El contenedor <code>{carpeta_cruda}</code> ha sido inicializado, pero actualmente no se han volcado los archivos correspondientes (reportes o tablas de vías biológicas) para esta comparativa.
       </div>
       '), sep = "\n")
@@ -930,9 +930,9 @@ if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_di
 } else {
   # ESCENARIO B: NO HAY PETICIONES AD HOC (SIN CARPETAS)
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 25px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Repositorio pasivo</b><br>
+    <b>Nota informativa</b><br>
     Actualmente no hay análisis funcionales personalizados ni peticiones extra solicitadas para este proyecto.
   </div>
   '), sep = "\n")

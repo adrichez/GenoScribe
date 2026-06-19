@@ -625,7 +625,7 @@ if (dir.exists(ruta_custom_comparisons)) {
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# SHOW BOX-FILES FROM ENRICHMENT ROOT (Seurat, Automatic, Manual)
+# MOSTRAR BOX-FILES DE LA RAÍZ DE ENRIQUECIMIENTO (Seurat, Automáticas, Manual)
 if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df) > 0) {
   
   cat('<div class="box-files">\n<ul>\n')
@@ -646,9 +646,9 @@ if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df)
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Empty directory</b><br>
+    <b>Information Note</b><br>
     No subdirectories have been detected in the "01_standard_comparisons" folder.
   </div>
   '), sep = "\n")
@@ -693,7 +693,7 @@ if (!is.null(std_comparisons_root_dirs_df) && nrow(std_comparisons_root_dirs_df)
 </p>
 
 ```{r, echo=FALSE, results="asis"}
-# 1. SHOW BOX-FILES FROM THE SPECIFIC DIRECTORY 01_reference_vs_test_within_cluster FOR THE LATEST VERSION OF MANUAL CLUSTERS
+# 1. MOSTRAR BOX-FILES DEL DIRECTORIO ESPECÍFICO DE 01_reference_vs_test_within_cluster PARA LA ÚLTIMA VERSIÓN DE CLÚSTERES MANUALES
 if (!is.null(ult_ver_enrich_within_df) && nrow(ult_ver_enrich_within_df) > 0) {
   
   cat('<div class="box-files">\n<ul>\n')
@@ -714,9 +714,9 @@ if (!is.null(ult_ver_enrich_within_df) && nrow(ult_ver_enrich_within_df) > 0) {
   
 } else {
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Empty directory</b><br>
+    <b>Information Note</b><br>
     No subdirectories have been detected in the folder "01_reference_vs_test_within_cluster".
   </div>
   '), sep = "\n")
@@ -907,14 +907,14 @@ if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_di
     } else {
       cat(glue::glue('
       <div class="alert-info alert-box" style="margin-top: 20px; margin-bottom: 20px;">
-        <i class="fa-solid fa-folder-open"></i>
-        <b>Directory without results</b><br>
+        <i class="fa-solid fa-circle-info"></i>
+        <b>Information Note</b><br>
         The container <code>{carpeta_cruda}</code> has been initialized, but no corresponding files (pathway reports or tables) have currently been generated for this comparison.
       </div>
       '), sep = "\n")
     }
     
-    # NAVIGATION BUTTON TO THAT SUBFOLDER
+    # BOTÓN DE EXPLORACIÓN HACIA ESA SUBCARPETA
     ruta_carpeta_html <- utils::URLencode(gsub("\\\\", "/", ruta_carpeta_rel))
     
     cat(glue::glue('
@@ -927,11 +927,11 @@ if (!is.null(custom_comparisons_root_dirs_df) && nrow(custom_comparisons_root_di
   }
   
 } else {
-  # SCENARIO B: NO AD HOC REQUESTS (NO FOLDERS)
+  # ESCENARIO B: NO HAY PETICIONES AD HOC (SIN CARPETAS)
   cat(glue::glue('
-  <div class="alert-info alert-box" style="margin-top: 25px; margin-bottom: 20px;">
+  <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Passive repository</b><br>
+    <b>Information Note</b><br>
     Currently there are no custom functional analyses or additional requests for this project.
   </div>
   '), sep = "\n")

@@ -537,8 +537,8 @@ if (!is.null(dim_reduction_df) && nrow(dim_reduction_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
-    No files were found in the dimensionality reduction (PCA) folder.
+    <b>Information Note</b><br>
+    No files were found in the dimensionality reduction folder (PCA).
   </div>
   '), sep = "\n")
 }
@@ -608,13 +608,12 @@ if (!is.null(dim_reduction_df) && nrow(dim_reduction_df) > 0) {
   HTML(glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Note</b><br>
+    <b>Information Note</b><br>
     As no dimensionality reduction files exist, interactive iframes will not be generated for this section.
   </div>
   '), sep = "\n")
 }
 ```
-
 
 <div class="divider"></div>
 
@@ -693,18 +692,19 @@ if (dir.exists(ruta_clustering)) {
     cat(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Methodological Note</b><br>
-      The root clustering directory is empty in this project.
+      <b>Information Note</b><br>
+      The clustering root directory is empty in this project.
     </div>
     '), sep = "\n")
   }
+
 
 } else {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
     <b>Access Error</b><br>
-    The root clustering directory could not be located.
+    The clustering root directory could not be located.
   </div>
   '), sep = "\n")
 }
@@ -798,7 +798,7 @@ if (!is.null(merged_umaps_df) && nrow(merged_umaps_df) > 0) {
   cat(glue::glue('
   <p class="text-center">
     <a href="{ruta_clustering_merged_umaps_relativa}" target="_blank" class="boton-files">
-      <i class="fa-solid fa-folder-open"></i> Explore UMAPs directory (Merged)
+      <i class="fa-solid fa-folder-open"></i> Browse merged UMAP directory
     </a>
   </p>
   '))
@@ -807,7 +807,7 @@ if (!is.null(merged_umaps_df) && nrow(merged_umaps_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No UMAP projection files were detected for the <em>Merged</em> strategy in this project.
   </div>
   '), sep = "\n")
@@ -920,7 +920,7 @@ if (!is.null(merged_proportions_df) && nrow(merged_proportions_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No cellular proportion files were detected for the <em>Merged</em> strategy in this project.
   </div>
   '), sep = "\n")
@@ -1049,7 +1049,7 @@ if (!is.null(integrated_umaps_df) && nrow(integrated_umaps_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No UMAP projection files were detected for the <em>Integrated</em> strategy in this project.
   </div>
   '), sep = "\n")
@@ -1169,7 +1169,7 @@ if (!is.null(integrated_proportions_df) && nrow(integrated_proportions_df) > 0) 
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Methodological Note</b><br>
+    <b>Information Note</b><br>
     No cellular proportion files were detected for the <em>Integrated</em> strategy in this project.
   </div>
   '), sep = "\n")

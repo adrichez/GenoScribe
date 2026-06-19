@@ -186,8 +186,8 @@ ruta_markers_relativa <- file.path(ruta_analysis_relativa, "04_markers")
 #------------------------------------------------------------------------
 
 # Rutas base Merged
-ruta_markers_merged <- file.path(ruta_markers, "01_markers_seurat_merged_clusters")
-ruta_markers_merged_relativa <- file.path(ruta_markers_relativa, "01_markers_seurat_merged_clusters")
+ruta_markers_merged <- file.path(ruta_markers, "01_seurat_merged_clusters")
+ruta_markers_merged_relativa <- file.path(ruta_markers_relativa, "01_seurat_merged_clusters")
 
 
 # Listar archivos dentro del directorio
@@ -214,8 +214,8 @@ if (dir.exists(ruta_markers_merged)) {
 #------------------------------------------------------------------------
 
 # Rutas base Integrated
-ruta_markers_integrated <- file.path(ruta_markers, "02_markers_seurat_integrated_clusters")
-ruta_markers_integrated_relativa <- file.path(ruta_markers_relativa, "02_markers_seurat_integrated_clusters")
+ruta_markers_integrated <- file.path(ruta_markers, "02_seurat_integrated_clusters")
+ruta_markers_integrated_relativa <- file.path(ruta_markers_relativa, "02_seurat_integrated_clusters")
 
 
 # Listar archivos dentro del directorio
@@ -403,7 +403,7 @@ if (dir.exists(ruta_markers_integrated)) {
 </div>
 
 <p>
-  En transcriptómica de célula única, la identificación de genes marcadores se fundamenta en el Análisis de Expresión Génica Diferencial (DEG). Dado que en esta fase exploratoria los clústeres carecen de una identidad biológica predefinida y no se están comparando condiciones experimentales directas (ej. WT frente a KO), el algoritmo de Seurat ejecuta una aproximación de descubrimiento topológico conocida como <strong>"Clúster frente al resto" (<em>Cluster vs All</em>)</strong>.
+  En transcriptómica de célula única, la identificación de genes marcadores se fundamenta en el Análisis de Expresión Génica Diferencial (DEG). Dado que en esta fase exploratoria los clústeres carecen de una identidad biológica predefinida y no se están comparando condiciones experimentales directas (ej. WT frente a KO), el algoritmo de Seurat ejecuta una aproximación de descubrimiento topológico conocida como <strong>"Clúster frente al resto" <em>(Cluster vs All)</em></strong>.
 </p>
 
 <p>
@@ -498,8 +498,9 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
-    No se detectaron archivos de marcadores para la estrategia <em>Merged</em> en este proyecto. Las subsecciones correspondientes se mostrarán vacías.
+    <b>Nota informativa</b><br>
+    No se detectaron archivos de marcadores para la estrategia <em>Merged</em> en este proyecto.<br>
+    Las subsecciones correspondientes se mostrarán vacías.
   </div>
   '), sep = "\n")
 }
@@ -569,7 +570,7 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Nota</b><br>
+      <b>Nota informativa</b><br>
       No se ha encontrado un archivo PDF consolidado global (resumen) para esta estrategia. Revise el escrutinio individual a continuación.
     </div>
     '), sep = "\n")
@@ -579,9 +580,8 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Directorio vacío</b><br>
-      La carpeta no contiene resultados para realizar esta visualización.
-    </div>
+      <b>Nota informativa</b><br>
+      El directorio se encuentra vacío o no se han detectado los archivos esperados con todos los marcadores globales.
     '), sep = "\n")
 }
 ```
@@ -688,7 +688,9 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
       } else {
         out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
           <div class="alert-info alert-box" style="margin-bottom: 25px;">
-            <i class="fa-solid fa-circle-info"></i> No se encontró reporte gráfico en PDF asociado al Clúster {c}.
+            <i class="fa-solid fa-circle-info"></i>
+            <b>Nota informativa</b><br>
+            No se encontró reporte gráfico en PDF asociado al Clúster {c}.
           </div>
         '), sep = "\n"))
       }
@@ -766,7 +768,9 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
       } else {
         out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
           <div class="alert-info alert-box" style="margin-bottom: 50px;">
-            <i class="fa-solid fa-circle-info"></i> No se encontró tabla de datos para el Clúster {c}.
+            <i class="fa-solid fa-circle-info"></i>
+            <b>Nota informativa</b><br>
+            No se encontró tabla de datos para el Clúster {c}.
           </div>
         ')))
       }
@@ -780,7 +784,7 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Nota</b><br>
+      <b>Nota informativa</b><br>
       No se han encontrado archivos individuales de clústeres (formatos <code>_vs_all</code>) para realizar el escrutinio detallado.
     </div>
     '), sep = "\n")
@@ -790,8 +794,8 @@ if (!is.null(markers_merged_df) && nrow(markers_merged_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Directorio vacío</b><br>
-      La carpeta no contiene resultados para realizar este análisis individual.
+      <b>Nota informativa</b><br>
+      El directorio se encuentra vacío o no se han detectado los archivos esperados con los marcadores individuales por clúster.
     </div>
     '), sep = "\n")
 }
@@ -868,8 +872,9 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
   cat(glue::glue('
   <div class="alert-info alert-box">
     <i class="fa-solid fa-circle-info"></i>
-    <b>Nota Metodológica</b><br>
-    No se detectaron archivos de marcadores para la estrategia <em>Integrated</em> en este proyecto. Las subsecciones correspondientes se mostrarán vacías.
+    <b>Nota informativa</b><br>
+    No se detectaron archivos de marcadores para la estrategia <em>Integrated</em> en este proyecto.<br>
+    Las subsecciones correspondientes se mostrarán vacías.
   </div>
   '), sep = "\n")
 }
@@ -940,7 +945,7 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
     HTML('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Nota</b><br>
+      <b>Nota informativa</b><br>
       No se ha encontrado un archivo PDF consolidado global (resumen) para esta estrategia. Revise el escrutinio individual a continuación.
     </div>
     ')
@@ -950,8 +955,8 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
     HTML('
     <div class="alert-info alert-box" style="margin-top: 20px;">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Directorio vacío</b><br>
-      La carpeta no contiene resultados para realizar esta visualización.
+      <b>Nota informativa</b><br>
+      El directorio se encuentra vacío o no se ha detectado el archivo esperado con todos los marcadores globales.
     </div>
     ')
 }
@@ -1059,7 +1064,9 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
       } else {
         out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
           <div class="alert-info alert-box" style="margin-bottom: 25px;">
-            <i class="fa-solid fa-circle-info"></i> No se encontró reporte gráfico en PDF asociado al Clúster {c}.
+            <i class="fa-solid fa-circle-info"></i>
+            <b>Nota informativa</b><br>
+            No se encontró reporte gráfico en PDF asociado al Clúster {c}.
           </div>
         '), sep = "\n"))
       }
@@ -1136,7 +1143,9 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
       } else {
         out_indiv <- tagAppendChild(out_indiv, HTML(glue::glue('
           <div class="alert-info alert-box" style="margin-bottom: 50px;">
-            <i class="fa-solid fa-circle-info"></i> No se encontró tabla de datos para el Clúster {c}.
+            <i class="fa-solid fa-circle-info"></i>
+            <b>Nota informativa</b><br>
+            No se encontró tabla de datos para el Clúster {c}.
           </div>
         ')))
       }
@@ -1150,7 +1159,7 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Nota</b><br>
+      <b>Nota informativa</b><br>
       No se han encontrado archivos individuales de clústeres (formatos <code>_vs_all</code>) para realizar el escrutinio detallado.
     </div>
     '), sep = "\n")
@@ -1160,8 +1169,8 @@ if (!is.null(markers_integrated_df) && nrow(markers_integrated_df) > 0) {
     HTML(glue::glue('
     <div class="alert-info alert-box">
       <i class="fa-solid fa-circle-info"></i>
-      <b>Directorio vacío</b><br>
-      La carpeta no contiene resultados para realizar este análisis individual.
+      <b>Nota informativa</b><br>
+      El directorio se encuentra vacío o no se han detectado los archivos esperados con los marcadores individuales por clúster.
     </div>
     '), sep = "\n")
 }

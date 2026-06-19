@@ -201,11 +201,19 @@ fastq_files <- list.files(
 )
 
 # Crear data.frame con nombre y ruta
-fastq_df <- data.frame(
-  file_name = basename(fastq_files),
-  ruta_absoluta = fastq_files,
-  stringsAsFactors = FALSE
-)
+if (length(fastq_files) > 0) {
+  fastq_df <- data.frame(
+    file_name = basename(fastq_files),
+    ruta_absoluta = fastq_files,
+    stringsAsFactors = FALSE
+  )
+} else {
+  fastq_df <- data.frame(
+    file_name = character(),
+    ruta_absoluta = character(),
+    stringsAsFactors = FALSE
+  )
+}
 ```
 
 
@@ -367,21 +375,35 @@ cat(glue::glue('
   A continuación se muestra la estructura completa de dicho directorio. Esta representación permite visualizar los archivos y subcarpetas generados durante el análisis de Single-Cell RNA-Seq y que se emplearon como base para la construcción de este informe:
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_proyecto_relativa)) {
-  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_proyecto_relativa))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Alerta</b><br>
+  La ruta especificada no existe o no es accesible:<br>
+  <code>{ruta_proyecto}</code>
+  </div>
+  '))
+
 } else {
   # Listar todos los archivos, sin filtros
   files <- list.files(ruta_proyecto_relativa, full.names = FALSE)
   
   if (length(files) == 0) {
-    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
+    No se encontraron archivos en la carpeta especificada:<br>
+    <code>{ruta_proyecto}</code>
+    </div>
+    '))
+  
   } else {
     enlace <- ruta_proyecto_relativa
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files) {
       # Asignar clase según la extensión
       clase <- if (!grepl("\\.", f)) {
@@ -400,24 +422,20 @@ if (!dir.exists(ruta_proyecto_relativa)) {
                   clase, enlace, f, f))
     }
     cat("</ul>\n")
+
+    # Para que funcione con rutas absolutas
+    enlace <- ruta_proyecto_relativa
+
+    # Imprimir el enlace
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{enlace}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{nombre_proyecto}" aquí
+      </a>
+    </p>
+    \n\n'))
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# Para que funcione con rutas absolutas
-enlace <- ruta_proyecto_relativa
-
-# Imprimir el enlace
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{enlace}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de la carpeta "{nombre_proyecto}" aquí
-  </a>
-</p>
-\n\n'))
 ```
 
 ```{r, results="asis"}
@@ -499,22 +517,34 @@ cat(glue::glue('
   A continuación se detallan los archivos de metadatos disponibles y asociados a este proyecto:
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_metadata_relativa)) {
-  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible.</em></p>\n', ruta_metadata_relativa))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Alerta</b><br>
+  La ruta especificada no existe o no es accesible:<br>
+  <code>{ruta_metadata}</code>
+  </div>
+  '))
 
 } else {
   # Listar todos los archivos
   files <- list.files(ruta_metadata_relativa, full.names = FALSE)
   
   if (length(files) == 0) {
-    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
+    No se encontraron archivos en la carpeta especificada:<br>
+    <code>{ruta_metadata}</code>
+    </div>
+    '))
   } else {
     enlace <- ruta_metadata_relativa
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files) {
       # Asignar clase según la extensión
       clase <- if (!grepl("\\.", f)) {
@@ -531,26 +561,23 @@ if (!dir.exists(ruta_metadata_relativa)) {
                   clase, enlace, f, f))
     }
     cat("</ul>\n")
+
+    # Imprimir el botón para explorar la carpeta
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_metadata_relativa}" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explorar los archivos de metadatos aquí
+      </a>
+    </p>
+    '), sep = "\n")
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-# Imprimir el botón para explorar la carpeta
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_metadata_relativa}" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explorar los archivos de metadatos aquí
-  </a>
-</p>
-'), sep = "\n")
 ```
 
 <p>
   Tras ubicar estos documentos en la estructura del directorio, procedemos a explorar detalladamente el contenido de la tabla de metadatos clínicos. El siguiente visor interactivo le permite revisar de forma rápida y cómoda las asignaciones experimentales, ordenar los pacientes o muestras según variables de interés y comprobar la integridad del diseño antes de adentrarse en la interpretación de los resultados analíticos.
 </p>
+
 
 <div class="divider"></div>
 
@@ -624,6 +651,7 @@ if ("sample_metadata.tsv" %in% names_metadata_list) {
 <p>
   Con el diseño biológico perfectamente definido y validado en la tabla anterior, resulta imperativo conectarlo con su contraparte técnica. Es decir, <strong>¿cómo sabe el pipeline bioinformático qué archivo físico salido del secuenciador corresponde a cada muestra clínica?</strong> Para resolver este solapamiento entre la biología y la informática, recurrimos al segundo archivo clave de este directorio.
 </p>
+
 
 <div class="divider"></div>
 
@@ -742,23 +770,35 @@ cat(glue::glue('
   Dicho esto, a continuación se exponen los paneles interactivos de ambos directorios. En primer lugar, se detalla el visor correspondiente a las lecturas crudas (<strong>FASTQ</strong>):
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_fastq)) {
-  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible en este sistema.</em></p>\n', ruta_fastq))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Alerta</b><br>
+  La ruta especificada no existe o no es accesible:<br>
+  <code>{ruta_fastq}</code>
+  </div>
+  '))
 
 } else {
   # Listar todos los archivos y carpetas del directorio FASTQ
   files_fastq <- list.files(ruta_fastq, full.names = FALSE)
   
   if (length(files_fastq) == 0) {
-    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
+    No se encontraron archivos en la carpeta especificada:<br>
+    <code>{ruta_fastq}</code>
+    </div>
+    '))
   
   } else {
     enlace_fastq <- ruta_fastq
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files_fastq) {
       clase <- if (!grepl("\\.", f)) {
         "file-folder"
@@ -772,43 +812,51 @@ if (!dir.exists(ruta_fastq)) {
                   clase, enlace_fastq, f, f))
     }
     cat("</ul>\n")
+
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_fastq_relativa}/" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explorar los datos FASTQ aquí
+      </a>
+    </p>
+    '), sep = "\n")
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_fastq_relativa}/" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explorar los datos FASTQ aquí
-  </a>
-</p>
-'), sep = "\n")
 ```
 
 <p>
   Y a continuación, se presenta el segundo visor correspondiente a los resultados del procesamiento primario. En este directorio se generan carpetas individuales (con el nombre de la muestra) que albergan el volcado completo de resultados de <em>Cell Ranger</em>, incluyendo la vital subcarpeta <code>outs/</code> donde residen las matrices de expresión filtradas.
 </p>
 
-<div class="box-files">
-
 ```{r, results="asis"}
 if (!dir.exists(ruta_cellranger)) {
-  cat(sprintf('<p><em>La ruta "%s" no existe o no es accesible en este sistema.</em></p>\n', ruta_cellranger))
+  cat(glue::glue('
+  <div class="alert-warning alert-box">
+  <i class="fa-solid fa-triangle-exclamation"></i>
+  <b>Alerta</b><br>
+  La ruta especificada no existe o no es accesible:<br>
+  <code>{ruta_cellranger}</code>
+  </div>
+  '))
 
 } else {
   # Listar todos los archivos y carpetas del directorio Cell Ranger
   files_cr <- list.files(ruta_cellranger, full.names = FALSE)
   
   if (length(files_cr) == 0) {
-    cat('<p><em>No se encontraron archivos en la carpeta especificada.</em></p>\n')
+    cat(glue::glue('
+    <div class="alert-info alert-box">
+    <i class="fa-solid fa-circle-info"></i>
+    <b>Nota informativa</b><br>
+    No se encontraron archivos en la carpeta especificada:<br>
+    <code>{ruta_cellranger}</code>
+    </div>
+    '))
   
   } else {
     enlace_cr <- ruta_cellranger
     
-    cat("<ul>\n")
+    cat("<ul class='box-files'>\n")
     for (f in files_cr) {
       clase <- if (!grepl("\\.", f)) {
         "file-folder"
@@ -824,20 +872,16 @@ if (!dir.exists(ruta_cellranger)) {
                   clase, enlace_cr, f, f))
     }
     cat("</ul>\n")
+
+    cat(glue::glue('
+    <p style="text-align:center;">
+      <a href="{ruta_cellranger_relativa}/" target="_blank" class="boton-files">
+        <i class="fa-solid fa-folder-open"></i> Explorar los resultados de Cell Ranger aquí
+      </a>
+    </p>
+    '), sep = "\n")
   }
 }
-```
-
-</div>
-
-```{r, results="asis"}
-cat(glue::glue('
-<p style="text-align:center;">
-  <a href="{ruta_cellranger_relativa}/" target="_blank" class="boton-files">
-    <i class="fa-solid fa-folder-open"></i> Explorar los resultados de Cell Ranger aquí
-  </a>
-</p>
-'), sep = "\n")
 ```
 
 <p>
