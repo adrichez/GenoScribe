@@ -232,6 +232,10 @@ case "$OMICS_CATEGORY" in
         title2 "≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠"
         read -p "---> Ruta a la carpeta de datos resultado del análisis: " PATH_PROJECT
         PATH_PROJECT="$(echo "$PATH_PROJECT" | sed -e "s/^['\"]//" -e "s/['\"]$//")"
+        echo "Seleccione la tecnología de captura:"
+        echo "  1) VisiumHD"
+        echo "  2) Stereo-Seq"
+        read -p "---> Versión del informe (1/2): " TECHNOLOGY
         echo "Seleccione el idioma del informe:"
         echo "  1) Español"
         echo "  2) Inglés"
@@ -240,7 +244,7 @@ case "$OMICS_CATEGORY" in
         echo "  1) Full"
         echo "  2) Compact"
         read -p "---> Versión del informe (1/2): " REPORT_VERSION
-        PARAMS=("$PATH_PROJECT" "$REPORT_LANGUAGE" "$REPORT_VERSION")
+        PARAMS=("$PATH_PROJECT" "$TECHNOLOGY" "$REPORT_LANGUAGE" "$REPORT_VERSION")
         PATH_RUN_PIPELINE="$PATH_TRANS_ST_PIPELINE/run_pipeline_shell.sh"
         ;;
     "metagen-shotgun")

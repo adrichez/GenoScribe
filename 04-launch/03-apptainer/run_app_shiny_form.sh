@@ -211,8 +211,11 @@ title2 "≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠
 info "📂${TAB_4}Carpeta de datos del proyecto: $PATH_PROJECT"
 info "📂${TAB_4}Carpeta de la app en contenedor: $PATH_APP_CONTAINER"
 important "🌐${TAB_4}Acceso local: http://localhost:$PORT/app"
-info "💡${TAB_4}Si se encuentra en un cluster remoto, use port forwarding empleando el siguiente comando:"
+info "💡${TAB_4}Si se encuentra en el cluster Halowan del IPBLN, use port forwarding empleando el siguiente comando:"
 important "💻${TAB_4}ssh -L ${PORT}:localhost:${PORT} -J ${USER}@halowan.ipb.csic.es ${USER}@$(hostname)"
+info "💡${TAB_4}Si se encuentra en el cluster Ossus del IPBLN, use port forwarding empleando el siguiente comando:"
+note "📝${TAB_4}(Es necesario pasar por el cluster Halowan primero para entrar a Ossus)"
+important "💻${TAB_4}ssh -N -L ${PORT}:localhost:${PORT} -J ${USER}@halowan.ipb.csic.es,${USER}@ossus.ipb.csic.es ${USER}@$(hostname)"
 important "🌐${TAB_4}Luego abra en su navegador local: http://localhost:${PORT}/"
 info "⏳${TAB_4}Lanzando servidor Shiny..."
 

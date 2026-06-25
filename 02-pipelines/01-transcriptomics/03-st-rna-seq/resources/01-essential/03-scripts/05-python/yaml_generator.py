@@ -155,6 +155,7 @@ base_spanish_full = {
     },
     "params": {
         "project_path": "",
+        "technology": "",
         "report_language": "",
         "report_version": ""
     },
@@ -495,6 +496,7 @@ base_english_full = {
     },
     "params": {
         "project_path": "",
+        "technology": "",
         "report_language": "",
         "report_version": ""
     },
@@ -665,6 +667,7 @@ base_english_compact = {
     },
     "params": {
         "project_path": "",
+        "technology": "",
         "report_language": "",
         "report_version": ""
     },

@@ -170,8 +170,8 @@ ruta_fastq <- file.path(ruta_data, "01_reads", "02_fastq")
 ruta_fastq_relativa <- file.path(ruta_data_relativa, "01_reads", "02_fastq")
 
 # Carpeta donde están los resultados de Cell Ranger
-ruta_cellranger <- file.path(ruta_data, "03_alignment_outputs", "visium_cellranger")
-ruta_cellranger_relativa <- file.path(ruta_data_relativa, "03_alignment_outputs", "visium_cellranger")
+ruta_cellranger <- file.path(ruta_data, "03_alignment_outputs", "cellranger_output")
+ruta_cellranger_relativa <- file.path(ruta_data_relativa, "03_alignment_outputs", "cellranger_output")
 
 
 # Listar todos los archivos FASTQ.gz dentro de la carpeta

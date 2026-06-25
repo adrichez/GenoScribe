@@ -79,8 +79,9 @@ TAB_5=$'\033[5G'  # Tabulación a la columna 5
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 PATH_PROJECT="$1"
-REPORT_LANGUAGE="$2"
-REPORT_VERSION="$3"
+TECHNOLOGY="$2"
+REPORT_LANGUAGE="$3"
+REPORT_VERSION="$4"
 
 cd "$(dirname "$0")"
 
@@ -98,8 +99,9 @@ if [ $# -lt 2 ]; then
   error "≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠"
   error "Este script necesita 2 parámetros para ejecutarse correctamente:"
   error "  1️⃣${TAB_6}<project_path>  Ruta a los datos del proyecto"
-  error "  2️⃣${TAB_6}<report_language>  Idioma del informe"
-  error "  3️⃣${TAB_6}<report_version>  Versión del informe"
+  error "  2️⃣${TAB_6}<technology>  Tecnología de captura"
+  error "  3️⃣${TAB_6}<report_language>  Idioma del informe"
+  error "  4️⃣${TAB_6}<report_version>  Versión del informe"
   echo ""
   exit 1
 fi
@@ -111,6 +113,7 @@ title2 "≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠
 title2 "🏗️${TAB_4}Trabajando con los siguientes datos:"
 title2 "≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠"
 info "📂${TAB_4}Ruta del proyecto: $PATH_PROJECT"
+info "🧬${TAB_4}Tecnología de captura: $TECHNOLOGY"
 info "🌐${TAB_4}Idioma del informe: $REPORT_LANGUAGE"
 info "📝${TAB_4}Versión del informe: $REPORT_VERSION"
 
@@ -165,6 +168,7 @@ echo ""
 
 nextflow run main.nf -resume \
   --project_path "$PATH_PROJECT" \
+  --technology "$TECHNOLOGY" \
   --report_language "$REPORT_LANGUAGE" \
   --report_version "$REPORT_VERSION"
 

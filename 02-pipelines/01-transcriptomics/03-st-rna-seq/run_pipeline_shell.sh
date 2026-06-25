@@ -89,8 +89,9 @@ REPOSITORY_BASENAME="$(basename "$PATH_REPOSITORY")"
 
 # Leer argumentos
 PATH_PROJECT="$1"
-REPORT_LANGUAGE="$2"
-REPORT_VERSION="$3"
+TECHNOLOGY="$2"
+REPORT_LANGUAGE="$3"
+REPORT_VERSION="$4"
 
 
 # Definir rutas adicionales
@@ -158,6 +159,7 @@ title2 "≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠
 title2 "🏗️${TAB_4}Trabajando con los siguientes datos:"
 title2 "≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠"
 info "📂${TAB_4}Ruta del proyecto: $PATH_PROJECT"
+info "🧬${TAB_4}Tecnología de captura: $TECHNOLOGY"
 info "🌐${TAB_4}Idioma del informe: $REPORT_LANGUAGE"
 info "📝${TAB_4}Versión del informe: $REPORT_VERSION"
 
@@ -210,6 +212,7 @@ echo ""
 
 nextflow run main.nf -resume \
   --project_path "$PATH_PROJECT" \
+  --technology "$TECHNOLOGY" \
   --report_language "$REPORT_LANGUAGE" \
   --report_version "$REPORT_VERSION"
 

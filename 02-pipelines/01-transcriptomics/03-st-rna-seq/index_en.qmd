@@ -3,6 +3,7 @@ title: "IPBLN Bioinformatics Report"
 
 params:
   project_path: ""
+  technology: ""
   report_language: ""
   report_version: ""
 ---

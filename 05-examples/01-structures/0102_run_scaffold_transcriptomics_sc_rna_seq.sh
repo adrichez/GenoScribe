@@ -271,14 +271,22 @@ DIRS=(
   # Bloque de Datos
   "data/01_reads/01_blc"
   "data/01_reads/02_fastq"
-  "data/02_genome"
-  "data/03_alignment_outputs/visium_cellranger"
+
+  "data/02_genome/01_fasta"
+  "data/02_genome/02_genes"
+  "data/02_genome/03_index"
+  "data/02_genome/04_log"
+
+  "data/03_alignment_outputs/cellranger_output"
+
   "data/04_processed_objects"
+
   "data/05_resources/01_metadata"
   "data/05_resources/02_annotations/dbs"
   "data/05_resources/02_annotations/manual"
-  "data/05_resources/03_aditional_r_objects"
-  "data/05_resources/04_documentation"
+  "data/05_resources/03_containers"
+  "data/05_resources/04_aditional_r_objects"
+  "data/05_resources/05_documentation"
 
 
 

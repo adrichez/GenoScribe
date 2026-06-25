@@ -95,6 +95,7 @@ usage() {
     info " -rl, --report_language: Idioma del informe (1: Español, 2: Inglés)"
     info " -rv, --report_version: Versión del informe (1: full, 2: compact)"
     info " -en, --experiment_name: Nombre del experimento (Requerido para Bulk RNA-Seq)"
+    info " -tg, --technology: Tecnología de captura (Requerido para Spatial RNA-Seq)"
     info " -am, --amplicon_type: Tipo de amplicón (1-7) (Requerido para Metagenómica de Amplicones)"
     echo ""
     important "Correspondencias de opciones:"
@@ -110,10 +111,11 @@ usage() {
 OMICS_CATEGORY=""
 ANALYSIS_TYPE=""
 PATH_PROJECT=""
+EXPERIMENT_NAME=""
+TECHNOLOGY=""
+AMPLICON_TYPE=""
 REPORT_VERSION=""
 REPORT_LANGUAGE=""
-EXPERIMENT_NAME=""
-AMPLICON_TYPE=""
 
 # Parsear argumentos
 while [[ "$#" -gt 0 ]]; do
@@ -121,10 +123,11 @@ while [[ "$#" -gt 0 ]]; do
         -oc|--omics_category) OMICS_CATEGORY="$2"; shift ;;
         -at|--analysis_type) ANALYSIS_TYPE="$2"; shift ;;
         -pp|--path_project) PATH_PROJECT="$2"; shift ;;
+        -en|--experiment_name) EXPERIMENT_NAME="$2"; shift ;;
+        -tg|--technology) TECHNOLOGY="$2"; shift ;;
+        -am|--amplicon_type) AMPLICON_TYPE="$2"; shift ;;
         -rv|--report_version) REPORT_VERSION="$2"; shift ;;
         -rl|--report_language) REPORT_LANGUAGE="$2"; shift ;;
-        -en|--experiment_name) EXPERIMENT_NAME="$2"; shift ;;
-        -am|--amplicon_type) AMPLICON_TYPE="$2"; shift ;;
         -h|--help) usage ;;
         *) error "❌${TAB_4}Parámetro desconocido: $1"; usage ;;
     esac
@@ -232,7 +235,11 @@ case "$OMICS_ANALYSIS" in
         PATH_RUN_PIPELINE_CONTAINER="/workspace/$REPOSITORY_BASENAME/02-pipelines/01-transcriptomics/02-sc-rna-seq/run_pipeline_shell.sh"
         ;;
     "trans-st")
-        PARAMS=("$PATH_PROJECT_CONTAINER" "$REPORT_VERSION" "$REPORT_LANGUAGE")
+        if [[ -z "$TECHNOLOGY" ]]; then
+            error "❌${TAB_4}Debe proporcionar --technology (-tg) para Spatial RNA-Seq."
+            exit 1
+        fi
+        PARAMS=("$PATH_PROJECT" "$TECHNOLOGY" "$REPORT_LANGUAGE" "$REPORT_VERSION")
         PATH_RUN_PIPELINE_CONTAINER="/workspace/$REPOSITORY_BASENAME/02-pipelines/01-transcriptomics/03-st-rna-seq/run_pipeline_shell.sh"
         ;;
     "meta-amplicon")
@@ -262,6 +269,7 @@ info "🔹${TAB_4}Tipo de Análisis: $ANALYSIS_TYPE"
 info "🔹${TAB_4}Análisis Específico: $OMICS_ANALYSIS"
 info "🔹${TAB_4}Ruta del Proyecto: $PATH_PROJECT"
 [[ -n "$EXPERIMENT_NAME" ]] && info "🔹${TAB_4}Nombre del Experimento: $EXPERIMENT_NAME"
+[[ -n "$TECHNOLOGY" ]] && info "🔹${TAB_4}Tecnología de captura: $TECHNOLOGY"
 [[ -n "$AMPLICON_TYPE" ]] && info "🔹${TAB_4}Tipo de Amplicón: $AMPLICON_TYPE"
 info "🔹${TAB_4}Idioma del Report: $REPORT_LANGUAGE"
 info "🔹${TAB_4}Versión del Report: $REPORT_VERSION"

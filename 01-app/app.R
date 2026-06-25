@@ -167,11 +167,11 @@ server <- function(input, output, session) {
       
 
 
-      
+
   #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
   # 3.3. Validación y estados de inputs
   #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-      
+
     ############################################################################################
     # 3.3.1. Transcriptomics - Bulk RNA-Seq
     ############################################################################################
@@ -359,6 +359,22 @@ server <- function(input, output, session) {
             ),
             div(style = "min-height: 25px; margin-bottom: 45px;",
                 uiOutput("status_project_path_trans_st")
+            )
+        ),
+
+        # Technology
+        div(class = "form-group inputs-conjuntos",
+            tags$label("Tecnología de captura:"),
+            selectInput(
+              "technology_trans_st", label = NULL,
+              choices = c(
+                "Selecciona..." = "",
+                "VisiumHD" = "1",
+                "Stereo-Seq" = "2"
+              )
+            ),
+            div(style = "min-height: 25px; margin-bottom: 45px;",
+                uiOutput("status_technology_trans_st")
             )
         ),
 
@@ -735,9 +751,10 @@ server <- function(input, output, session) {
           paste0("analysis/", "08_enrichment"),
           paste0("analysis/", "09_extra"),
           paste0("data/", "01_raw_blc"),
-          paste0("data/", "02_fastq_cellranger"),
-          paste0("data/", "03_processed_objects"),
-          paste0("data/", "04_resources"),
+          paste0("data/", "02_genome"),
+          paste0("data/", "03_alignment_outputs"),
+          paste0("data/", "04_processed_objects"),
+          paste0("data/", "05_resources"),
           paste0("scripts/", "01_main"),
           paste0("scripts/", "02_functions"),
           paste0("scripts/", "03_extra")
@@ -770,17 +787,34 @@ server <- function(input, output, session) {
     observeEvent(
       {
         input$project_path_trans_st
+        input$technology_trans_st
         input$report_language_trans_st
         input$report_version_trans_st
       },
       {
-        req(input$project_path_trans_st, input$report_language_trans_st, input$report_version_trans_st)
+        req(input$project_path_trans_st, input$technology_trans_st, input$report_language_trans_st, input$report_version_trans_st)
         ruta <- limpiar_comillas(input$project_path_trans_st)
         
         rutas_esperadas <- c(
-          paste0("analysis/", "completar"),
-          paste0("data/", "completar"),
-          paste0("scripts/", "completar")
+          paste0("analysis/", "01_qc"),
+          paste0("analysis/", "02_dim_reduction"),
+          paste0("analysis/", "03_clustering"),
+          paste0("analysis/", "04_markers"),
+          paste0("analysis/", "05_cell_annotation"),
+          paste0("analysis/", "06_population_aggregation"),
+          paste0("analysis/", "07_deg_conditions"),
+          paste0("analysis/", "08_enrichment"),
+          paste0("analysis/", "09_extra"),
+          paste0("data/", "01_raw_blc"),
+          paste0("data/", "02_genome"),
+          paste0("data/", "03_images"),
+          paste0("data/", "04_spatial_templates"),
+          paste0("data/", "05_alignment_outputs"),
+          paste0("data/", "06_processed_objects"),
+          paste0("data/", "07_resources"),
+          paste0("scripts/", "01_main"),
+          paste0("scripts/", "02_functions"),
+          paste0("scripts/", "03_extra")
         )
         
         existen <- sapply(file.path(ruta, rutas_esperadas), file.exists)
@@ -1156,9 +1190,10 @@ server <- function(input, output, session) {
     ############################################################################################
   
     } else if (cat == "transcriptomics" && tipo == "trans_st") {
-      req(input$project_path_trans_st, input$report_language_trans_st, input$report_version_trans_st)
+      req(input$project_path_trans_st, input$technology_trans_st, input$report_language_trans_st, input$report_version_trans_st)
       
       ruta <- limpiar_comillas(input$project_path_trans_st)
+      tech <- limpiar_comillas(input$technology_trans_st)
       lan <- limpiar_comillas(input$report_language_trans_st)
       ver <- limpiar_comillas(input$report_version_trans_st)
       
@@ -1179,7 +1214,7 @@ server <- function(input, output, session) {
         system2("chmod", c("+x", "run_pipeline_shiny.sh"))
         
         incProgress(0.3, detail = "Ejecutando Nextflow")
-        log_out <- system2("./run_pipeline_shiny.sh", args = c(shQuote(ruta), shQuote(lan), shQuote(ver)), stdout = TRUE, stderr = TRUE)
+        log_out <- system2("./run_pipeline_shiny.sh", args = c(shQuote(ruta), shQuote(lan), shQuote(ver), shQuote(ver)), stdout = TRUE, stderr = TRUE)
         
         status <- attr(log_out, "status")
         if (is.null(status)) status <- 0

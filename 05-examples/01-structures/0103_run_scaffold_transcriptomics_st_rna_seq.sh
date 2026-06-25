@@ -271,14 +271,29 @@ DIRS=(
   # Bloque de Datos
   "data/01_reads/01_blc"
   "data/01_reads/02_fastq"
-  "data/02_genome"
-  "data/03_alignment_outputs/visium_cellranger"
-  "data/04_processed_objects"
-  "data/05_resources/01_metadata"
-  "data/05_resources/02_annotations/dbs"
-  "data/05_resources/02_annotations/manual"
-  "data/05_resources/03_aditional_r_objects"
-  "data/05_resources/04_documentation"
+
+  "data/02_genome/01_fasta"
+  "data/02_genome/02_genes"
+  "data/02_genome/03_index"
+  "data/02_genome/04_log"
+
+  "data/03_images/01_microscopy"
+  "data/03_images/02_instrument_extra"
+
+  "data/04_spatial_templates/01_visium_probes"
+  "data/04_spatial_templates/02_stereo_masks"
+
+  "data/05_alignment_outputs/01_spaceranger_output"
+  "data/05_alignment_outputs/02_saw_output"
+  
+  "data/06_processed_objects"
+  
+  "data/07_resources/01_metadata"
+  "data/07_resources/02_annotations/dbs"
+  "data/07_resources/02_annotations/manual"
+  "data/07_resources/03_containers"
+  "data/07_resources/04_aditional_r_objects"
+  "data/07_resources/05_documentation"
 
 
 

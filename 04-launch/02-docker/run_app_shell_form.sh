@@ -234,6 +234,10 @@ case "$OMICS_ANALYSIS" in
         read -e -p "---> Ruta a la carpeta de datos resultado del análisis: " PATH_PROJECT
         PATH_PROJECT="$(echo "$PATH_PROJECT" | sed -e "s/^['\"]//" -e "s/['\"]$//")"
         PATH_PROJECT_CONTAINER="/workspace/data/$(basename "$PATH_PROJECT")"
+        echo "Seleccione la tecnología de captura:"
+        echo "  1) VisiumHD"
+        echo "  2) Stereo-Seq"
+        read -p "---> Versión del informe (1/2): " TECHNOLOGY
         echo "Seleccione el idioma del informe:"
         echo "  1) Español"
         echo "  2) Inglés"
@@ -241,8 +245,8 @@ case "$OMICS_ANALYSIS" in
         echo "Seleccione la versión del informe:"
         echo "  1) Full"
         echo "  2) Compact"
-        read -e -p "---> Versión del informe (1/2): " REPORT_VERSION
-        PARAMS=("$PATH_PROJECT_CONTAINER" "$REPORT_LANGUAGE" "$REPORT_VERSION")
+        read -p "---> Versión del informe (1/2): " REPORT_VERSION
+        PARAMS=("$PATH_PROJECT" "$TECHNOLOGY" "$REPORT_LANGUAGE" "$REPORT_VERSION")
         PATH_RUN_PIPELINE_CONTAINER="/workspace/$REPOSITORY_BASENAME/02-pipelines/01-transcriptomics/03-st-rna-seq/run_pipeline_shell.sh"
         ;;
     "meta-amplicon")
