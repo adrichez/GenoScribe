@@ -235,7 +235,7 @@ case "$OMICS_CATEGORY" in
         echo "Seleccione la tecnología de captura:"
         echo "  1) VisiumHD"
         echo "  2) Stereo-Seq"
-        read -p "---> Versión del informe (1/2): " TECHNOLOGY
+        read -p "---> Tecnología de captura (1/2): " TECHNOLOGY
         echo "Seleccione el idioma del informe:"
         echo "  1) Español"
         echo "  2) Inglés"

@@ -74,7 +74,7 @@ website:
             href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/05-anotacion.qmd"
           - text: "6. Agrupación de poblaciones biológicas"
             href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/06-agrupacion.qmd"
-          - text: "7. Expresión diferencial por condición (WT vs KO)"
+          - text: "7. Análisis de expresión diferencial"
             href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/07-expresion-diferencial.qmd"
           - text: "8. Análisis funcional y de enriquecimiento"
             href: "resources/01-essential/03-scripts/02-quarto/01-spanish-language/01-full-version/tab3-analisis/08-enriquecimiento.qmd"
